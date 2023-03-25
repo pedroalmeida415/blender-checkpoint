@@ -1,3 +1,8 @@
+import platform
+import subprocess
+import importlib
+import sys
+import os
 bl_info = {
     "name": "blendit",
     "authon": "imaginelenses",
@@ -6,10 +11,6 @@ bl_info = {
     "category": "Blendit"
 }
 
-import os
-import sys
-import importlib
-import subprocess
 
 # Ensure pip is installed
 try:
@@ -22,7 +23,6 @@ except ModuleNotFoundError:
 # Get executable path
 executable = sys.executable
 
-import platform
 system = platform.system()
 LINUX = "Linux"
 WINDOWS = "Windows"
@@ -72,15 +72,15 @@ except ModuleNotFoundError:
     # Install Pygit2
     subprocess.check_call(
         [executable, "-m", "pip", "install", "pygit2", "--no-cache-dir"])
-    
+
     import pygit2 as git
 
 print(f"{git.__name__} is installed.")
 
-# Local imports implemented to support Blender refreshes 
+# Local imports implemented to support Blender refreshes
 """ORDER MATTERS"""
 modulesNames = ("newProject", "openProject", "reports",
-                "startMenu", "subscriptions","sourceControl", 
+                "startMenu", "subscriptions", "sourceControl",
                 "commitsPanel", "appHandlers")
 for module in modulesNames:
     if module in sys.modules:
