@@ -211,7 +211,7 @@ class GitSubPanel1(GitPanelMixin, Panel):
                 row = layout.row()
                 row.label(text="Unsaved will be lost.", icon='ERROR')
 
-            if repo.status_file(f"{filename}.py") != GIT_STATUS_CURRENT:
+            if repo.status_file(f"{filename}.blend") != GIT_STATUS_CURRENT:
                 row = layout.row()
                 row.label(text="Uncommited will be lost.", icon='ERROR')
 
