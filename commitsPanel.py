@@ -7,8 +7,8 @@ from bpy.types import Panel, PropertyGroup, UIList
 from bpy.props import (CollectionProperty, EnumProperty, IntProperty,
                        PointerProperty, StringProperty)
 
-import pygit2 as git
 from pygit2._pygit2 import GitError
+from pygit2 import GIT_STATUS_CURRENT
 
 # Local imports implemented to support Blender refreshes
 modulesNames = ("gitHelpers", "openProject", "sourceControl")
@@ -38,7 +38,7 @@ class GitPanelData(PropertyGroup):
     def getBranches(self, context):
         filepath = bpy.path.abspath("//")
         try:
-            repo = git.Repository(filepath)
+            repo = gitHelpers.getRepo(filepath)
         except GitError:
             return []
 
@@ -59,7 +59,7 @@ class GitPanelData(PropertyGroup):
         filename = bpy.path.basename(bpy.data.filepath).split(".")[0]
 
         try:
-            repo = git.Repository(filepath)
+            repo = gitHelpers.getRepo(filepath)
         except GitError:
             return
 
@@ -203,7 +203,7 @@ class GitSubPanel1(GitPanelMixin, Panel):
 
         if git.commitsList and git.commitsListIndex != 0:
             try:
-                repo = git.Repository(filepath)
+                repo = gitHelpers.getRepo(filepath)
             except GitError:
                 return
 
@@ -211,7 +211,7 @@ class GitSubPanel1(GitPanelMixin, Panel):
                 row = layout.row()
                 row.label(text="Unsaved will be lost.", icon='ERROR')
 
-            if repo.status_file(f"{filename}.py") != git.GIT_STATUS_CURRENT:
+            if repo.status_file(f"{filename}.py") != GIT_STATUS_CURRENT:
                 row = layout.row()
                 row.label(text="Uncommited will be lost.", icon='ERROR')
 
@@ -236,7 +236,7 @@ def addCommitsToList():
     # Get commits
     filepath = bpy.path.abspath("//")
     try:
-        repo = git.Repository(filepath)
+        repo = gitHelpers.getRepo(filepath)
     except GitError:
         return
 
