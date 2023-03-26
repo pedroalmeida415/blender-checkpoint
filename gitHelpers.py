@@ -116,8 +116,6 @@ def makeGitIgnore(path):
 
     content = (
         "# Git\n"
-        "assets/\n"
-        "*.blend\n"
         "*.blend*\n"
         "\n"
         "# Python\n"
