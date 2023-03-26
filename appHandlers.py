@@ -37,17 +37,17 @@ def savePostHandler(_):
 
     commands = reports.getCommands()
 
-    with open(os.path.join(filepath, f"{filename}.py"), "a") as file: 
+    with open(os.path.join(filepath, f"{filename}.py"), "a") as file:
         for command in commands:
             file.write(f"\t{command}\n")
-    
+
     reports.clearReports()
 
 
 @persistent
 def loadPostHandler(_):
     bpy.ops.wm.splash('INVOKE_DEFAULT')
-    
+
     # Message bus subscription
     subscriptions.subscribe()
 

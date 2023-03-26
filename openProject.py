@@ -24,10 +24,10 @@ OPEN_PROJECT_ICON = 'FILE_FOLDER'
 
 class BlenditOpenProject(bpy.types.Operator, ExportHelper):
     """Open a Blendit project."""
-    
+
     bl_label = "Open existing Project"
     bl_idname = "blendit.open_project"
-    
+
     # ExportHelper mixin class uses this
     filename_ext = ""
 
@@ -36,13 +36,13 @@ class BlenditOpenProject(bpy.types.Operator, ExportHelper):
         # Max internal buffer length, longer would be clamped.
         maxlen=255,
     )
-    
+
     filepath: StringProperty(
         default="/",
         options={'HIDDEN'},
         subtype='DIR_PATH'
     )
-    
+
     filename: StringProperty(
         name="Name",
         description="Name of the project",
@@ -55,20 +55,20 @@ class BlenditOpenProject(bpy.types.Operator, ExportHelper):
         defaultConfig = git.Config.get_global_config()
     except OSError:
         defaultConfig = {}
-    
-    defaultUser = (defaultConfig["user.name"] 
-            if "user.name"  in defaultConfig else "Artist")
-            
-    defaultEmail = (defaultConfig["user.email"] 
-            if "user.email" in defaultConfig else "artist@example.com")
-    
+
+    defaultUser = (defaultConfig["user.name"]
+                   if "user.name" in defaultConfig else "Artist")
+
+    defaultEmail = (defaultConfig["user.email"]
+                    if "user.email" in defaultConfig else "artist@example.com")
+
     username: StringProperty(
         name="User",
         default=defaultUser,
         description="Username of the artist.",
         options={'TEXTEDIT_UPDATE'},
     )
-    
+
     email: StringProperty(
         name="Email",
         default=defaultEmail,
@@ -76,12 +76,11 @@ class BlenditOpenProject(bpy.types.Operator, ExportHelper):
         options={'TEXTEDIT_UPDATE'},
     )
 
-
     def draw(self, context):
         self.username = self.defaultUser
         self.email = self.defaultEmail
 
-        layout = self.layout.box()        
+        layout = self.layout.box()
         layout.label(text="Open Project", icon=OPEN_PROJECT_ICON)
 
         # Get repo user details
@@ -97,12 +96,11 @@ class BlenditOpenProject(bpy.types.Operator, ExportHelper):
         if not self.username.strip():
             layout.label(text="Username cannot be empty.", icon="ERROR")
         layout.prop(self, "username")
-        
+
         if not self.email.strip():
             layout.label(text="Email cannot be empty.", icon="ERROR")
         layout.prop(self, "email")
 
-    
     def execute(self, context):
         filepath = self.filepath.strip()
         filename = filepath.split(os.sep)[-2]
@@ -125,7 +123,7 @@ class BlenditOpenProject(bpy.types.Operator, ExportHelper):
         if username != self.defaultUser or email != self.defaultEmail:
             repo = git.Repository(filepath)
             gitHelpers.configUser(repo, username, email)
-        
+
         try:
             regenFile(filepath, filename)
         except FileNotFoundError:
@@ -152,38 +150,42 @@ def regenFile(filepath, filename):
         # Current area type
         currentType = area.type
 
-        # Change area type to INFO and delete all content                
+        # Change area type to INFO and delete all content
         area.type = 'VIEW_3D'
-        
+
         regen.executeCommands()
 
         # Restore area type
         area.type = currentType
-    
+
     # Clear reports
     reports.clearReports()
 
     # Save .blend file
-    bpy.ops.wm.save_mainfile(filepath=os.path.join(filepath, f"{filename}.blend"))
-    
+    bpy.ops.wm.save_mainfile(
+        filepath=os.path.join(filepath, f"{filename}.blend"))
+
     # Re-subscribe to message busses
     subscriptions.subscribe()
 
 
 def importRegen(filepath, filename):
     """ Import python file as a module named regen """
-    
+
     from importlib import util
 
-    spec = util.spec_from_file_location("regen", os.path.join(filepath, f"{filename}.py"))
+    spec = util.spec_from_file_location(
+        "regen", os.path.join(filepath, f"{filename}.py"))
     regen = util.module_from_spec(spec)
-    
+
     spec.loader.exec_module(regen)
 
     return regen
 
+
 def register():
     bpy.utils.register_class(BlenditOpenProject)
+
 
 def unregister():
     bpy.utils.unregister_class(BlenditOpenProject)

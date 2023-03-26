@@ -37,7 +37,8 @@ class BlenditNewBranch(Operator):
         filename = bpy.path.basename(bpy.data.filepath).split(".")[0]
 
         # Save .blend file (Writes commands to Python file and clears reports)
-        bpy.ops.wm.save_mainfile(filepath=os.path.join(filepath, f"{filename}.blend"))
+        bpy.ops.wm.save_mainfile(
+            filepath=os.path.join(filepath, f"{filename}.blend"))
 
         # Get repo
         try:
@@ -75,7 +76,8 @@ class BlenditRevertToCommit(Operator):
         filename = bpy.path.basename(bpy.data.filepath).split(".")[0]
 
         # Save .blend file (Writes commands to Python file and clears reports)
-        bpy.ops.wm.save_mainfile(filepath=os.path.join(filepath, f"{filename}.blend"))
+        bpy.ops.wm.save_mainfile(
+            filepath=os.path.join(filepath, f"{filename}.blend"))
 
         # Get repo
         try:
@@ -113,7 +115,7 @@ class BlenditRevertToCommit(Operator):
 
 class BlenditCommit(Operator):
     """Commit Changes."""
-    
+
     bl_label = __doc__
     bl_idname = "blendit.commit"
 
@@ -128,7 +130,8 @@ class BlenditCommit(Operator):
         filename = bpy.path.basename(bpy.data.filepath).split(".")[0]
 
         # Save .blend file (Writes commands to Python file and clears reports)
-        bpy.ops.wm.save_mainfile(filepath=os.path.join(filepath, f"{filename}.blend"))
+        bpy.ops.wm.save_mainfile(
+            filepath=os.path.join(filepath, f"{filename}.blend"))
 
         # Commit changes
         try:
@@ -148,13 +151,16 @@ class BlenditCommit(Operator):
 
 classes = (BlenditNewBranch, BlenditRevertToCommit, BlenditCommit)
 
+
 def register():
     for cls in classes:
         bpy.utils.register_class(cls)
 
+
 def unregister():
     for cls in classes:
         bpy.utils.unregister_class(cls)
+
 
 if __name__ == "__main__":
     register()

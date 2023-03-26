@@ -15,8 +15,8 @@ def getLastModifiedStr(date):
     date: offset-aware datetime.datetime object
     """
 
-    # Get time difference            
-    now = datetime.now(timezone.utc)    
+    # Get time difference
+    now = datetime.now(timezone.utc)
     delta = now - date
 
     output = ""
@@ -30,7 +30,7 @@ def getLastModifiedStr(date):
                 secs = delta.seconds - hours * 3600 - mins * 60
                 if secs <= 0:
                     output = "now"
-                
+
                 # Secs
                 elif secs == 1:
                     output = f"{secs} sec"
@@ -48,7 +48,7 @@ def getLastModifiedStr(date):
             output = f"{hours} hr"
         else:
             output = f"{hours} hrs"
-    
+
     # Days
     elif days == 1:
         output = f"{days} day"
@@ -69,7 +69,7 @@ def commit(repo, message):
     email = repo.config["User.email"]
     signature = git.Signature(name, email)
     tree = repo.index.write_tree()
-    
+
     try:
         # Assuming prior commits exist
         ref = repo.head.name
@@ -80,11 +80,11 @@ def commit(repo, message):
         parents = []
 
     repo.create_commit(
-        ref, 
-        signature, 
-        signature, 
-        message, 
-        tree, 
+        ref,
+        signature,
+        signature,
+        message,
+        tree,
         parents
     )
 
@@ -96,8 +96,8 @@ def getCommits(repo):
     last = repo[repo.head.target]
     for commit in repo.walk(last.id, git.GIT_SORT_TIME):
         timezoneInfo = timezone(timedelta(minutes=commit.author.offset))
-        datetimeString = datetime.fromtimestamp(float(commit.author.time), 
-                                    timezoneInfo).strftime(GIT_TIME_FORMAT)
+        datetimeString = datetime.fromtimestamp(float(commit.author.time),
+                                                timezoneInfo).strftime(GIT_TIME_FORMAT)
 
         commitDict = {}
         commitDict["id"] = commit.hex
@@ -110,9 +110,10 @@ def getCommits(repo):
 
     return commits
 
+
 def makeGitIgnore(path):
     """Generates .gitignore file for Blendit project at given path"""
-    
+
     content = (
         "# Blendit\n"
         "assets/\n"
@@ -131,6 +132,7 @@ def makeGitIgnore(path):
 
     with open(os.path.join(path, ".gitignore"), "w") as file:
         file.write(content)
+
 
 def configUser(repo, name, email):
     """Set user.name and user.email to the given Repo object"""

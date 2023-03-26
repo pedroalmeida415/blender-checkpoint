@@ -49,7 +49,7 @@ class BlenditPanelData(PropertyGroup):
         for index, branch in enumerate(branches):
             if branch == activeBranch:
                 index = -1
-            branchList.append((branch, branch, f"Branch: '{branch}'", 
+            branchList.append((branch, branch, f"Branch: '{branch}'",
                                BRANCH_ICON, index))
 
         return branchList
@@ -87,7 +87,7 @@ class BlenditPanelData(PropertyGroup):
         items=getBranches,
         default=-1,
         options={'ANIMATABLE'},
-        update=setActiveBranch     
+        update=setActiveBranch
     )
 
     newBranchName: StringProperty(
@@ -126,9 +126,9 @@ class BlenditCommitsList(UIList):
 
     def draw_item(self, context, layout, data, item, icon, active_data,
                   active_propname, index):
-        
+
         split = layout.split(factor=0.825)
-        
+
         col1 = split.column()
         col1.label(text=item.message, icon=COMMENT_ICON)
 
@@ -149,17 +149,17 @@ class BlenditNewBranchPanel(BlenditPanelMixin, Panel):
 
     def draw(self, context):
         layout = self.layout
-        
+
         layout.label(text="New Branch", icon=BRANCH_ICON)
 
         layout.prop(context.window_manager.blendit, "newBranchName")
         name = context.window_manager.blendit.newBranchName
-        
+
         row = layout.row()
         if not name:
             row.enabled = False
 
-        branch = row.operator(sourceControl.BlenditNewBranch.bl_idname, 
+        branch = row.operator(sourceControl.BlenditNewBranch.bl_idname,
                               text="Create Branch")
         branch.name = name
 
@@ -169,13 +169,13 @@ class BlenditSubPanel1(BlenditPanelMixin, Panel):
     bl_parent_id = BlenditPanel.bl_idname
     bl_label = ""
     bl_options = {'DEFAULT_CLOSED'}
-    
+
     def draw_header(self, context):
         layout = self.layout
 
         row = layout.row(align=True)
         row.prop(context.window_manager.blendit, "branches")
-        
+
         col = row.column()
         col.scale_x = 0.8
         col.popover(BlenditNewBranchPanel.bl_idname, icon=NEW_BRANCH_ICON)
@@ -191,8 +191,8 @@ class BlenditSubPanel1(BlenditPanelMixin, Panel):
         row = layout.row()
         row.template_list(
             listtype_name="BlenditCommitsList",
-            # "" takes the name of the class used to define the UIList 
-            list_id="", 
+            # "" takes the name of the class used to define the UIList
+            list_id="",
             dataptr=blendit,
             propname="commitsList",
             active_dataptr=blendit,
@@ -216,10 +216,10 @@ class BlenditSubPanel1(BlenditPanelMixin, Panel):
                 row.label(text="Uncommited will be lost.", icon='ERROR')
 
             row = layout.row()
-            switch = row.operator(sourceControl.BlenditRevertToCommit.bl_idname, 
+            switch = row.operator(sourceControl.BlenditRevertToCommit.bl_idname,
                                   text="Revert to Commit")
             switch.id = blendit.commitsList[blendit.commitsListIndex]["id"]
-        
+
         # Add commits to list
         bpy.app.timers.register(addCommitsToList)
 
@@ -229,7 +229,7 @@ def addCommitsToList():
 
     # Get list
     commitsList = bpy.context.window_manager.blendit.commitsList
-    
+
     # Clear list
     commitsList.clear()
 
@@ -261,11 +261,11 @@ class BlenditSubPanel2(BlenditPanelMixin, Panel):
         layout.alignment = 'CENTER'
 
         row = layout.row()
-        
+
         col1 = row.column()
         col1.scale_x = 0.5
         col1.label(text="Message: ")
-        
+
         col2 = row.column()
         col2.prop(context.window_manager.blendit, "commitMessage")
 
@@ -274,15 +274,16 @@ class BlenditSubPanel2(BlenditPanelMixin, Panel):
         if not message:
             row.enabled = False
 
-        commit = row.operator(sourceControl.BlenditCommit.bl_idname, 
-                               text="Commit Changes")
+        commit = row.operator(sourceControl.BlenditCommit.bl_idname,
+                              text="Commit Changes")
         commit.message = message
 
 
 """ORDER MATTERS"""
-classes = (BlenditCommitsListItem, BlenditPanelData, BlenditPanel, 
-           BlenditCommitsList, BlenditNewBranchPanel, BlenditSubPanel1, 
+classes = (BlenditCommitsListItem, BlenditPanelData, BlenditPanel,
+           BlenditCommitsList, BlenditNewBranchPanel, BlenditSubPanel1,
            BlenditSubPanel2)
+
 
 def register():
     for cls in classes:
@@ -290,9 +291,11 @@ def register():
 
     bpy.types.WindowManager.blendit = PointerProperty(type=BlenditPanelData)
 
+
 def unregister():
     for cls in classes:
         bpy.utils.unregister_class(cls)
+
 
 if __name__ == "__main__":
     register()

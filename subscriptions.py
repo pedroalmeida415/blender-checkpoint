@@ -6,10 +6,10 @@ import bpy
 
 class BlenditSubscriber:
     """Subscriber to different event publishers"""
-    
+
     def __repr__(self):
         return self.__doc__
-        
+
 
 blenditSubscriber = BlenditSubscriber()
 
@@ -21,7 +21,8 @@ def writeToFile(lines):
     filename = bpy.path.basename(bpy.data.filepath).split(".")[0]
 
     # Save .blend file (Writes commands to Python file and clears reports)
-    bpy.ops.wm.save_mainfile(filepath=os.path.join(filepath, f"{filename}.blend"))
+    bpy.ops.wm.save_mainfile(
+        filepath=os.path.join(filepath, f"{filename}.blend"))
 
     # Append lines to Python file
     with open(os.path.join(filepath, f"{filename}.py"), "a") as file:
@@ -32,7 +33,7 @@ def writeToFile(lines):
 def activeObjectCallback():
     """Called when active object changes"""
 
-    objectsToSelect  = bpy.context.view_layer.objects.selected.keys()
+    objectsToSelect = bpy.context.view_layer.objects.selected.keys()
     objectToActivate = bpy.context.view_layer.objects.active.__repr__()
     lines = (
         "[obj.select_set(False) for obj in bpy.context.view_layer.objects.selected.values()]",
