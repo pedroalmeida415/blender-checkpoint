@@ -20,11 +20,11 @@ for module in modulesNames:
         globals()[module] = importlib.import_module(f"{parent}.{module}")
 
 
-class BlenditNewBranch(Operator):
+class GitNewBranch(Operator):
     """Create New Branch."""
 
     bl_label = __doc__
-    bl_idname = "blendit.new_branch"
+    bl_idname = "git.new_branch"
 
     name: StringProperty(
         name="",
@@ -54,17 +54,17 @@ class BlenditNewBranch(Operator):
 
         # Clear branch name property
         self.newBranchName = ""
-        if context.window_manager.blendit.newBranchName:
-            context.window_manager.blendit.newBranchName = ""
+        if context.window_manager.git.newBranchName:
+            context.window_manager.git.newBranchName = ""
 
         return {'FINISHED'}
 
 
-class BlenditRevertToCommit(Operator):
+class GitRevertToCommit(Operator):
     """Revert to Commit"""
 
     bl_label = __doc__
-    bl_idname = "blendit.revert_to_commit"
+    bl_idname = "git.revert_to_commit"
 
     id: StringProperty(
         name="",
@@ -113,11 +113,11 @@ class BlenditRevertToCommit(Operator):
         return {'FINISHED'}
 
 
-class BlenditCommit(Operator):
+class GitCommit(Operator):
     """Commit Changes."""
 
     bl_label = __doc__
-    bl_idname = "blendit.commit"
+    bl_idname = "git.commit"
 
     message: StringProperty(
         name="",
@@ -147,13 +147,13 @@ class BlenditCommit(Operator):
 
         # Clear commit message property
         self.message = ""
-        if context.window_manager.blendit.commitMessage:
-            context.window_manager.blendit.commitMessage = ""
+        if context.window_manager.git.commitMessage:
+            context.window_manager.git.commitMessage = ""
 
         return {'FINISHED'}
 
 
-classes = (BlenditNewBranch, BlenditRevertToCommit, BlenditCommit)
+classes = (GitNewBranch, GitRevertToCommit, GitCommit)
 
 
 def register():

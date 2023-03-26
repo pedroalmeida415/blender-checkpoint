@@ -21,11 +21,11 @@ for module in modulesNames:
 NEW_PROJECT_ICON = 'NEWFOLDER'
 
 
-class BlenditNewProject(bpy.types.Operator, ExportHelper):
-    """Create a Blendit project."""
+class GitNewProject(bpy.types.Operator, ExportHelper):
+    """Create a Git project."""
 
     bl_label = "Create New Project"
-    bl_idname = "blendit.new_project"
+    bl_idname = "git.new_project"
 
     # ExportHelper mixin class uses this
     filename_ext = ""
@@ -170,8 +170,8 @@ class BlenditNewProject(bpy.types.Operator, ExportHelper):
 
 
 def register():
-    bpy.utils.register_class(BlenditNewProject)
+    bpy.utils.register_class(GitNewProject)
 
 
 def unregister():
-    bpy.utils.unregister_class(BlenditNewProject)
+    bpy.utils.unregister_class(GitNewProject)

@@ -17,9 +17,9 @@ def drawFileMenu(self, context, layout=None):
     if not layout:
         layout = self.layout
 
-    layout.operator(newProject.BlenditNewProject.bl_idname,
+    layout.operator(newProject.GitNewProject.bl_idname,
                     text="New Project", icon=newProject.NEW_PROJECT_ICON)
-    layout.operator(openProject.BlenditOpenProject.bl_idname,
+    layout.operator(openProject.GitOpenProject.bl_idname,
                     text="Open Project", icon=openProject.OPEN_PROJECT_ICON)
     layout.separator()
 
@@ -31,15 +31,15 @@ def drawStartMenu(self, context):
     split = layout.split()
 
     col1 = split.column()
-    col1.label(text="Blendit")
+    col1.label(text="Git")
 
     drawFileMenu(self, context, col1)
 
     col2 = split.column()
     col2.label(text="Getting Started")
 
-    col2.operator("wm.url_open", text="Blendit Website",
-                  icon='URL').url = "https://blendit.imaginelenses.com"
+    col2.operator("wm.url_open", text="Git Website",
+                  icon='URL').url = "https://git.imaginelenses.com"
     col2.operator("wm.url_open", text="About Git",
                   icon='URL').url = "https://git-scm.com/about"
 

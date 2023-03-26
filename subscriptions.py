@@ -4,14 +4,14 @@ import functools
 import bpy
 
 
-class BlenditSubscriber:
+class GitSubscriber:
     """Subscriber to different event publishers"""
 
     def __repr__(self):
         return self.__doc__
 
 
-blenditSubscriber = BlenditSubscriber()
+gitSubscriber = GitSubscriber()
 
 
 def writeToFile(lines):
@@ -49,7 +49,7 @@ def subscribe():
     # Active Object
     bpy.msgbus.subscribe_rna(
         key=(bpy.types.LayerObjects, "active"),
-        owner=blenditSubscriber,
+        owner=gitSubscriber,
         args=(),
         notify=activeObjectCallback,
         options={'PERSISTENT'}
@@ -58,4 +58,4 @@ def subscribe():
 
 def unsubscribe():
     """Unsubscribes to all event publishers"""
-    bpy.msgbus.clear_by_owner(blenditSubscriber)
+    bpy.msgbus.clear_by_owner(gitSubscriber)

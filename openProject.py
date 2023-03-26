@@ -22,11 +22,11 @@ for module in modulesNames:
 OPEN_PROJECT_ICON = 'FILE_FOLDER'
 
 
-class BlenditOpenProject(bpy.types.Operator, ExportHelper):
-    """Open a Blendit project."""
+class GitOpenProject(bpy.types.Operator, ExportHelper):
+    """Open a Git project."""
 
     bl_label = "Open existing Project"
-    bl_idname = "blendit.open_project"
+    bl_idname = "git.open_project"
 
     # ExportHelper mixin class uses this
     filename_ext = ""
@@ -90,7 +90,7 @@ class BlenditOpenProject(bpy.types.Operator, ExportHelper):
                 self.username = repo.config["user.name"]
                 self.email = repo.config["user.email"]
         except GitError:
-            layout.label(text="Cannot find Blendit project at this location.",
+            layout.label(text="Cannot find Git project at this location.",
                          icon="ERROR")
 
         if not self.username.strip():
@@ -127,7 +127,7 @@ class BlenditOpenProject(bpy.types.Operator, ExportHelper):
         try:
             regenFile(filepath, filename)
         except FileNotFoundError:
-            self.report({'ERROR_INVALID_INPUT'}, "Blendit project not found.")
+            self.report({'ERROR_INVALID_INPUT'}, "Git project not found.")
             return {'CANCELLED'}
 
         return {'FINISHED'}
@@ -135,7 +135,7 @@ class BlenditOpenProject(bpy.types.Operator, ExportHelper):
 
 def regenFile(filepath, filename):
     # Load new blend file
-    bpy.ops.wm.read_homefile(app_template="blendit")
+    bpy.ops.wm.read_homefile(app_template="git")
 
     # Unsubscribe message busses
     subscriptions.unsubscribe()
@@ -184,8 +184,8 @@ def importRegen(filepath, filename):
 
 
 def register():
-    bpy.utils.register_class(BlenditOpenProject)
+    bpy.utils.register_class(GitOpenProject)
 
 
 def unregister():
-    bpy.utils.unregister_class(BlenditOpenProject)
+    bpy.utils.unregister_class(GitOpenProject)

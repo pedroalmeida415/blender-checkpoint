@@ -31,7 +31,7 @@ def ignoreReport(report):
     ignoreReportList = [
         "bpy.context.space_data.",
         "bpy.data.window_managers[",
-        "bpy.context.window_manager.blendit"
+        "bpy.context.window_manager.git"
     ]
     for s in ignoreReportList:
         if report.startswith(s):

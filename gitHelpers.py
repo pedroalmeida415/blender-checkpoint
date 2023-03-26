@@ -112,10 +112,10 @@ def getCommits(repo):
 
 
 def makeGitIgnore(path):
-    """Generates .gitignore file for Blendit project at given path"""
+    """Generates .gitignore file for Git project at given path"""
 
     content = (
-        "# Blendit\n"
+        "# Git\n"
         "assets/\n"
         "*.blend\n"
         "*.blend*\n"

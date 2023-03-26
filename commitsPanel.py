@@ -26,7 +26,7 @@ CLEAR_ICON = 'X'
 COMMENT_ICON = 'LAYER_USED'
 
 
-class BlenditCommitsListItem(PropertyGroup):
+class GitCommitsListItem(PropertyGroup):
     id: StringProperty(description="Unique ID of commit")
     name: StringProperty(description="Name of commiter")
     email: StringProperty(description="Email of commiter")
@@ -34,7 +34,7 @@ class BlenditCommitsListItem(PropertyGroup):
     message: StringProperty(description="Commit message")
 
 
-class BlenditPanelData(PropertyGroup):
+class GitPanelData(PropertyGroup):
     def getBranches(self, context):
         filepath = bpy.path.abspath("//")
         try:
@@ -64,7 +64,7 @@ class BlenditPanelData(PropertyGroup):
             return
 
         # Ensure value is not active branch
-        value = context.window_manager.blendit.branches
+        value = context.window_manager.git.branches
         activeBranch = repo.head.shorthand
         if value == activeBranch:
             return
@@ -102,26 +102,26 @@ class BlenditPanelData(PropertyGroup):
         description="A short description of the changes made"
     )
 
-    commitsList: CollectionProperty(type=BlenditCommitsListItem)
+    commitsList: CollectionProperty(type=GitCommitsListItem)
 
     commitsListIndex: IntProperty(default=0)
 
 
-class BlenditPanelMixin:
+class GitPanelMixin:
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = 'Tool'
 
 
-class BlenditPanel(BlenditPanelMixin, Panel):
-    bl_idname = "BLENDIT_PT_panel"
-    bl_label = "Blendit"
+class GitPanel(GitPanelMixin, Panel):
+    bl_idname = "GIT_PT_panel"
+    bl_label = "Git"
 
     def draw(self, context):
         pass
 
 
-class BlenditCommitsList(UIList):
+class GitCommitsList(UIList):
     """List of Commits in project."""
 
     def draw_item(self, context, layout, data, item, icon, active_data,
@@ -140,10 +140,10 @@ class BlenditCommitsList(UIList):
         col2.label(text=lastModified)
 
 
-class BlenditNewBranchPanel(BlenditPanelMixin, Panel):
+class GitNewBranchPanel(GitPanelMixin, Panel):
     """Add New Branch"""
 
-    bl_idname = "BLENDIT_PT_new_branch_panel"
+    bl_idname = "GIT_PT_new_branch_panel"
     bl_label = ""
     bl_options = {'INSTANCED'}
 
@@ -152,21 +152,21 @@ class BlenditNewBranchPanel(BlenditPanelMixin, Panel):
 
         layout.label(text="New Branch", icon=BRANCH_ICON)
 
-        layout.prop(context.window_manager.blendit, "newBranchName")
-        name = context.window_manager.blendit.newBranchName
+        layout.prop(context.window_manager.git, "newBranchName")
+        name = context.window_manager.git.newBranchName
 
         row = layout.row()
         if not name:
             row.enabled = False
 
-        branch = row.operator(sourceControl.BlenditNewBranch.bl_idname,
+        branch = row.operator(sourceControl.GitNewBranch.bl_idname,
                               text="Create Branch")
         branch.name = name
 
 
-class BlenditSubPanel1(BlenditPanelMixin, Panel):
-    bl_idname = "BLENDIT_PT_sub_panel_1"
-    bl_parent_id = BlenditPanel.bl_idname
+class GitSubPanel1(GitPanelMixin, Panel):
+    bl_idname = "GIT_PT_sub_panel_1"
+    bl_parent_id = GitPanel.bl_idname
     bl_label = ""
     bl_options = {'DEFAULT_CLOSED'}
 
@@ -174,34 +174,34 @@ class BlenditSubPanel1(BlenditPanelMixin, Panel):
         layout = self.layout
 
         row = layout.row(align=True)
-        row.prop(context.window_manager.blendit, "branches")
+        row.prop(context.window_manager.git, "branches")
 
         col = row.column()
         col.scale_x = 0.8
-        col.popover(BlenditNewBranchPanel.bl_idname, icon=NEW_BRANCH_ICON)
+        col.popover(GitNewBranchPanel.bl_idname, icon=NEW_BRANCH_ICON)
 
     def draw(self, context):
         filepath = bpy.path.abspath("//")
         filename = bpy.path.basename(bpy.data.filepath).split(".")[0]
 
         layout = self.layout
-        blendit = context.window_manager.blendit
+        git = context.window_manager.git
 
         # List of Commits
         row = layout.row()
         row.template_list(
-            listtype_name="BlenditCommitsList",
+            listtype_name="GitCommitsList",
             # "" takes the name of the class used to define the UIList
             list_id="",
-            dataptr=blendit,
+            dataptr=git,
             propname="commitsList",
-            active_dataptr=blendit,
+            active_dataptr=git,
             active_propname="commitsListIndex",
             item_dyntip_propname="message",
             sort_lock=True,
         )
 
-        if blendit.commitsList and blendit.commitsListIndex != 0:
+        if git.commitsList and git.commitsListIndex != 0:
             try:
                 repo = git.Repository(filepath)
             except GitError:
@@ -216,9 +216,9 @@ class BlenditSubPanel1(BlenditPanelMixin, Panel):
                 row.label(text="Uncommited will be lost.", icon='ERROR')
 
             row = layout.row()
-            switch = row.operator(sourceControl.BlenditRevertToCommit.bl_idname,
+            switch = row.operator(sourceControl.GitRevertToCommit.bl_idname,
                                   text="Revert to Commit")
-            switch.id = blendit.commitsList[blendit.commitsListIndex]["id"]
+            switch.id = git.commitsList[git.commitsListIndex]["id"]
 
         # Add commits to list
         bpy.app.timers.register(addCommitsToList)
@@ -228,7 +228,7 @@ def addCommitsToList():
     """Add commits to list"""
 
     # Get list
-    commitsList = bpy.context.window_manager.blendit.commitsList
+    commitsList = bpy.context.window_manager.git.commitsList
 
     # Clear list
     commitsList.clear()
@@ -250,9 +250,9 @@ def addCommitsToList():
         item.message = commit["message"]
 
 
-class BlenditSubPanel2(BlenditPanelMixin, Panel):
-    bl_idname = "BLENDIT_PT_sub_panel_2"
-    bl_parent_id = BlenditPanel.bl_idname
+class GitSubPanel2(GitPanelMixin, Panel):
+    bl_idname = "GIT_PT_sub_panel_2"
+    bl_parent_id = GitPanel.bl_idname
     bl_label = ""
     bl_options = {'HIDE_HEADER'}
 
@@ -267,29 +267,29 @@ class BlenditSubPanel2(BlenditPanelMixin, Panel):
         col1.label(text="Message: ")
 
         col2 = row.column()
-        col2.prop(context.window_manager.blendit, "commitMessage")
+        col2.prop(context.window_manager.git, "commitMessage")
 
         row = layout.row()
-        message = context.window_manager.blendit.commitMessage
+        message = context.window_manager.git.commitMessage
         if not message:
             row.enabled = False
 
-        commit = row.operator(sourceControl.BlenditCommit.bl_idname,
+        commit = row.operator(sourceControl.GitCommit.bl_idname,
                               text="Commit Changes")
         commit.message = message
 
 
 """ORDER MATTERS"""
-classes = (BlenditCommitsListItem, BlenditPanelData, BlenditPanel,
-           BlenditCommitsList, BlenditNewBranchPanel, BlenditSubPanel1,
-           BlenditSubPanel2)
+classes = (GitCommitsListItem, GitPanelData, GitPanel,
+           GitCommitsList, GitNewBranchPanel, GitSubPanel1,
+           GitSubPanel2)
 
 
 def register():
     for cls in classes:
         bpy.utils.register_class(cls)
 
-    bpy.types.WindowManager.blendit = PointerProperty(type=BlenditPanelData)
+    bpy.types.WindowManager.git = PointerProperty(type=GitPanelData)
 
 
 def unregister():
