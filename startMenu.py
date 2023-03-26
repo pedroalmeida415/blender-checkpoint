@@ -4,7 +4,7 @@ import importlib
 import bpy
 
 # Local imports implemented to support Blender refreshes
-modulesNames = ("newProject", "openProject")
+modulesNames = ("saveProject", "newProject", "openProject")
 for module in modulesNames:
     if module in sys.modules:
         importlib.reload(sys.modules[module])
@@ -21,6 +21,8 @@ def drawFileMenu(self, context, layout=None):
                     text="New Project", icon=newProject.NEW_PROJECT_ICON)
     layout.operator(openProject.GitOpenProject.bl_idname,
                     text="Open Project", icon=openProject.OPEN_PROJECT_ICON)
+    layout.operator(saveProject.GitSaveProject.bl_idname,
+                    text="Save Project", icon=saveProject.NEW_PROJECT_ICON)
     layout.separator()
 
 
@@ -38,8 +40,8 @@ def drawStartMenu(self, context):
     col2 = split.column()
     col2.label(text="Getting Started")
 
-    col2.operator("wm.url_open", text="Git Website",
-                  icon='URL').url = "https://git.imaginelenses.com"
+    col2.operator("wm.url_open", text="Blender-Git Website",
+                  icon='URL').url = ""
     col2.operator("wm.url_open", text="About Git",
                   icon='URL').url = "https://git-scm.com/about"
 

@@ -3,12 +3,13 @@ import sys
 import importlib
 
 import bpy
+from bpy_extras.io_utils import ExportHelper
 from bpy.props import StringProperty
 
 import pygit2 as git
 
 # Local imports implemented to support Blender refreshes
-modulesNames = ("gitHelpers", "reports", "sourceControl", "gitHelpers")
+modulesNames = ("gitHelpers", "reports")
 for module in modulesNames:
     if module in sys.modules:
         importlib.reload(sys.modules[module])
@@ -17,11 +18,43 @@ for module in modulesNames:
         globals()[module] = importlib.import_module(f"{parent}.{module}")
 
 
-class SimpleOperator(bpy.types.Operator):
-    bl_idname = "object.simple_operator"
-    bl_label = "Simple Object Operator"
+NEW_PROJECT_ICON = 'NEWFOLDER'
 
-    # Define a custom property
+
+class GitSaveProject(bpy.types.Operator, ExportHelper):
+    """Save a Git project."""
+
+    bl_label = "Save Project"
+    bl_idname = "git.save_project"
+
+    # ExportHelper mixin class uses this
+    filename_ext = ""
+
+    filter_glob: StringProperty(
+        options={'HIDDEN'},
+        # Max internal buffer length, longer would be clamped.
+        maxlen=255,
+    )
+
+    filepath: StringProperty(
+        default="/",
+        options={'HIDDEN'},
+        subtype='DIR_PATH'
+    )
+
+    filename: StringProperty(
+        name="Name",
+        description="Name of the project",
+        options={'TEXTEDIT_UPDATE'},
+        subtype='FILE_NAME'
+    )
+
+    location: StringProperty(
+        name="Location",
+        description="Location of the project"
+    )
+
+    # Get global/default git config if .gitconfig or .git/config exists
     try:
         defaultConfig = git.Config.get_global_config()
     except OSError:
@@ -43,41 +76,96 @@ class SimpleOperator(bpy.types.Operator):
     email: StringProperty(
         name="Email",
         default=defaultEmail,
-        description="Email of the artist. Should be the same email as the one used in their version control platform account",
+        description="Email of the artist",
         options={'TEXTEDIT_UPDATE'},
     )
 
-    description: StringProperty(
-        name="Description",
-        description="Short description of the changes you made",
-        options={'TEXTEDIT_UPDATE'},
-    )
+    def draw(self, context):
+        layout = self.layout.box()
+
+        layout.label(text="Save Project", icon=NEW_PROJECT_ICON)
+
+        if not self.filename.strip():
+            layout.label(text="Name cannot be empty.", icon="ERROR")
+        row = layout.row()
+        row.enabled = False
+        row.prop(self, "filename")
+
+        if not self.filepath.strip():
+            layout.label(text="Location cannot be empty.", icon="ERROR")
+        self.location = self.filepath
+        row = layout.row()
+        row.enabled = False
+        row.prop(self, "location")
+
+        if not self.username.strip():
+            layout.label(text="Username cannot be empty.", icon="ERROR")
+        layout.prop(self, "username")
+
+        if not self.email.strip():
+            layout.label(text="Email cannot be empty.", icon="ERROR")
+        layout.prop(self, "email")
 
     def execute(self, context):
-        # Verificar helpers e funções de source control para ver se já não está implementado
+        filename = self.filename.strip()
+        filepath = self.filepath.strip()
+        username = self.username.strip()
+        email = self.email.strip()
 
-        # Get the current .blend file name in order to add it to "Staged" on git
-        # Commit changes using the "description" field as commmit message
+        if not filename:
+            self.report({'ERROR_INVALID_INPUT'}, "Name cannot be empty.")
+            return {'CANCELLED'}
 
-        # The above is currently implemented with the GitCommit Operator, functioning on the GitPanel
-        bpy.ops.git.commit(message=self.description)
+        if not filepath:
+            self.report({'ERROR_INVALID_INPUT'}, "Path cannot be empty.")
+            return {'CANCELLED'}
 
-        # Push changes to master after commit
+        if not username:
+            self.report({'ERROR_INVALID_INPUT'}, "User cannot be empty.")
+            return {'CANCELLED'}
 
-        print(f"The value of description is: {self.description}")
+        if not email:
+            self.report({'ERROR_INVALID_INPUT'}, "Email cannot be empty.")
+            return {'CANCELLED'}
+
+        print(f"Dir Path: {filepath}")
+        self.report({'DEBUG'}, filepath)
+
+        # Make directory
+        try:
+            os.mkdir(os.path.abspath(filepath))
+        except FileNotFoundError:
+            self.report({'ERROR_INVALID_INPUT'}, "Invalid directory path.")
+            return {'CANCELLED'}
+
+        # Make assets directory
+        os.mkdir(os.path.join(filepath, "assets"))
+
+        # Make .gitignore file
+        gitHelpers.makeGitIgnore(filepath)
+
+        # Init git repo
+        repo = git.init_repository(filepath)
+
+        # Configure git repo
+        gitHelpers.configUser(repo, username, email)
+
+        # Clear reports
+        reports.clearReports()
+
+        # Save .blend file
+        bpy.ops.wm.save_mainfile(
+            filepath=os.path.join(filepath, f"{filename}.blend"))
+
+        # Initial commit
+        gitHelpers.commit(repo, "Initial commit - created project")
+
         return {'FINISHED'}
-
-    def invoke(self, context, event):
-        # Display the dialog box
-
-        return context.window_manager.invoke_props_dialog(self)
-
-# Invoke the operator and display the dialog box
 
 
 def register():
-    bpy.utils.register_class(SimpleOperator)
+    bpy.utils.register_class(GitSaveProject)
 
 
 def unregister():
-    bpy.utils.unregister_class(SimpleOperator)
+    bpy.utils.unregister_class(GitSaveProject)
