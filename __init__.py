@@ -4,11 +4,11 @@ import importlib
 import sys
 import os
 bl_info = {
-    "name": "blendit",
-    "authon": "imaginelenses",
+    "name": "Blender Git Integration",
+    "authon": "Nameless",
     "description": "Version control for Blender.",
-    "blender": (3, 3, 0),
-    "category": "Blendit"
+    "blender": (3, 4, 1),
+    "category": "Git"
 }
 
 
