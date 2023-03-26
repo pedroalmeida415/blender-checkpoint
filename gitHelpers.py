@@ -139,3 +139,13 @@ def configUser(repo, name, email):
 
     repo.config["User.name"] = name
     repo.config["User.email"] = email
+
+
+def getRepo(filepath):
+    # Find repository path from subdirectory
+    repo_path = git.discover_repository(filepath)
+
+    # Set up repository
+    repo = git.Repository(repo_path)
+
+    return repo

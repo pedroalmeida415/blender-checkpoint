@@ -57,9 +57,10 @@ class SimpleOperator(bpy.types.Operator):
         # Verificar helpers e funções de source control para ver se já não está implementado
 
         # Get the current .blend file name in order to add it to "Staged" on git
-        bpy.ops.git.commit(message=self.description)
-
         # Commit changes using the "description" field as commmit message
+
+        # The above is currently implemented with the GitCommit Operator, functioning on the GitPanel
+        bpy.ops.git.commit(message=self.description)
 
         # Push changes to master after commit
 

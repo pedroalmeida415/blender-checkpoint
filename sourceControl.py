@@ -6,7 +6,6 @@ import bpy
 from bpy.types import Operator
 from bpy.props import StringProperty
 
-import pygit2 as git
 from pygit2._pygit2 import GitError
 from pygit2 import GIT_RESET_SOFT, GIT_RESET_HARD
 
@@ -42,7 +41,7 @@ class GitNewBranch(Operator):
 
         # Get repo
         try:
-            repo = git.Repository(filepath)
+            repo = gitHelpers.getRepo(filepath)
         except GitError:
             return {'CANCELLED'}
 
@@ -81,7 +80,7 @@ class GitRevertToCommit(Operator):
 
         # Get repo
         try:
-            repo = git.Repository(filepath)
+            repo = gitHelpers.getRepo(filepath)
         except GitError:
             return {'CANCELLED'}
 
@@ -135,11 +134,7 @@ class GitCommit(Operator):
 
         # Commit changes
         try:
-            # Find repository path from subdirectory
-            repo_path = git.discover_repository(filepath)
-
-            # Set up repository
-            repo = git.Repository(repo_path)
+            repo = gitHelpers.getRepo(filepath)
         except GitError:
             return {'CANCELLED'}
 

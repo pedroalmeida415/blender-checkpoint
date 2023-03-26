@@ -121,7 +121,7 @@ class GitOpenProject(bpy.types.Operator, ExportHelper):
 
         # Configure git repo
         if username != self.defaultUser or email != self.defaultEmail:
-            repo = git.Repository(filepath)
+            repo = gitHelpers.getRepo(filepath)
             gitHelpers.configUser(repo, username, email)
 
         try:
