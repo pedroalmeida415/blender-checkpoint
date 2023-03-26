@@ -29,19 +29,21 @@ def loadPreferencesHandler(_):
 
 @persistent
 def savePostHandler(_):
-    filepath = bpy.path.abspath("//")
-    filename = bpy.path.basename(bpy.data.filepath).split(".")[0]
+    bpy.ops.object.simple_operator('INVOKE_DEFAULT')
 
-    # Apply all transforms
-    # bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+    # filepath = bpy.path.abspath("//")
+    # filename = bpy.path.basename(bpy.data.filepath).split(".")[0]
 
-    commands = reports.getCommands()
+    # # Apply all transforms
+    # # bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
 
-    with open(os.path.join(filepath, f"{filename}.py"), "a") as file:
-        for command in commands:
-            file.write(f"\t{command}\n")
+    # commands = reports.getCommands()
 
-    reports.clearReports()
+    # with open(os.path.join(filepath, f"{filename}.py"), "a") as file:
+    #     for command in commands:
+    #         file.write(f"\t{command}\n")
+
+    # reports.clearReports()
 
 
 @persistent
