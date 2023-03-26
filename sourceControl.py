@@ -135,7 +135,11 @@ class BlenditCommit(Operator):
 
         # Commit changes
         try:
-            repo = git.Repository(filepath)
+            # Find repository path from subdirectory
+            repo_path = git.discover_repository(filepath)
+
+            # Set up repository
+            repo = git.Repository(repo_path)
         except GitError:
             return {'CANCELLED'}
 
