@@ -79,7 +79,7 @@ class GitPanelData(PropertyGroup):
         repo.checkout(ref)
 
         # Regen file
-        appHandlers.regenFile(filepath, filename)
+        appHandlers.regenFile()
 
     branches: EnumProperty(
         name="Branch",

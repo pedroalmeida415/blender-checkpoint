@@ -98,7 +98,7 @@ class GitRevertToCommit(Operator):
         gitHelpers.commit(repo, f"Reverted to commit: {revertCommit.hex[:7]}")
 
         # Regen file
-        appHandlers.regenFile(filepath, filename)
+        appHandlers.regenFile()
 
         return {'FINISHED'}
 
