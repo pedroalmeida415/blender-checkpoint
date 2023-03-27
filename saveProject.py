@@ -6,7 +6,7 @@ import bpy
 import pygit2 as git
 
 # Local imports implemented to support Blender refreshes
-modulesNames = ("gitHelpers", "reports", "sourceControl")
+modulesNames = ("gitHelpers", "sourceControl")
 for module in modulesNames:
     if module in sys.modules:
         importlib.reload(sys.modules[module])

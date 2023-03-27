@@ -6,15 +6,6 @@ import bpy
 from bpy.app import handlers
 from bpy.app.handlers import persistent
 
-# Local imports implemented to support Blender refreshes
-modulesNames = ("reports", "subscriptions")
-for module in modulesNames:
-    if module in sys.modules:
-        importlib.reload(sys.modules[module])
-    else:
-        parent = ".".join(__name__.split(".")[:-1])
-        globals()[module] = importlib.import_module(f"{parent}.{module}")
-
 
 def regenFile(_):
     # Load new blend file
