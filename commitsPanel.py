@@ -11,7 +11,7 @@ from pygit2._pygit2 import GitError
 from pygit2 import GIT_STATUS_CURRENT
 
 # Local imports implemented to support Blender refreshes
-modulesNames = ("gitHelpers", "openProject", "sourceControl")
+modulesNames = ("gitHelpers", "appHandlers", "sourceControl")
 for module in modulesNames:
     if module in sys.modules:
         importlib.reload(sys.modules[module])
@@ -79,7 +79,7 @@ class GitPanelData(PropertyGroup):
         repo.checkout(ref)
 
         # Regen file
-        openProject.regenFile(filepath, filename)
+        appHandlers.regenFile(filepath, filename)
 
     branches: EnumProperty(
         name="Branch",

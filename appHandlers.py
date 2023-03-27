@@ -16,15 +16,29 @@ for module in modulesNames:
         globals()[module] = importlib.import_module(f"{parent}.{module}")
 
 
+def regenFile(_):
+    # Load new blend file
+    bpy.ops.wm.read_homefile()
+    # Regenerate blend file
+    window = bpy.context.window_manager.windows[0]
+    area = window.screen.areas[0]
+    with bpy.context.temp_override(window=window, area=area):
+        # Current area type
+        currentType = area.type
+
+        # Change area type to INFO and delete all content
+        area.type = 'VIEW_3D'
+
+        # Restore area type
+        area.type = currentType
+
+
 @persistent
 def loadPreferencesHandler(_):
     print("Changing Preference Defaults!")
 
     prefs = bpy.context.preferences
     prefs.use_preferences_save = False
-
-    view = prefs.view
-    view.show_splash = True
 
 
 @persistent
@@ -35,9 +49,6 @@ def savePostHandler(_):
 @persistent
 def loadPostHandler(_):
     bpy.ops.wm.splash('INVOKE_DEFAULT')
-
-    # Message bus subscription
-    subscriptions.subscribe()
 
 
 def register():
@@ -52,6 +63,3 @@ def unregister():
     handlers.load_post.remove(loadPostHandler)
     handlers.save_post.remove(savePostHandler)
     handlers.load_factory_preferences_post.remove(loadPreferencesHandler)
-
-    # Message bus unsubscription
-    subscriptions.unsubscribe()

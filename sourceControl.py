@@ -10,7 +10,7 @@ from pygit2._pygit2 import GitError
 from pygit2 import GIT_RESET_SOFT, GIT_RESET_HARD
 
 # Local imports implemented to support Blender refreshes
-modulesNames = ("gitHelpers", "openProject")
+modulesNames = ("gitHelpers", "appHandlers")
 for module in modulesNames:
     if module in sys.modules:
         importlib.reload(sys.modules[module])
@@ -33,11 +33,6 @@ class GitNewBranch(Operator):
 
     def invoke(self, context, event):
         filepath = bpy.path.abspath("//")
-        filename = bpy.path.basename(bpy.data.filepath).split(".")[0]
-
-        # Save .blend file (Writes commands to Python file and clears reports)
-        bpy.ops.wm.save_mainfile(
-            filepath=os.path.join(filepath, f"{filename}.blend"))
 
         # Get repo
         try:
@@ -74,10 +69,6 @@ class GitRevertToCommit(Operator):
         filepath = bpy.path.abspath("//")
         filename = bpy.path.basename(bpy.data.filepath).split(".")[0]
 
-        # Save .blend file (Writes commands to Python file and clears reports)
-        bpy.ops.wm.save_mainfile(
-            filepath=os.path.join(filepath, f"{filename}.blend"))
-
         # Get repo
         try:
             repo = gitHelpers.getRepo(filepath)
@@ -107,7 +98,7 @@ class GitRevertToCommit(Operator):
         gitHelpers.commit(repo, f"Reverted to commit: {revertCommit.hex[:7]}")
 
         # Regen file
-        openProject.regenFile(filepath, filename)
+        appHandlers.regenFile(filepath, filename)
 
         return {'FINISHED'}
 
@@ -126,11 +117,6 @@ class GitCommit(Operator):
 
     def invoke(self, context, event):
         filepath = bpy.path.abspath("//")
-        filename = bpy.path.basename(bpy.data.filepath).split(".")[0]
-
-        # Save .blend file (Writes commands to Python file and clears reports)
-        bpy.ops.wm.save_mainfile(
-            filepath=os.path.join(filepath, f"{filename}.blend"))
 
         # Commit changes
         try:
