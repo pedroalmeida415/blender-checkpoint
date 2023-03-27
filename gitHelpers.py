@@ -116,7 +116,7 @@ def makeGitIgnore(path):
 
     content = (
         "# Git\n"
-        "*.blend*\n"
+        "*.blend1\n"
         "\n"
         "# Python\n"
         "# Byte-compiled / optimized / DLL files\n"

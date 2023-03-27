@@ -3,13 +3,10 @@ import sys
 import importlib
 
 import bpy
-from bpy_extras.io_utils import ExportHelper
-from bpy.props import StringProperty
-
 import pygit2 as git
 
 # Local imports implemented to support Blender refreshes
-modulesNames = ("gitHelpers", "reports")
+modulesNames = ("gitHelpers", "reports", "sourceControl")
 for module in modulesNames:
     if module in sys.modules:
         importlib.reload(sys.modules[module])
@@ -21,151 +18,83 @@ for module in modulesNames:
 NEW_PROJECT_ICON = 'NEWFOLDER'
 
 
-class GitSaveProject(bpy.types.Operator, ExportHelper):
-    """Save a Git project."""
+class GitPostSaveProject(bpy.types.Operator):
+    """Save project Git settings"""
 
     bl_label = "Save Project"
-    bl_idname = "git.save_project"
+    bl_idname = "object.post_save_commit"
 
-    # ExportHelper mixin class uses this
-    filename_ext = ""
+    def invoke(self, context, event):
+        wm = context.window_manager
+        filepath = bpy.path.abspath("//")
 
-    filter_glob: StringProperty(
-        options={'HIDDEN'},
-        # Max internal buffer length, longer would be clamped.
-        maxlen=255,
-    )
+        try:
+            git.Repository(filepath)
+            return wm.invoke_props_dialog(self)
+        except git.GitError:
+            # Make .gitignore file
+            gitHelpers.makeGitIgnore(filepath)
 
-    filepath: StringProperty(
-        default="/",
-        options={'HIDDEN'},
-        subtype='DIR_PATH'
-    )
+            # Init git repo
+            repo = git.init_repository(filepath)
 
-    filename: StringProperty(
-        name="Name",
-        description="Name of the project",
-        options={'TEXTEDIT_UPDATE'},
-        subtype='FILE_NAME'
-    )
+            # Get global/default git config if .gitconfig or .git/config exists
+            try:
+                defaultConfig = git.Config.get_global_config()
+            except OSError:
+                defaultConfig = {}
 
-    location: StringProperty(
-        name="Location",
-        description="Location of the project"
-    )
+            username = (defaultConfig["user.name"]
+                        if "user.name" in defaultConfig else "Artist")
 
-    # Get global/default git config if .gitconfig or .git/config exists
-    try:
-        defaultConfig = git.Config.get_global_config()
-    except OSError:
-        defaultConfig = {}
+            email = (defaultConfig["user.email"]
+                     if "user.email" in defaultConfig else "artist@example.com")
 
-    defaultUser = (defaultConfig["user.name"]
-                   if "user.name" in defaultConfig else "Artist")
+            # Configure git repo
+            gitHelpers.configUser(repo, username, email)
 
-    defaultEmail = (defaultConfig["user.email"]
-                    if "user.email" in defaultConfig else "artist@example.com")
+            # Initial commit
+            gitHelpers.commit(repo, "Initial commit - created project")
 
-    username: StringProperty(
-        name="User",
-        default=defaultUser,
-        description="Username of the artist",
-        options={'TEXTEDIT_UPDATE'},
-    )
-
-    email: StringProperty(
-        name="Email",
-        default=defaultEmail,
-        description="Email of the artist",
-        options={'TEXTEDIT_UPDATE'},
-    )
+        return {'CANCELLED'}
 
     def draw(self, context):
-        layout = self.layout.box()
+        layout = self.layout
+        layout.alignment = 'CENTER'
 
-        layout.label(text="Save Project", icon=NEW_PROJECT_ICON)
-
-        if not self.filename.strip():
-            layout.label(text="Name cannot be empty.", icon="ERROR")
         row = layout.row()
-        row.enabled = False
-        row.prop(self, "filename")
 
-        if not self.filepath.strip():
-            layout.label(text="Location cannot be empty.", icon="ERROR")
-        self.location = self.filepath
-        row = layout.row()
-        row.enabled = False
-        row.prop(self, "location")
+        col1 = row.column()
+        col1.scale_x = 0.5
+        col1.label(text="Message: ")
 
-        if not self.username.strip():
-            layout.label(text="Username cannot be empty.", icon="ERROR")
-        layout.prop(self, "username")
-
-        if not self.email.strip():
-            layout.label(text="Email cannot be empty.", icon="ERROR")
-        layout.prop(self, "email")
+        col2 = row.column()
+        col2.prop(context.window_manager.git, "commitMessage")
 
     def execute(self, context):
-        filename = self.filename.strip()
-        filepath = self.filepath.strip()
-        username = self.username.strip()
-        email = self.email.strip()
+        message = context.window_manager.git.commitMessage
 
-        if not filename:
-            self.report({'ERROR_INVALID_INPUT'}, "Name cannot be empty.")
+        if not message:
+            self.report({'ERROR_INVALID_INPUT'},
+                        "Description cannot be empty.")
             return {'CANCELLED'}
 
-        if not filepath:
-            self.report({'ERROR_INVALID_INPUT'}, "Path cannot be empty.")
-            return {'CANCELLED'}
+        operatorName = sourceControl.GitCommit.bl_idname.split(".")
 
-        if not username:
-            self.report({'ERROR_INVALID_INPUT'}, "User cannot be empty.")
-            return {'CANCELLED'}
+        bpy.ops[operatorName[0]][operatorName[1]](message=message)
 
-        if not email:
-            self.report({'ERROR_INVALID_INPUT'}, "Email cannot be empty.")
-            return {'CANCELLED'}
+        # bpy.ops.git.commit(message=message)
 
-        print(f"Dir Path: {filepath}")
-        self.report({'DEBUG'}, filepath)
+        # func = getattr(bpy.ops, sourceControl.GitCommit.bl_idname)
 
-        # Make directory
-        try:
-            os.mkdir(os.path.abspath(filepath))
-        except FileNotFoundError:
-            self.report({'ERROR_INVALID_INPUT'}, "Invalid directory path.")
-            return {'CANCELLED'}
-
-        # Make assets directory
-        os.mkdir(os.path.join(filepath, "assets"))
-
-        # Make .gitignore file
-        gitHelpers.makeGitIgnore(filepath)
-
-        # Init git repo
-        repo = git.init_repository(filepath)
-
-        # Configure git repo
-        gitHelpers.configUser(repo, username, email)
-
-        # Clear reports
-        reports.clearReports()
-
-        # Save .blend file
-        bpy.ops.wm.save_mainfile(
-            filepath=os.path.join(filepath, f"{filename}.blend"))
-
-        # Initial commit
-        gitHelpers.commit(repo, "Initial commit - created project")
+        # func(message=message)
 
         return {'FINISHED'}
 
 
 def register():
-    bpy.utils.register_class(GitSaveProject)
+    bpy.utils.register_class(GitPostSaveProject)
 
 
 def unregister():
-    bpy.utils.unregister_class(GitSaveProject)
+    bpy.utils.unregister_class(GitPostSaveProject)
