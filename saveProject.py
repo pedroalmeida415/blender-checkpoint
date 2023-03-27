@@ -1,4 +1,3 @@
-import os
 import sys
 import importlib
 
@@ -81,13 +80,10 @@ class GitPostSaveProject(bpy.types.Operator):
 
         operatorName = sourceControl.GitCommit.bl_idname.split(".")
 
-        bpy.ops[operatorName[0]][operatorName[1]](message=message)
+        commitOperator = getattr(
+            getattr(bpy.ops, operatorName[0]), operatorName[1])
 
-        # bpy.ops.git.commit(message=message)
-
-        # func = getattr(bpy.ops, sourceControl.GitCommit.bl_idname)
-
-        # func(message=message)
+        commitOperator('INVOKE_DEFAULT', message=message)
 
         return {'FINISHED'}
 
