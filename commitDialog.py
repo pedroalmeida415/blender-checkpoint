@@ -17,11 +17,11 @@ for module in modulesNames:
 NEW_PROJECT_ICON = 'NEWFOLDER'
 
 
-class GitPostSaveProject(bpy.types.Operator):
-    """Save project Git settings"""
+class GitPostSaveDialog(bpy.types.Operator):
+    """Dialog to commit changes after saving file"""
 
-    bl_label = "Save Project"
-    bl_idname = "object.post_save_commit"
+    bl_label = "Commit changes"
+    bl_idname = "git.post_save_dialog"
 
     def invoke(self, context, event):
         wm = context.window_manager
@@ -37,6 +37,7 @@ class GitPostSaveProject(bpy.types.Operator):
             # Init git repo
             repo = git.init_repository(filepath)
 
+            # REFACTOR TO USE LOCAL USER, DEFINED IN THE SAVE WINDOW
             # Get global/default git config if .gitconfig or .git/config exists
             try:
                 defaultConfig = git.Config.get_global_config()
@@ -44,10 +45,10 @@ class GitPostSaveProject(bpy.types.Operator):
                 defaultConfig = {}
 
             username = (defaultConfig["user.name"]
-                        if "user.name" in defaultConfig else "Artist")
+                        if "user.name" in defaultConfig else "User")
 
             email = (defaultConfig["user.email"]
-                     if "user.email" in defaultConfig else "artist@example.com")
+                     if "user.email" in defaultConfig else "user@example.com")
 
             # Configure git repo
             gitHelpers.configUser(repo, username, email)

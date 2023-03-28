@@ -10,7 +10,7 @@ def regenFile():
 
 @persistent
 def savePostHandler(_):
-    bpy.ops.object.post_save_commit('INVOKE_DEFAULT')
+    bpy.ops.git.post_save_dialog('INVOKE_DEFAULT')
 
 
 def register():
