@@ -45,10 +45,10 @@ class GitPostSaveDialog(bpy.types.Operator):
                 defaultConfig = {}
 
             username = (defaultConfig["user.name"]
-                        if "user.name" in defaultConfig else "User")
+                        if "user.name" in defaultConfig else "Blender Git")
 
             email = (defaultConfig["user.email"]
-                     if "user.email" in defaultConfig else "user@example.com")
+                     if "user.email" in defaultConfig else "email@example.com")
 
             # Configure git repo
             gitHelpers.configUser(repo, username, email)
@@ -61,14 +61,17 @@ class GitPostSaveDialog(bpy.types.Operator):
     def draw(self, context):
         layout = self.layout
         layout.alignment = 'CENTER'
+        layout.ui_units_x = 20
 
         row = layout.row()
+        row.ui_units_y = 3
 
         col1 = row.column()
         col1.scale_x = 0.5
-        col1.label(text="Message: ")
+        col1.label(text="Description: ")
 
         col2 = row.column()
+        col2.scale_y = 2
         col2.prop(context.window_manager.git, "commitMessage")
 
     def execute(self, context):
@@ -90,8 +93,8 @@ class GitPostSaveDialog(bpy.types.Operator):
 
 
 def register():
-    bpy.utils.register_class(GitPostSaveProject)
+    bpy.utils.register_class(GitPostSaveDialog)
 
 
 def unregister():
-    bpy.utils.unregister_class(GitPostSaveProject)
+    bpy.utils.unregister_class(GitPostSaveDialog)
