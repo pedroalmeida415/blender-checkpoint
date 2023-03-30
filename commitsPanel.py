@@ -56,7 +56,6 @@ class GitPanelData(PropertyGroup):
 
     def setActiveBranch(self, context):
         filepath = bpy.path.abspath("//")
-        filename = bpy.path.basename(bpy.data.filepath).split(".")[0]
 
         try:
             repo = gitHelpers.getRepo(filepath)

@@ -45,10 +45,10 @@ class GitPostSaveDialog(bpy.types.Operator):
                 defaultConfig = {}
 
             username = (defaultConfig["user.name"]
-                        if "user.name" in defaultConfig else "Blender Git")
+                        if "user.name" in defaultConfig else "Blender Version Control")
 
             email = (defaultConfig["user.email"]
-                     if "user.email" in defaultConfig else "email@example.com")
+                     if "user.email" in defaultConfig else "blenderversioncontrol.415@gmail.com")
 
             # Configure git repo
             gitHelpers.configUser(repo, username, email)

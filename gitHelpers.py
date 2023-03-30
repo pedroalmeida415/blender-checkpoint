@@ -135,8 +135,8 @@ def makeGitIgnore(path):
 def configUser(repo, name, email):
     """Set user.name and user.email to the given Repo object"""
 
-    repo.config["User.name"] = name
-    repo.config["User.email"] = email
+    repo.config["user.name"] = name
+    repo.config["user.email"] = email
 
 
 def getRepo(filepath):
