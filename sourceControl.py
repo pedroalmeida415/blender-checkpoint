@@ -131,6 +131,8 @@ class GitCommit(Operator):
         gitHelpers.commit(repo, self.message)
 
         # Clear commit message property
+        repo.config["user.currentCommit"] = ""
+
         self.message = ""
         if context.window_manager.git.commitMessage:
             context.window_manager.git.commitMessage = ""
