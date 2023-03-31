@@ -55,7 +55,7 @@ class GitNewBranch(Operator):
 
 
 class GitRevertToCommit(Operator):
-    """Switch to Commit"""
+    """Switch to selected commit"""
 
     bl_label = __doc__
     bl_idname = "git.revert_to_commit"

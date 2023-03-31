@@ -20,10 +20,11 @@ for module in modulesNames:
         globals()[module] = importlib.import_module(f"{parent}.{module}")
 
 
-BRANCH_ICON = 'IPO_BEZIER'
+BRANCH_ICON = 'NETWORK_DRIVE'
 NEW_BRANCH_ICON = 'ADD'
 CLEAR_ICON = 'X'
 COMMENT_ICON = 'LAYER_USED'
+ACTIVE_COMMENT_ICON = 'KEYTYPE_JITTER_VEC'
 
 
 class GitCommitsListItem(PropertyGroup):
@@ -135,10 +136,16 @@ class GitCommitsList(UIList):
 
         activeCommitId = context.window_manager.git.currentCommitId
 
-        commmitDisplayText = f"Current: {item.message}" if item.id == activeCommitId else item.message
+        if activeCommitId:
+            isActiveCommit = item.id == activeCommitId
+        else:
+            isActiveCommit = True if index == 0 else False
+
+        commmitDisplayText = f"Switched to: {item.message}" if item.id == activeCommitId else item.message
         col1 = split.column()
         # different Icon for active commit
-        col1.label(text=commmitDisplayText, icon=COMMENT_ICON)
+        col1.label(text=commmitDisplayText,
+                   icon=ACTIVE_COMMENT_ICON if isActiveCommit else COMMENT_ICON)
 
         # Get last mofied string
         commitTime = datetime.strptime(item.date, gitHelpers.GIT_TIME_FORMAT)
@@ -242,7 +249,7 @@ class GitSubPanel1(GitPanelMixin, Panel):
 
                 row = layout.row()
                 switch = row.operator(sourceControl.GitRevertToCommit.bl_idname,
-                                      text="Checkout Commit")
+                                      text="Switch to commit")
                 switch.id = git.commitsList[git.commitsListIndex]["id"]
 
         # Add commits to list
