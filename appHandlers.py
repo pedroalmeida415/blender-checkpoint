@@ -3,11 +3,6 @@ from bpy.app import handlers
 from bpy.app.handlers import persistent
 
 
-def regenFile():
-    # Blender Revert (reload saved file)
-    bpy.ops.wm.revert_mainfile()
-
-
 @persistent
 def savePostHandler(_):
     bpy.ops.git.post_save_dialog('INVOKE_DEFAULT')

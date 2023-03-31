@@ -55,7 +55,7 @@ class GitNewBranch(Operator):
 
 
 class GitRevertToCommit(Operator):
-    """Revert to Commit"""
+    """Switch to Commit"""
 
     bl_label = __doc__
     bl_idname = "git.revert_to_commit"
@@ -67,7 +67,6 @@ class GitRevertToCommit(Operator):
 
     def invoke(self, context, event):
         filepath = bpy.path.abspath("//")
-        filename = bpy.path.basename(bpy.data.filepath).split(".")[0]
 
         # Get repo
         try:
@@ -95,10 +94,13 @@ class GitRevertToCommit(Operator):
         """
         repo.reset(revertCommit.oid, GIT_RESET_HARD)
         repo.reset(latestCommit.oid, GIT_RESET_SOFT)
-        gitHelpers.commit(repo, f"Reverted to commit: {revertCommit.hex[:7]}")
 
-        # Regen file
-        appHandlers.regenFile()
+        # Used to correctly identify the active commit after revert,
+        # since there is no way to keep that after Blender's reload
+        repo.config["user.currentCommit"] = revertCommit.oid
+
+        # Load the reverted file
+        bpy.ops.wm.revert_mainfile()
 
         return {'FINISHED'}
 
@@ -118,7 +120,6 @@ class GitCommit(Operator):
     def invoke(self, context, event):
         filepath = bpy.path.abspath("//")
 
-        # Commit changes
         try:
             repo = gitHelpers.getRepo(filepath)
         except GitError:

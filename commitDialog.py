@@ -2,7 +2,7 @@ import sys
 import importlib
 
 import bpy
-import pygit2 as git
+from pygit2._pygit2 import GitError
 
 # Local imports implemented to support Blender refreshes
 modulesNames = ("gitHelpers", "sourceControl")
@@ -28,40 +28,16 @@ class GitPostSaveDialog(bpy.types.Operator):
         filepath = bpy.path.abspath("//")
 
         try:
-            git.Repository(filepath)
-            return wm.invoke_props_dialog(self)
-        except git.GitError:
-            # Make .gitignore file
-            gitHelpers.makeGitIgnore(filepath)
-
-            # Init git repo
-            repo = git.init_repository(filepath)
-
-            # REFACTOR TO USE LOCAL USER, DEFINED IN THE SAVE WINDOW
-            # Get global/default git config if .gitconfig or .git/config exists
-            try:
-                defaultConfig = git.Config.get_global_config()
-            except OSError:
-                defaultConfig = {}
-
-            username = (defaultConfig["user.name"]
-                        if "user.name" in defaultConfig else "Blender Version Control")
-
-            email = (defaultConfig["user.email"]
-                     if "user.email" in defaultConfig else "blenderversioncontrol.415@gmail.com")
-
-            # Configure git repo
-            gitHelpers.configUser(repo, username, email)
-
-            # Initial commit
-            gitHelpers.commit(repo, "Initial commit - created project")
-
-        return {'CANCELLED'}
+            gitHelpers.getRepo(filepath)
+            return wm.invoke_props_dialog(self, width=400)
+        except GitError:
+            # Setup repo if not initiated yet
+            gitHelpers.initialRepoSetup(filepath)
+            return {'CANCELLED'}
 
     def draw(self, context):
         layout = self.layout
         layout.alignment = 'CENTER'
-        layout.ui_units_x = 20
 
         row = layout.row()
         row.ui_units_y = 3

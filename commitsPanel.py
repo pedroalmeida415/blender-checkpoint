@@ -11,7 +11,7 @@ from pygit2._pygit2 import GitError
 from pygit2 import GIT_STATUS_CURRENT
 
 # Local imports implemented to support Blender refreshes
-modulesNames = ("gitHelpers", "appHandlers", "sourceControl")
+modulesNames = ("gitHelpers", "sourceControl")
 for module in modulesNames:
     if module in sys.modules:
         importlib.reload(sys.modules[module])
@@ -77,8 +77,8 @@ class GitPanelData(PropertyGroup):
         ref = repo.lookup_reference(branch.name)
         repo.checkout(ref)
 
-        # Regen file
-        appHandlers.regenFile()
+        # Load the reverted file
+        bpy.ops.wm.revert_mainfile()
 
     branches: EnumProperty(
         name="Branch",
@@ -105,6 +105,11 @@ class GitPanelData(PropertyGroup):
 
     commitsListIndex: IntProperty(default=0)
 
+    currentCommitId: StringProperty(
+        name="",
+        description="Current active commit ID"
+    )
+
 
 class GitPanelMixin:
     bl_space_type = 'VIEW_3D'
@@ -128,8 +133,11 @@ class GitCommitsList(UIList):
 
         split = layout.split(factor=0.825)
 
+        activeCommitId = context.window_manager.git.currentCommitId
+
+        commmitDisplayText = f"Current: {item.message}" if item.id == activeCommitId else item.message
         col1 = split.column()
-        col1.label(text=item.message, icon=COMMENT_ICON)
+        col1.label(text=commmitDisplayText, icon=COMMENT_ICON)
 
         # Get last mofied string
         commitTime = datetime.strptime(item.date, gitHelpers.GIT_TIME_FORMAT)
@@ -216,7 +224,7 @@ class GitSubPanel1(GitPanelMixin, Panel):
 
             row = layout.row()
             switch = row.operator(sourceControl.GitRevertToCommit.bl_idname,
-                                  text="Revert to Commit")
+                                  text="Checkout Commit")
             switch.id = git.commitsList[git.commitsListIndex]["id"]
 
         # Add commits to list

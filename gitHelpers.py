@@ -1,6 +1,5 @@
 import os
 from datetime import datetime, timezone, timedelta
-from unicodedata import name
 
 import pygit2 as git
 from pygit2._pygit2 import GitError
@@ -137,13 +136,37 @@ def configUser(repo, name, email):
 
     repo.config["user.name"] = name
     repo.config["user.email"] = email
+    repo.config["user.currentCommit"] = ""
 
 
 def getRepo(filepath):
-    # Find repository path from subdirectory
-    repo_path = git.discover_repository(filepath)
-
     # Set up repository
-    repo = git.Repository(repo_path)
+    repo = git.Repository(filepath)
 
     return repo
+
+
+def initialRepoSetup(filepath):
+    # Make .gitignore file
+    makeGitIgnore(filepath)
+
+    # Init git repo
+    repo = git.init_repository(filepath)
+
+    # Get global/default git config if .gitconfig or .git/config exists
+    try:
+        defaultConfig = git.Config.get_global_config()
+    except OSError:
+        defaultConfig = {}
+
+    username = (defaultConfig["user.name"]
+                if "user.name" in defaultConfig else "Blender Version Control")
+
+    email = (defaultConfig["user.email"]
+             if "user.email" in defaultConfig else "blenderversioncontrol.415@gmail.com")
+
+    # Configure git repo
+    configUser(repo, username, email)
+
+    # Initial commit
+    commit(repo, "Initial commit - created project")
