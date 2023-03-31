@@ -10,7 +10,7 @@ from pygit2._pygit2 import GitError
 from pygit2 import GIT_RESET_SOFT, GIT_RESET_HARD
 
 # Local imports implemented to support Blender refreshes
-modulesNames = ("gitHelpers", "appHandlers")
+modulesNames = ("gitHelpers",)
 for module in modulesNames:
     if module in sys.modules:
         importlib.reload(sys.modules[module])
