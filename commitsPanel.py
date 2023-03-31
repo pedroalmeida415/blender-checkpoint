@@ -131,12 +131,13 @@ class GitCommitsList(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data,
                   active_propname, index):
 
-        split = layout.split(factor=0.825)
+        split = layout.split(factor=0.8)
 
         activeCommitId = context.window_manager.git.currentCommitId
 
         commmitDisplayText = f"Current: {item.message}" if item.id == activeCommitId else item.message
         col1 = split.column()
+        # different Icon for active commit
         col1.label(text=commmitDisplayText, icon=COMMENT_ICON)
 
         # Get last mofied string
@@ -206,6 +207,8 @@ class GitSubPanel1(GitPanelMixin, Panel):
             active_propname="commitsListIndex",
             item_dyntip_propname="message",
             sort_lock=True,
+            rows=5,
+            maxrows=10
         )
 
         if git.commitsList:
@@ -218,9 +221,17 @@ class GitSubPanel1(GitPanelMixin, Panel):
                 f'HEAD~{git.commitsListIndex}')
 
             isSelectedCommitCurrent = str(
-                selectedCommit.id).strip() == git.currentCommitId.strip()
+                selectedCommit.id) == git.currentCommitId
 
-            if not isSelectedCommitCurrent:
+            if git.currentCommitId:
+                shouldRenderCommitButton = not isSelectedCommitCurrent
+            else:
+                if git.commitsListIndex == 0:
+                    shouldRenderCommitButton = False
+                else:
+                    shouldRenderCommitButton = True
+
+            if shouldRenderCommitButton:
                 if bpy.data.is_dirty:
                     row = layout.row()
                     row.label(text="Unsaved will be lost.", icon='ERROR')
