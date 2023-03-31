@@ -208,24 +208,31 @@ class GitSubPanel1(GitPanelMixin, Panel):
             sort_lock=True,
         )
 
-        if git.commitsList and git.commitsListIndex != 0:
+        if git.commitsList:
             try:
                 repo = gitHelpers.getRepo(filepath)
             except GitError:
                 return
 
-            if bpy.data.is_dirty:
-                row = layout.row()
-                row.label(text="Unsaved will be lost.", icon='ERROR')
+            selectedCommit = repo.revparse_single(
+                f'HEAD~{git.commitsListIndex}')
 
-            if repo.status_file(f"{filename}.blend") != GIT_STATUS_CURRENT:
-                row = layout.row()
-                row.label(text="Uncommited will be lost.", icon='ERROR')
+            isSelectedCommitCurrent = str(
+                selectedCommit.id).strip() == git.currentCommitId.strip()
 
-            row = layout.row()
-            switch = row.operator(sourceControl.GitRevertToCommit.bl_idname,
-                                  text="Checkout Commit")
-            switch.id = git.commitsList[git.commitsListIndex]["id"]
+            if not isSelectedCommitCurrent:
+                if bpy.data.is_dirty:
+                    row = layout.row()
+                    row.label(text="Unsaved will be lost.", icon='ERROR')
+
+                if repo.status_file(f"{filename}.blend") != GIT_STATUS_CURRENT:
+                    row = layout.row()
+                    row.label(text="Uncommited will be lost.", icon='ERROR')
+
+                row = layout.row()
+                switch = row.operator(sourceControl.GitRevertToCommit.bl_idname,
+                                      text="Checkout Commit")
+                switch.id = git.commitsList[git.commitsListIndex]["id"]
 
         # Add commits to list
         bpy.app.timers.register(addCommitsToList)
@@ -234,8 +241,10 @@ class GitSubPanel1(GitPanelMixin, Panel):
 def addCommitsToList():
     """Add commits to list"""
 
+    git_context = bpy.context.window_manager.git
+
     # Get list
-    commitsList = bpy.context.window_manager.git.commitsList
+    commitsList = git_context.commitsList
 
     # Clear list
     commitsList.clear()
@@ -246,6 +255,8 @@ def addCommitsToList():
         repo = gitHelpers.getRepo(filepath)
     except GitError:
         return
+
+    git_context.currentCommitId = repo.config["user.currentCommit"]
 
     commits = gitHelpers.getCommits(repo)
     for commit in commits:

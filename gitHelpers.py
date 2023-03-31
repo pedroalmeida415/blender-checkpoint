@@ -2,7 +2,7 @@ import os
 from datetime import datetime, timezone, timedelta
 
 import pygit2 as git
-from pygit2._pygit2 import GitError
+from pygit2._pygit2 import GitError, GIT_SORT_TIME
 
 # Format: Fri Sep  2 19:36:07 2022 +0530
 GIT_TIME_FORMAT = "%c %z"
@@ -93,7 +93,7 @@ def getCommits(repo):
 
     commits = []
     last = repo[repo.head.target]
-    for commit in repo.walk(last.id, git.GIT_SORT_TIME):
+    for commit in repo.walk(last.id, GIT_SORT_TIME):
         timezoneInfo = timezone(timedelta(minutes=commit.author.offset))
         datetimeString = datetime.fromtimestamp(float(commit.author.time),
                                                 timezoneInfo).strftime(GIT_TIME_FORMAT)

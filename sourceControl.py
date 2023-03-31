@@ -68,6 +68,11 @@ class GitRevertToCommit(Operator):
     def invoke(self, context, event):
         filepath = bpy.path.abspath("//")
 
+        currentCommitId = context.window_manager.git.currentCommitId
+
+        if currentCommitId == self.id:
+            return {'CANCELLED'}
+
         # Get repo
         try:
             repo = gitHelpers.getRepo(filepath)
@@ -76,8 +81,6 @@ class GitRevertToCommit(Operator):
 
         latestCommit = repo[repo.head.target]
         revertCommit = repo.get(self.id)
-        if latestCommit.hex == revertCommit.hex:
-            return {'CANCELLED'}
 
         """
             https://stackoverflow.com/a/1470452
@@ -97,7 +100,7 @@ class GitRevertToCommit(Operator):
 
         # Used to correctly identify the active commit after revert,
         # since there is no way to keep that after Blender's reload
-        repo.config["user.currentCommit"] = revertCommit.oid
+        repo.config["user.currentCommit"] = self.id
 
         # Load the reverted file
         bpy.ops.wm.revert_mainfile()
