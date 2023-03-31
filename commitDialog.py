@@ -31,8 +31,6 @@ class GitPostSaveDialog(bpy.types.Operator):
             gitHelpers.getRepo(filepath)
             return wm.invoke_props_dialog(self, width=400)
         except GitError:
-            # Setup repo if not initiated yet
-            gitHelpers.initialRepoSetup(filepath)
             return {'CANCELLED'}
 
     def draw(self, context):
