@@ -20,11 +20,26 @@ for module in modulesNames:
         globals()[module] = importlib.import_module(f"{parent}.{module}")
 
 
-BRANCH_ICON = 'NETWORK_DRIVE'
+# BRANCH_ICON = 'GRAPH'
+# BRANCH_ICON = 'MOD_SIMPLIFY'
+# BRANCH_ICON = 'EVENT_TAB'
+# BRANCH_ICON = 'ORIENTATION_VIEW'
+BRANCH_ICON = 'WINDOW'
+
+# COMMENT_ICON = 'RADIOBUT_OFF'
+# ACTIVE_COMMENT_ICON = 'RADIOBUT_ON'
+# COMMENT_ICON = 'HIDE_ON'
+# ACTIVE_COMMENT_ICON = 'HIDE_OFF'
+COMMENT_ICON = 'KEYFRAME'
+ACTIVE_COMMENT_ICON = 'KEYTYPE_KEYFRAME_VEC'
+
+# SWITCH_ICON = 'LOOP_BACK'
+# SWITCH_ICON = 'CON_TRACKTO'
+# SWITCH_ICON = 'UV_SYNC_SELECT'
+SWITCH_ICON = 'DECORATE_OVERRIDE'
+
 NEW_BRANCH_ICON = 'ADD'
 CLEAR_ICON = 'X'
-COMMENT_ICON = 'LAYER_USED'
-ACTIVE_COMMENT_ICON = 'KEYTYPE_JITTER_VEC'
 
 
 class GitCommitsListItem(PropertyGroup):
@@ -141,10 +156,8 @@ class GitCommitsList(UIList):
         else:
             isActiveCommit = True if index == 0 else False
 
-        commmitDisplayText = f"Switched to: {item.message}" if item.id == activeCommitId else item.message
         col1 = split.column()
-        # different Icon for active commit
-        col1.label(text=commmitDisplayText,
+        col1.label(text=item.message,
                    icon=ACTIVE_COMMENT_ICON if isActiveCommit else COMMENT_ICON)
 
         # Get last mofied string
@@ -249,7 +262,7 @@ class GitSubPanel1(GitPanelMixin, Panel):
 
                 row = layout.row()
                 switch = row.operator(sourceControl.GitRevertToCommit.bl_idname,
-                                      text="Switch to commit")
+                                      text="Switch to Commit", icon=SWITCH_ICON)
                 switch.id = git.commitsList[git.commitsListIndex]["id"]
 
         # Add commits to list
@@ -313,6 +326,8 @@ class GitSubPanel2(GitPanelMixin, Panel):
         commit = row.operator(sourceControl.GitCommit.bl_idname,
                               text="Commit Changes")
         commit.message = message
+
+        # Another row, showing how much disk space is being used by all the versions
 
 
 """ORDER MATTERS"""

@@ -20,7 +20,7 @@ NEW_PROJECT_ICON = 'NEWFOLDER'
 class GitPostSaveDialog(bpy.types.Operator):
     """Dialog to commit changes after saving file"""
 
-    bl_label = "Commit changes"
+    bl_label = "Commit Changes"
     bl_idname = "git.post_save_dialog"
 
     def invoke(self, context, event):
