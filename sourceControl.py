@@ -137,7 +137,22 @@ class GitCommit(Operator):
         if context.window_manager.git.commitMessage:
             context.window_manager.git.commitMessage = ""
 
+        backupSize = getBackupFolderSize(f"{filepath}/.git")
+        repo.config["user.backupSize"] = str(backupSize)
+
         return {'FINISHED'}
+
+
+def getBackupFolderSize(filepath):
+    total_size = 0
+    for dirpath, dirnames, filenames in os.walk(filepath):
+        for f in filenames:
+            fp = os.path.join(dirpath, f)
+            # skip if it is symbolic link
+            if not os.path.islink(fp):
+                total_size += os.path.getsize(fp)
+
+    return total_size
 
 
 classes = (GitNewBranch, GitRevertToCommit, GitCommit)

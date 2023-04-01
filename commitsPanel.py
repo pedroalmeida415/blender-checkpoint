@@ -41,6 +41,8 @@ SWITCH_ICON = 'DECORATE_OVERRIDE'
 NEW_BRANCH_ICON = 'ADD'
 CLEAR_ICON = 'X'
 
+BACKUP_SIZE_ICONS = ('IMPORT', 'FILE_BLEND')
+
 
 class GitCommitsListItem(PropertyGroup):
     id: StringProperty(description="Unique ID of commit")
@@ -125,6 +127,8 @@ class GitPanelData(PropertyGroup):
         name="",
         description="Current active commit ID"
     )
+
+    backupSize: IntProperty(default=0)
 
 
 class GitPanelMixin:
@@ -252,17 +256,24 @@ class GitSubPanel1(GitPanelMixin, Panel):
                     shouldRenderCommitButton = True
 
             if shouldRenderCommitButton:
+                row = layout.row()
+
+                col1 = None
                 if bpy.data.is_dirty:
-                    row = layout.row()
-                    row.label(text="Unsaved will be lost.", icon='ERROR')
+                    col1 = row.column()
+                    col1.label(text="Unsaved will be lost.", icon='ERROR')
 
                 if repo.status_file(f"{filename}.blend") != GIT_STATUS_CURRENT:
-                    row = layout.row()
-                    row.label(text="Uncommited will be lost.", icon='ERROR')
+                    if not col1:
+                        col1 = row.column()
+                    col1.label(text="Uncommited will be lost.", icon='ERROR')
 
-                row = layout.row()
-                switch = row.operator(sourceControl.GitRevertToCommit.bl_idname,
-                                      text="Switch to Commit", icon=SWITCH_ICON)
+                col2 = row.column()
+                col2.alignment = 'RIGHT'
+                col2.scale_y = 2
+
+                switch = col2.operator(sourceControl.GitRevertToCommit.bl_idname,
+                                       text="Switch to Commit", icon=SWITCH_ICON)
                 switch.id = git.commitsList[git.commitsListIndex]["id"]
 
         # Add commits to list
@@ -288,6 +299,7 @@ def addCommitsToList():
         return
 
     git_context.currentCommitId = repo.config["user.currentCommit"]
+    git_context.backupSize = int(repo.config["user.backupSize"])
 
     commits = gitHelpers.getCommits(repo)
     for commit in commits:
@@ -319,6 +331,7 @@ class GitSubPanel2(GitPanelMixin, Panel):
         col2.prop(context.window_manager.git, "commitMessage")
 
         row = layout.row()
+        row.scale_y = 2
         message = context.window_manager.git.commitMessage
         if not message:
             row.enabled = False
@@ -327,7 +340,32 @@ class GitSubPanel2(GitPanelMixin, Panel):
                               text="Commit Changes")
         commit.message = message
 
-        # Another row, showing how much disk space is being used by all the versions
+        layout.separator()
+
+        backupSize = context.window_manager.git.backupSize
+
+        row = layout.row()
+
+        col1 = row.column()
+        subRow = col1.row(align=True)
+        subRow.label(text="", icon=BACKUP_SIZE_ICONS[0])
+        subRow.label(text="", icon=BACKUP_SIZE_ICONS[1])
+
+        col2 = row.column()
+        col2.alignment = 'RIGHT'
+        col2.label(
+            text=f"Backup total size: {format_size(backupSize)}")
+
+
+def format_size(size):
+    # Convert bytes to megabytes
+    size = size / (1024 * 1024)
+    if size < 999:
+        return f"{size:.2f} MB"
+    else:
+        # Convert megabytes to gigabytes
+        size = size / 1024
+        return f"{size:.2f} GB"
 
 
 """ORDER MATTERS"""
