@@ -8,7 +8,7 @@ from pygit2._pygit2 import GitError
 
 
 # Local imports implemented to support Blender refreshes
-modulesNames = ("gitHelpers",)
+modulesNames = ("gitHelpers", "preferences")
 for module in modulesNames:
     if module in sys.modules:
         importlib.reload(sys.modules[module])
@@ -19,7 +19,9 @@ for module in modulesNames:
 
 @persistent
 def savePostHandler(_):
-    bpy.ops.git.post_save_dialog('INVOKE_DEFAULT')
+    prefs = preferences.get_user_preferences()
+    if prefs.shouldDisplayCommitDialog:
+        bpy.ops.git.post_save_dialog('INVOKE_DEFAULT')
 
     filepath = bpy.path.abspath("//")
 
