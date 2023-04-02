@@ -137,7 +137,7 @@ def configUser(repo, name, email):
     repo.config["user.name"] = name
     repo.config["user.email"] = email
     repo.config["user.currentCommit"] = ""
-    repo.config["user.backupSize"] = ""
+    repo.config["user.backupSize"] = "0"
 
 
 def getRepo(filepath):
