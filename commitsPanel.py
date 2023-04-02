@@ -5,7 +5,7 @@ from datetime import datetime
 import bpy
 from bpy.types import Panel, PropertyGroup, UIList
 from bpy.props import (CollectionProperty, EnumProperty, IntProperty,
-                       PointerProperty, StringProperty)
+                       PointerProperty, StringProperty, BoolProperty)
 
 from pygit2._pygit2 import GitError
 from pygit2 import GIT_STATUS_CURRENT
@@ -130,6 +130,11 @@ class GitPanelData(PropertyGroup):
 
     backupSize: IntProperty(default=0)
 
+    isRepoInitialized: BoolProperty(
+        name="Version Control Status",
+        default=False,
+    )
+
 
 class GitPanelMixin:
     bl_space_type = 'VIEW_3D'
@@ -137,12 +142,58 @@ class GitPanelMixin:
     bl_category = 'Tool'
 
 
+class StartVersionControl(bpy.types.Operator):
+    '''Initialize version control on the current folder'''
+
+    bl_idname = "git.start_version_control"
+    bl_label = "Start Version Control"
+
+    def execute(self, context):
+        filepath = bpy.path.abspath("//")
+
+        git = context.window_manager.git
+
+        if git.isRepoInitialized:
+            return {'CANCELLED'}
+
+        try:
+            gitHelpers.getRepo(filepath)
+
+            return {'CANCELLED'}
+        except GitError:
+            # Setup repo if not initiated yet
+            gitHelpers.initialRepoSetup(filepath)
+
+            git.isRepoInitialized = True
+            return {'FINISHED'}
+
+
 class GitPanel(GitPanelMixin, Panel):
     bl_idname = "GIT_PT_panel"
     bl_label = "Git"
 
     def draw(self, context):
-        pass
+        filepath = bpy.path.abspath("//")
+        git = context.window_manager.git
+
+        if git.isRepoInitialized:
+            pass
+
+        try:
+            gitHelpers.getRepo(filepath)
+            git.isRepoInitialized = True
+            pass
+        except GitError:
+            layout = self.layout
+
+            row = layout.row()
+            row.operator(StartVersionControl.bl_idname,
+                         text="Start Version Control", icon="WINDOW")
+            if not bpy.data.is_saved:
+                row.enabled = False
+                row = layout.row()
+                row.alignment = "CENTER"
+                row.label(text="You must save your project first")
 
 
 class GitCommitsList(UIList):
@@ -201,6 +252,10 @@ class GitSubPanel1(GitPanelMixin, Panel):
     bl_parent_id = GitPanel.bl_idname
     bl_label = ""
     bl_options = {'DEFAULT_CLOSED'}
+
+    @classmethod
+    def poll(cls, context):
+        return context.window_manager.git.isRepoInitialized
 
     def draw_header(self, context):
         layout = self.layout
@@ -317,6 +372,10 @@ class GitSubPanel2(GitPanelMixin, Panel):
     bl_label = ""
     bl_options = {'HIDE_HEADER'}
 
+    @classmethod
+    def poll(cls, context):
+        return context.window_manager.git.isRepoInitialized
+
     def draw(self, context):
         layout = self.layout
         layout.alignment = 'CENTER'
@@ -369,7 +428,7 @@ def format_size(size):
 
 
 """ORDER MATTERS"""
-classes = (GitCommitsListItem, GitPanelData, GitPanel,
+classes = (GitCommitsListItem, GitPanelData, StartVersionControl, GitPanel,
            GitCommitsList, GitNewBranchPanel, GitSubPanel1,
            GitSubPanel2)
 

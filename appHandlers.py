@@ -4,8 +4,6 @@ import importlib
 import bpy
 from bpy.app import handlers
 from bpy.app.handlers import persistent
-from pygit2._pygit2 import GitError
-
 
 # Local imports implemented to support Blender refreshes
 modulesNames = ("gitHelpers", "preferences")
@@ -23,13 +21,8 @@ def savePostHandler(_):
     if prefs.shouldDisplayCommitDialog:
         bpy.ops.git.post_save_dialog('INVOKE_DEFAULT')
 
-    filepath = bpy.path.abspath("//")
-    try:
-        gitHelpers.getRepo(filepath)
-    except GitError:
-        if prefs.shouldAutoStartVersionControl:
-            # Setup repo if not initiated yet
-            gitHelpers.initialRepoSetup(filepath)
+    if prefs.shouldAutoStartVersionControl:
+        bpy.ops.git.start_version_control('INVOKE_DEFAULT')
 
 
 def register():
