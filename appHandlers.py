@@ -24,12 +24,12 @@ def savePostHandler(_):
         bpy.ops.git.post_save_dialog('INVOKE_DEFAULT')
 
     filepath = bpy.path.abspath("//")
-
     try:
         gitHelpers.getRepo(filepath)
     except GitError:
-        # Setup repo if not initiated yet
-        gitHelpers.initialRepoSetup(filepath)
+        if prefs.shouldAutoStartVersionControl:
+            # Setup repo if not initiated yet
+            gitHelpers.initialRepoSetup(filepath)
 
 
 def register():

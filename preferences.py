@@ -21,18 +21,24 @@ class MyAddonPreferences(bpy.types.AddonPreferences):
     bl_idname = __package__
 
     shouldDisplayCommitDialog: bpy.props.BoolProperty(
-        name="Commit Dialog",
-        description="Should display commit dialog after save",
-        default=False,
+        name="Show Commit Dialog",
+        description="Should display commit dialog after saving project?",
+        default=True,
+    )
+
+    shouldAutoStartVersionControl: bpy.props.BoolProperty(
+        name="Automatically start version control on new projects",
+        description="Should start version control right after saving new project?",
+        default=True,
     )
 
     def draw(self, context):
         layout = self.layout
 
         layout.prop(self, "shouldDisplayCommitDialog")
-        layout.separator()
+        layout.prop(self, "shouldAutoStartVersionControl")
 
-        layout.prop(self, "commitDialog")
+        layout.separator()
 
 
 def register():
