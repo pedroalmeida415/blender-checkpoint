@@ -137,7 +137,7 @@ class GitCommit(Operator):
         if context.window_manager.git.commitMessage:
             context.window_manager.git.commitMessage = ""
 
-        backupSize = getBackupFolderSize(f"{filepath}/.git")
+        backupSize = getBackupFolderSize(os.path.join(filepath, ".git"))
         repo.config["user.backupSize"] = str(backupSize)
 
         return {'FINISHED'}
