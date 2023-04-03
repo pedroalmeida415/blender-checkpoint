@@ -63,6 +63,8 @@ class GitPostSaveDialog(bpy.types.Operator):
 
         commitOperator('INVOKE_DEFAULT', message=message)
 
+        self.report({"INFO"}, "Successfully saved commit changes!")
+
         return {'FINISHED'}
 
 
