@@ -377,13 +377,14 @@ class GitSubPanel2(GitPanelMixin, Panel):
         layout = self.layout
         layout.alignment = 'CENTER'
 
-        row = layout.row()
+        row = layout.row(align=True)
 
         col1 = row.column()
-        col1.scale_x = 0.5
+        col1.alignment = 'LEFT'
         col1.label(text="Description: ")
 
         col2 = row.column()
+        col2.alignment = 'EXPAND'
         col2.prop(context.window_manager.git, "commitMessage")
 
         row = layout.row()

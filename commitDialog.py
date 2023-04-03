@@ -20,7 +20,7 @@ NEW_PROJECT_ICON = 'NEWFOLDER'
 class GitPostSaveDialog(bpy.types.Operator):
     """Dialog to commit changes after saving file"""
 
-    bl_label = "Commit Changes"
+    bl_label = "Commit changes"
     bl_idname = "git.post_save_dialog"
 
     def invoke(self, context, event):
@@ -35,18 +35,18 @@ class GitPostSaveDialog(bpy.types.Operator):
 
     def draw(self, context):
         layout = self.layout
-        layout.alignment = 'CENTER'
 
-        row = layout.row()
-        row.ui_units_y = 3
+        row = layout.row(align=True)
 
         col1 = row.column()
-        col1.scale_x = 0.5
+        col1.alignment = "LEFT"
         col1.label(text="Description: ")
 
         col2 = row.column()
-        col2.scale_y = 2
+        col2.alignment = "EXPAND"
         col2.prop(context.window_manager.git, "commitMessage")
+
+        layout.separator()
 
     def execute(self, context):
         message = context.window_manager.git.commitMessage
