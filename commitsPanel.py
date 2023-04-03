@@ -303,33 +303,30 @@ class GitSubPanel1(GitPanelMixin, Panel):
                 selectedCommit.id) == git.currentCommitId
 
             if git.currentCommitId:
-                shouldRenderCommitButton = not isSelectedCommitCurrent
+                isActionButtonsEnabled = not isSelectedCommitCurrent
             else:
                 if git.commitsListIndex == 0:
-                    shouldRenderCommitButton = False
+                    isActionButtonsEnabled = False
                 else:
-                    shouldRenderCommitButton = True
+                    isActionButtonsEnabled = True
 
-            if shouldRenderCommitButton:
+            if isActionButtonsEnabled and bpy.data.is_dirty and repo.status_file(f"{filename}.blend") != GIT_STATUS_CURRENT:
                 row = layout.row()
+                row.label(text="Uncommited will be lost.", icon='ERROR')
 
-                col1 = None
-                if bpy.data.is_dirty:
-                    col1 = row.column()
-                    col1.label(text="Unsaved will be lost.", icon='ERROR')
+            row = layout.row()
 
-                if repo.status_file(f"{filename}.blend") != GIT_STATUS_CURRENT:
-                    if not col1:
-                        col1 = row.column()
-                    col1.label(text="Uncommited will be lost.", icon='ERROR')
+            swtichCol = row.column()
+            swtichCol.enabled = isActionButtonsEnabled
+            switch = swtichCol.operator(sourceControl.GitRevertToCommit.bl_idname,
+                                        text="Switch back to commit", icon=SWITCH_ICON)
+            switch.id = git.commitsList[git.commitsListIndex]["id"]
 
-                col2 = row.column()
-                col2.alignment = 'RIGHT'
-                col2.scale_y = 2
-
-                switch = col2.operator(sourceControl.GitRevertToCommit.bl_idname,
-                                       text="Switch to Commit", icon=SWITCH_ICON)
-                switch.id = git.commitsList[git.commitsListIndex]["id"]
+            deleteCol = row.column()
+            deleteCol.enabled = isActionButtonsEnabled
+            commit = deleteCol.operator(sourceControl.GitCommit.bl_idname,
+                                        text="Delete commit", icon="TRASH")
+            commit.message = git.commitMessage
 
         # Add commits to list
         bpy.app.timers.register(addCommitsToList)
@@ -384,19 +381,20 @@ class GitSubPanel2(GitPanelMixin, Panel):
 
         col1 = row.column()
         col1.scale_x = 0.5
-        col1.label(text="Message: ")
+        col1.label(text="Description: ")
 
         col2 = row.column()
         col2.prop(context.window_manager.git, "commitMessage")
 
         row = layout.row()
         row.scale_y = 2
+        commitCol = row.column()
+
         message = context.window_manager.git.commitMessage
         if not message:
-            row.enabled = False
+            commitCol.enabled = False
 
-        commit = row.operator(sourceControl.GitCommit.bl_idname,
-                              text="Commit Changes")
+        commit = commitCol.operator(sourceControl.GitCommit.bl_idname)
         commit.message = message
 
         layout.separator()
@@ -404,7 +402,6 @@ class GitSubPanel2(GitPanelMixin, Panel):
         backupSize = context.window_manager.git.backupSize
 
         row = layout.row()
-
         col1 = row.column()
         subRow = col1.row(align=True)
         subRow.label(text="", icon=BACKUP_SIZE_ICONS[0])
