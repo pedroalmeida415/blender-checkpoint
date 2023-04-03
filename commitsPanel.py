@@ -296,11 +296,11 @@ class GitSubPanel1(GitPanelMixin, Panel):
             except GitError:
                 return
 
-            selectedCommit = repo.revparse_single(
-                f'HEAD~{git.commitsListIndex}')
+            selectedCommitId = str(repo.revparse_single(
+                f'HEAD~{git.commitsListIndex}').id)
+            # git.commitsList[git.commitsListIndex]["id"]
 
-            isSelectedCommitCurrent = str(
-                selectedCommit.id) == git.currentCommitId
+            isSelectedCommitCurrent = selectedCommitId == git.currentCommitId
 
             if git.currentCommitId:
                 isActionButtonsEnabled = not isSelectedCommitCurrent
@@ -318,15 +318,15 @@ class GitSubPanel1(GitPanelMixin, Panel):
 
             swtichCol = row.column()
             swtichCol.enabled = isActionButtonsEnabled
-            switch = swtichCol.operator(sourceControl.GitRevertToCommit.bl_idname,
-                                        text="Switch back to commit", icon=SWITCH_ICON)
-            switch.id = git.commitsList[git.commitsListIndex]["id"]
+            switchOps = swtichCol.operator(sourceControl.GitRevertToCommit.bl_idname,
+                                           text="Switch back to commit", icon=SWITCH_ICON)
+            switchOps.id = selectedCommitId
 
             deleteCol = row.column()
             deleteCol.enabled = isActionButtonsEnabled
-            commit = deleteCol.operator(sourceControl.GitCommit.bl_idname,
+            delOps = deleteCol.operator(sourceControl.GitDeleteCommit.bl_idname,
                                         text="Delete commit", icon="TRASH")
-            commit.message = git.commitMessage
+            delOps.id = selectedCommitId
 
         # Add commits to list
         bpy.app.timers.register(addCommitsToList)
