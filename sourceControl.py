@@ -31,7 +31,7 @@ class GitNewBranch(Operator):
         description="Name of new Branch."
     )
 
-    def invoke(self, context, event):
+    def execute(self, context):
         filepath = bpy.path.abspath("//")
 
         # Get repo
@@ -65,7 +65,7 @@ class GitRevertToCommit(Operator):
         description="ID of commit to switch to"
     )
 
-    def invoke(self, context, event):
+    def execute(self, context):
         filepath = bpy.path.abspath("//")
 
         currentCommitId = context.window_manager.git.currentCommitId
@@ -109,7 +109,7 @@ class GitRevertToCommit(Operator):
 
 
 class GitCommit(Operator):
-    """Commit Changes."""
+    """Commit changes"""
 
     bl_label = __doc__
     bl_idname = "git.commit"
@@ -120,7 +120,7 @@ class GitCommit(Operator):
         description="A short description of the changes made"
     )
 
-    def invoke(self, context, event):
+    def execute(self, context):
         filepath = bpy.path.abspath("//")
 
         try:
