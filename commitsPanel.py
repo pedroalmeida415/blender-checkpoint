@@ -296,9 +296,12 @@ class GitSubPanel1(GitPanelMixin, Panel):
             except GitError:
                 return
 
-            selectedCommitId = str(repo.revparse_single(
-                f'HEAD~{git.commitsListIndex}').id)
+            selectedCommit = repo.revparse_single(
+                f'HEAD~{git.commitsListIndex}')
             # git.commitsList[git.commitsListIndex]["id"]
+            selectedCommitId = selectedCommit.hex
+
+            isSelectedCommitInitial = selectedCommit.message == "Initial commit - created project"
 
             isSelectedCommitCurrent = selectedCommitId == git.currentCommitId
 
@@ -323,7 +326,7 @@ class GitSubPanel1(GitPanelMixin, Panel):
             switchOps.id = selectedCommitId
 
             deleteCol = row.column()
-            deleteCol.enabled = isActionButtonsEnabled
+            deleteCol.enabled = isActionButtonsEnabled and not isSelectedCommitInitial
             delOps = deleteCol.operator(sourceControl.GitDeleteCommit.bl_idname,
                                         text="Delete commit", icon="TRASH")
             delOps.id = selectedCommitId
