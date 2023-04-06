@@ -325,10 +325,10 @@ class GitSubPanel1(GitPanelMixin, Panel):
                                            text="Switch back to commit", icon=SWITCH_ICON)
             switchOps.id = selectedCommitId
 
-            deleteCol = row.column()
-            deleteCol.enabled = isActionButtonsEnabled and not isSelectedCommitInitial
-            delOps = deleteCol.operator(sourceControl.GitDeleteCommit.bl_idname,
-                                        text="Delete commit", icon="TRASH")
+            removeCol = row.column()
+            removeCol.enabled = isActionButtonsEnabled and not isSelectedCommitInitial
+            delOps = removeCol.operator(sourceControl.GitRemoveCommit.bl_idname,
+                                        text="Remove commit", icon="CANCEL")
             delOps.id = selectedCommitId
 
         # Add commits to list

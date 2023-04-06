@@ -157,21 +157,21 @@ def getBackupFolderSize(filepath):
     return total_size
 
 
-class GitDeleteCommit(Operator):
-    """Delete selected commit"""
+class GitRemoveCommit(Operator):
+    """Remove selected commit"""
 
     bl_label = __doc__
-    bl_idname = "git.delete_commit"
+    bl_idname = "git.remove_commit"
 
     id: StringProperty(
         name="",
-        description="ID of commit to delete"
+        description="ID of commit to remove"
     )
 
     def invoke(self, context, event):
         wm = context.window_manager
 
-        return wm.invoke_props_dialog(self, width=380)
+        return wm.invoke_props_dialog(self, width=290)
 
     def draw(self, context):
         layout = self.layout
@@ -186,7 +186,7 @@ class GitDeleteCommit(Operator):
 
         row = layout.row()
         row.label(
-            text='This will remove the selected commit forever. There is no going back.', icon="UNLINKED")
+            text="This will remove the selected commit from the list.", icon="UNLINKED")
 
     def execute(self, context):
         git_context = context.window_manager.git
@@ -206,7 +206,7 @@ class GitDeleteCommit(Operator):
 
         self.id = ""
 
-        self.report({"INFO"}, "Commit deleted successfully!")
+        self.report({"INFO"}, "Commit removed successfully!")
         return {'FINISHED'}
 
 
@@ -214,7 +214,7 @@ class GitDeleteCommit(Operator):
 #     '''Edit selected commit's message'''
 #     '''https://www.pygit2.org/repository.html#pygit2.Repository.amend_commit'''
 
-classes = (GitNewBranch, GitRevertToCommit, GitCommit, GitDeleteCommit)
+classes = (GitNewBranch, GitRevertToCommit, GitCommit, GitRemoveCommit)
 
 
 def register():
