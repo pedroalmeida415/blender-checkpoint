@@ -2,7 +2,7 @@ import os
 from datetime import datetime, timezone, timedelta
 
 import pygit2 as git
-from pygit2._pygit2 import GitError, GIT_SORT_TIME, GIT_SORT_REVERSE
+from pygit2._pygit2 import GitError, GIT_SORT_TIME, GIT_SORT_REVERSE, GIT_RESET_HARD
 
 # Format: Fri Sep  2 19:36:07 2022 +0530
 GIT_TIME_FORMAT = "%c %z"
@@ -173,11 +173,13 @@ def initialRepoSetup(filepath):
     commit(repo, "Initial commit - created project")
 
 
-def deleteCommit(repo, delete_commit_id):
+def removeCommitFromHistory(repo, commit_id):
+    repo.reset(repo.head.target, GIT_RESET_HARD)
+
     previous_branch_ref = repo.branches[repo.head.shorthand]
     previous_branch_shorthand = previous_branch_ref.shorthand
 
-    old_branch_name = f"delete_commit_{delete_commit_id}"
+    old_branch_name = f"remove_commit_{commit_id}"
 
     previous_branch_ref.rename(old_branch_name)
 
@@ -190,27 +192,24 @@ def deleteCommit(repo, delete_commit_id):
         previous_branch_shorthand, initial_commit)
     repo.checkout(new_branch_ref)
 
-    delete_commit_parents = None
+    remove_commit_parents = None
 
     for commit in old_branch_iter:
-        if commit.hex == delete_commit_id:
-            delete_commit_parents = commit.parent_ids
+        if commit.hex == commit_id:
+            remove_commit_parents = commit.parent_ids[:]
             continue
 
         index = repo.index
 
-        if str(commit.parent_ids[0]) == delete_commit_id:
-            parents = delete_commit_parents
-
-            repo.merge_commits(
-                commit.id, delete_commit_id, favor="ours")
+        if remove_commit_parents:
+            index = repo.merge_commits(
+                commit.id, remove_commit_parents[0], favor="ours")
         else:
-            parents = [repo.head.target]
-
             repo.cherrypick(commit.id)
 
-        index.add_all()
-        index.write()
+        parents = remove_commit_parents if str(
+            commit.parent_ids[0]) == commit_id else [repo.head.target]
+
         tree_id = index.write_tree()
 
         repo.create_commit(repo.head.name, commit.author, commit.committer,

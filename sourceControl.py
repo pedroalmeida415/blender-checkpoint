@@ -202,11 +202,9 @@ class GitDeleteCommit(Operator):
         except GitError:
             return {'CANCELLED'}
 
-        gitHelpers.deleteCommit(repo, self.id)
+        gitHelpers.removeCommitFromHistory(repo, self.id)
 
         self.id = ""
-        if currentCommitId:
-            git_context.currentCommitId = ""
 
         self.report({"INFO"}, "Commit deleted successfully!")
         return {'FINISHED'}
