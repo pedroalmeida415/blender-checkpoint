@@ -73,6 +73,7 @@ class GitRevertToCommit(Operator):
         if currentCommitId == self.id:
             return {'CANCELLED'}
 
+        # ABSTRACT IN A GITHELPER
         # Get repo
         try:
             repo = gitHelpers.getRepo(filepath)
@@ -97,6 +98,7 @@ class GitRevertToCommit(Operator):
         """
         repo.reset(revertCommit.oid, GIT_RESET_HARD)
         repo.reset(latestCommit.oid, GIT_RESET_SOFT)
+        # ABSTRACT IN A GITHELPER
 
         # Used to correctly identify the active commit after revert,
         # since there is no way to keep that after Blender's reload
@@ -155,7 +157,66 @@ def getBackupFolderSize(filepath):
     return total_size
 
 
-classes = (GitNewBranch, GitRevertToCommit, GitCommit)
+class GitDeleteCommit(Operator):
+    """Delete selected commit"""
+
+    bl_label = __doc__
+    bl_idname = "git.delete_commit"
+
+    id: StringProperty(
+        name="",
+        description="ID of commit to delete"
+    )
+
+    def invoke(self, context, event):
+        wm = context.window_manager
+
+        return wm.invoke_props_dialog(self, width=380)
+
+    def draw(self, context):
+        layout = self.layout
+
+        layout.separator()
+
+        row = layout.row()
+        row.alignment = 'CENTER'
+        row.label(text="ARE YOU SURE?")
+
+        layout.separator()
+
+        row = layout.row()
+        row.label(
+            text='This will remove the selected commit forever. There is no going back.', icon="UNLINKED")
+
+    def execute(self, context):
+        git_context = context.window_manager.git
+        currentCommitId = git_context.currentCommitId
+
+        if currentCommitId == self.id:
+            return {'CANCELLED'}
+
+        filepath = bpy.path.abspath("//")
+
+        try:
+            repo = gitHelpers.getRepo(filepath)
+        except GitError:
+            return {'CANCELLED'}
+
+        gitHelpers.deleteCommit(repo, self.id)
+
+        self.id = ""
+        if currentCommitId:
+            git_context.currentCommitId = ""
+
+        self.report({"INFO"}, "Commit deleted successfully!")
+        return {'FINISHED'}
+
+
+# class GitAmmendCommit(Operator):
+#     '''Edit selected commit's message'''
+#     '''https://www.pygit2.org/repository.html#pygit2.Repository.amend_commit'''
+
+classes = (GitNewBranch, GitRevertToCommit, GitCommit, GitDeleteCommit)
 
 
 def register():
