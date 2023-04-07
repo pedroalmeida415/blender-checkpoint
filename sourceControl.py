@@ -33,7 +33,7 @@ def slugify(text):
 
 
 class GitNewBranch(Operator):
-    """Create New Branch."""
+    """Create New Branch from selected commit."""
 
     bl_label = __doc__
     bl_idname = "git.new_branch"
@@ -41,7 +41,7 @@ class GitNewBranch(Operator):
     name: StringProperty(
         name="",
         options={'TEXTEDIT_UPDATE'},
-        description="Name of new Branch."
+        description="Name of new Branch. (will be slugified)"
     )
 
     def execute(self, context):

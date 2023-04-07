@@ -110,7 +110,7 @@ class GitPanelData(PropertyGroup):
     newBranchName: StringProperty(
         name="Name",
         options={'TEXTEDIT_UPDATE'},
-        description="Name of new Branch"
+        description="Name of new Branch. (will be slugified)"
     )
 
     commitMessage: StringProperty(
@@ -232,8 +232,9 @@ class GitNewBranchPanel(GitPanelMixin, Panel):
 
     def draw(self, context):
         layout = self.layout
+        layout.ui_units_x = 11
 
-        layout.label(text="New Branch", icon=BRANCH_ICON)
+        layout.label(text="New Branch from selected commit.", icon=BRANCH_ICON)
 
         layout.prop(context.window_manager.git, "newBranchName")
         name = context.window_manager.git.newBranchName
@@ -247,6 +248,21 @@ class GitNewBranchPanel(GitPanelMixin, Panel):
         branch.name = name
 
 
+class SwitchBranchErrorTooltip(GitPanelMixin, Panel):
+    """You must commit your changes before switching branches."""
+
+    bl_idname = "GIT_PT_switch_branch_error_panel"
+    bl_label = ""
+    bl_options = {'INSTANCED'}
+
+    def draw(self, context):
+        layout = self.layout
+        layout.ui_units_x = 15.5
+
+        row = layout.row()
+        row.label(text=self.bl_description)
+
+
 class GitSubPanel1(GitPanelMixin, Panel):
     bl_idname = "GIT_PT_sub_panel_1"
     bl_parent_id = GitPanel.bl_idname
@@ -258,14 +274,29 @@ class GitSubPanel1(GitPanelMixin, Panel):
         return context.window_manager.git.isRepoInitialized
 
     def draw_header(self, context):
+        filepath = bpy.path.abspath("//")
+        filename = bpy.path.basename(bpy.data.filepath).split(".")[0]
+
+        try:
+            repo = gitHelpers.getRepo(filepath)
+        except GitError:
+            return
+
         layout = self.layout
 
-        row = layout.row(align=True)
+        row = layout.row()
         row.prop(context.window_manager.git, "branches")
 
-        col = row.column()
-        col.scale_x = 0.8
-        col.popover(GitNewBranchPanel.bl_idname, icon=NEW_BRANCH_ICON)
+        row_button = layout.row()
+        row_button.scale_x = 0.8
+
+        if repo.status_file(f"{filename}.blend") == GIT_STATUS_CURRENT:
+            row_button.popover(GitNewBranchPanel.bl_idname,
+                               icon=NEW_BRANCH_ICON)
+        else:
+            row.enabled = False
+            row_button.popover(
+                SwitchBranchErrorTooltip.bl_idname, icon="ERROR")
 
     def draw(self, context):
         filepath = bpy.path.abspath("//")
@@ -430,7 +461,7 @@ def format_size(size):
 
 """ORDER MATTERS"""
 classes = (GitCommitsListItem, GitPanelData, StartVersionControl, GitPanel,
-           GitCommitsList, GitNewBranchPanel, GitSubPanel1,
+           GitCommitsList, GitNewBranchPanel, SwitchBranchErrorTooltip, GitSubPanel1,
            GitSubPanel2)
 
 
