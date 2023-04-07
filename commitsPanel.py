@@ -51,6 +51,10 @@ class GitCommitsListItem(PropertyGroup):
     date: StringProperty(description="Date of commit")
     message: StringProperty(description="Commit message")
 
+# def errorPopupDraw(self, context):
+#     self.layout.label(text="You have done something you shouldn't do!")
+# bpy.context.window_manager.popup_menu(errorPopupDraw, title="Error", icon='ERROR')
+
 
 class GitPanelData(PropertyGroup):
     def getBranches(self, context):
@@ -90,6 +94,8 @@ class GitPanelData(PropertyGroup):
         branch = repo.lookup_branch(value)
         if not branch:
             return
+
+        # InvalidSpecError: cannot locate local branch '', GitError: checkout conflict
 
         # Checkout branch
         ref = repo.lookup_reference(branch.name)
@@ -133,6 +139,12 @@ class GitPanelData(PropertyGroup):
     isRepoInitialized: BoolProperty(
         name="Version Control Status",
         default=False,
+    )
+
+    squash_commits: BoolProperty(
+        name=" Squash commits",
+        default=False,
+        description="Commits in the new branch will be merged into a single one"
     )
 
 
@@ -231,13 +243,19 @@ class GitNewBranchPanel(GitPanelMixin, Panel):
     bl_options = {'INSTANCED'}
 
     def draw(self, context):
+        git = context.window_manager.git
+
         layout = self.layout
         layout.ui_units_x = 11
 
         layout.label(text="New Branch from selected commit.", icon=BRANCH_ICON)
 
-        layout.prop(context.window_manager.git, "newBranchName")
-        name = context.window_manager.git.newBranchName
+        layout.prop(git, "newBranchName")
+        name = git.newBranchName
+
+        row = layout.row()
+        row.prop(git, "squash_commits")
+        squash_commits = git.squash_commits
 
         row = layout.row()
         if not name:
@@ -246,6 +264,7 @@ class GitNewBranchPanel(GitPanelMixin, Panel):
         branch = row.operator(sourceControl.GitNewBranch.bl_idname,
                               text="Create Branch")
         branch.name = name
+        branch.squash_commits = squash_commits
 
 
 class SwitchBranchErrorTooltip(GitPanelMixin, Panel):
@@ -332,7 +351,7 @@ class GitSubPanel1(GitPanelMixin, Panel):
             # git.commitsList[git.commitsListIndex]["id"]
             selectedCommitId = selectedCommit.hex
 
-            isSelectedCommitInitial = selectedCommit.message == "Initial commit - created project"
+            isSelectedCommitInitial = selectedCommit.hex == git.commitsList[-1]["id"]
 
             isSelectedCommitCurrent = selectedCommitId == git.currentCommitId
 

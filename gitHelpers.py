@@ -217,4 +217,5 @@ def removeCommitFromHistory(repo, commit_id):
 
         repo.state_cleanup()
 
+    repo.reset(repo.head.target, GIT_RESET_HARD)
     repo.branches[old_branch_name].delete()

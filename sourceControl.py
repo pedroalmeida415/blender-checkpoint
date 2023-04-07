@@ -6,7 +6,7 @@ from unicodedata import normalize
 
 import bpy
 from bpy.types import Operator
-from bpy.props import StringProperty
+from bpy.props import (StringProperty, BoolProperty)
 
 from pygit2._pygit2 import GitError
 from pygit2 import GIT_RESET_SOFT, GIT_RESET_HARD
@@ -44,6 +44,11 @@ class GitNewBranch(Operator):
         description="Name of new Branch. (will be slugified)"
     )
 
+    squash_commits: BoolProperty(
+        name="",
+        description="Commits in the new branch will be merged into a single one"
+    )
+
     def execute(self, context):
         filepath = bpy.path.abspath("//")
         git = context.window_manager.git
@@ -58,16 +63,35 @@ class GitNewBranch(Operator):
         selectedCommit = repo.revparse_single(
             f'HEAD~{git.commitsListIndex}')
 
-        # Create new Branch
+        # Create new Branch from selected commit
         new_branch_ref = repo.branches.create(
             slugify(self.name), selectedCommit)
 
         repo.checkout(new_branch_ref)
 
-        # Clear branch name property
+        if self.squash_commits:
+            # Squash commits by soft reseting head to initial commit
+            # and ammending it with the selected commit's message and changes
+            commits = gitHelpers.getCommits(repo)
+
+            initialCommit = commits[-1]["id"]
+
+            repo.reset(initialCommit, GIT_RESET_SOFT)
+
+            tree_id = repo.index.write_tree()
+
+            repo.amend_commit(initialCommit, 'HEAD',
+                              message=selectedCommit.message, tree=tree_id)
+
+        # Clean up
+        git.commitsListIndex = 0
+
         self.newBranchName = ""
+        self.squash_commits = False
         if context.window_manager.git.newBranchName:
             context.window_manager.git.newBranchName = ""
+
+        bpy.ops.wm.revert_mainfile()
 
         return {'FINISHED'}
 
@@ -222,7 +246,9 @@ class GitRemoveCommit(Operator):
 
         gitHelpers.removeCommitFromHistory(repo, self.id)
 
+        # Clean up
         self.id = ""
+        git_context.commitsListIndex = 0
 
         self.report({"INFO"}, "Commit removed successfully!")
         return {'FINISHED'}
