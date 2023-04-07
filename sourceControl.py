@@ -1,6 +1,8 @@
 import os
 import sys
 import importlib
+import re
+from unicodedata import normalize
 
 import bpy
 from bpy.types import Operator
@@ -19,6 +21,17 @@ for module in modulesNames:
         globals()[module] = importlib.import_module(f"{parent}.{module}")
 
 
+def slugify(text):
+    """
+    Simplifies a string, converts it to lowercase, removes non-word characters
+    and spaces, converts spaces and apostrophes to hyphens.
+    """
+    text = normalize('NFKD', text).encode('ASCII', 'ignore').decode('ASCII')
+    text = re.sub(r'[^\w\s\'-]', '', text).strip().lower()
+    text = re.sub(r'[-\s\'"]+', '-', text)
+    return text
+
+
 class GitNewBranch(Operator):
     """Create New Branch."""
 
@@ -33,6 +46,7 @@ class GitNewBranch(Operator):
 
     def execute(self, context):
         filepath = bpy.path.abspath("//")
+        git = context.window_manager.git
 
         # Get repo
         try:
@@ -40,11 +54,15 @@ class GitNewBranch(Operator):
         except GitError:
             return {'CANCELLED'}
 
-        # Get last commit
-        commit = repo[repo.head.target]
+        # Get selected commit
+        selectedCommit = repo.revparse_single(
+            f'HEAD~{git.commitsListIndex}')
 
         # Create new Branch
-        repo.branches.create(self.name.strip(), commit)
+        new_branch_ref = repo.branches.create(
+            slugify(self.name), selectedCommit)
+
+        repo.checkout(new_branch_ref)
 
         # Clear branch name property
         self.newBranchName = ""
