@@ -71,7 +71,7 @@ class GitNewBranch(Operator):
 
         if self.squash_commits:
             # Squash commits by soft reseting head to initial commit
-            # and ammending it with the selected commit's message and changes
+            # and amending it with the selected commit's message and changes
             commits = gitHelpers.getCommits(repo)
 
             initialCommit = commits[-1]["id"]
@@ -90,6 +90,8 @@ class GitNewBranch(Operator):
         self.squash_commits = False
         if context.window_manager.git.newBranchName:
             context.window_manager.git.newBranchName = ""
+
+        repo.config["user.currentCommit"] = str(repo.head.target)
 
         bpy.ops.wm.revert_mainfile()
 
@@ -250,13 +252,13 @@ class GitRemoveCommit(Operator):
         self.id = ""
         git_context.commitsListIndex = 0
 
+        # get index of the currentCommitId and set the commit of that index as the current when deleting commits below the current one
+        # in order to preserve icons, since the all the commits above the deleted get assigned a new id
+        # context.window_manager.git.currentCommitId
+
         self.report({"INFO"}, "Commit removed successfully!")
         return {'FINISHED'}
 
-
-# class GitAmmendCommit(Operator):
-#     '''Edit selected commit's message'''
-#     '''https://www.pygit2.org/repository.html#pygit2.Repository.amend_commit'''
 
 classes = (GitNewBranch, GitRevertToCommit, GitCommit, GitRemoveCommit)
 

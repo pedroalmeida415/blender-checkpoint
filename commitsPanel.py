@@ -8,7 +8,7 @@ from bpy.props import (CollectionProperty, EnumProperty, IntProperty,
                        PointerProperty, StringProperty, BoolProperty)
 
 from pygit2._pygit2 import GitError
-from pygit2 import GIT_STATUS_CURRENT
+from pygit2 import GIT_STATUS_INDEX_MODIFIED
 
 # Local imports implemented to support Blender refreshes
 modulesNames = ("gitHelpers", "sourceControl")
@@ -100,6 +100,8 @@ class GitPanelData(PropertyGroup):
         # Checkout branch
         ref = repo.lookup_reference(branch.name)
         repo.checkout(ref)
+
+        repo.config["user.currentCommit"] = str(repo.head.target)
 
         # Load the reverted file
         bpy.ops.wm.revert_mainfile()
@@ -216,12 +218,14 @@ class GitCommitsList(UIList):
 
         split = layout.split(factor=0.8)
 
-        activeCommitId = context.window_manager.git.currentCommitId
+        currentCommitId = context.window_manager.git.currentCommitId
 
-        if activeCommitId:
-            isActiveCommit = item.id == activeCommitId
+        if currentCommitId:
+            isActiveCommit = item.id == currentCommitId
         else:
             isActiveCommit = True if index == 0 else False
+
+        isActiveCommit = item.id == currentCommitId if currentCommitId else index == 0
 
         col1 = split.column()
         col1.label(text=item.message,
