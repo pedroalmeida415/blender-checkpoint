@@ -309,20 +309,24 @@ class GitSubPanel1(GitPanelMixin, Panel):
         row_button = layout.row()
         row_button.scale_x = 0.8
 
-        if repo.status_file(f"{filename}.blend") == GIT_STATUS_CURRENT:
-            row_button.popover(GitNewBranchPanel.bl_idname,
-                               icon=NEW_BRANCH_ICON)
-        else:
+        isFileModified = str(
+            GIT_STATUS_INDEX_MODIFIED) in str(repo.status_file(f"{filename}.blend"))
+
+        if isFileModified:
             row.enabled = False
             row_button.popover(
                 SwitchBranchErrorTooltip.bl_idname, icon="ERROR")
+        else:
+            row_button.popover(GitNewBranchPanel.bl_idname,
+                               icon=NEW_BRANCH_ICON)
 
     def draw(self, context):
         filepath = bpy.path.abspath("//")
         filename = bpy.path.basename(bpy.data.filepath).split(".")[0]
 
+        git_context = context.window_manager.git
+
         layout = self.layout
-        git = context.window_manager.git
 
         # List of Commits
         row = layout.row()
@@ -330,9 +334,9 @@ class GitSubPanel1(GitPanelMixin, Panel):
             listtype_name="GitCommitsList",
             # "" takes the name of the class used to define the UIList
             list_id="",
-            dataptr=git,
+            dataptr=git_context,
             propname="commitsList",
-            active_dataptr=git,
+            active_dataptr=git_context,
             active_propname="commitsListIndex",
             item_dyntip_propname="message",
             sort_lock=True,
@@ -340,30 +344,28 @@ class GitSubPanel1(GitPanelMixin, Panel):
             maxrows=10
         )
 
-        if git.commitsList:
+        if git_context.commitsList:
             try:
                 repo = gitHelpers.getRepo(filepath)
             except GitError:
                 return
 
             selectedCommit = repo.revparse_single(
-                f'HEAD~{git.commitsListIndex}')
-            # git.commitsList[git.commitsListIndex]["id"]
-            selectedCommitId = selectedCommit.hex
+                f'HEAD~{git_context.commitsListIndex}')
 
-            isSelectedCommitInitial = selectedCommit.hex == git.commitsList[-1]["id"]
+            isSelectedCommitInitial = selectedCommit.hex == git_context.commitsList[-1]["id"]
 
-            isSelectedCommitCurrent = selectedCommitId == git.currentCommitId
+            isSelectedCommitCurrent = selectedCommit.hex == git_context.currentCommitId
 
-            if git.currentCommitId:
-                isActionButtonsEnabled = not isSelectedCommitCurrent
-            else:
-                if git.commitsListIndex == 0:
-                    isActionButtonsEnabled = False
-                else:
-                    isActionButtonsEnabled = True
+            isActionButtonsEnabled = not isSelectedCommitCurrent if git_context.currentCommitId else git_context.commitsListIndex != 0
 
-            if isActionButtonsEnabled and bpy.data.is_dirty and repo.status_file(f"{filename}.blend") != GIT_STATUS_CURRENT:
+            isBlenderDirty = bpy.data.is_dirty
+
+            isFileModified = str(
+                GIT_STATUS_INDEX_MODIFIED) in str(repo.status_file(f"{filename}.blend"))
+
+            shouldShowError = isActionButtonsEnabled and isBlenderDirty and isFileModified
+            if shouldShowError:
                 row = layout.row()
                 row.label(text="Uncommited will be lost.", icon='ERROR')
 
@@ -373,13 +375,13 @@ class GitSubPanel1(GitPanelMixin, Panel):
             swtichCol.enabled = isActionButtonsEnabled
             switchOps = swtichCol.operator(sourceControl.GitRevertToCommit.bl_idname,
                                            text="Switch back to commit", icon=SWITCH_ICON)
-            switchOps.id = selectedCommitId
+            switchOps.id = selectedCommit.hex
 
             removeCol = row.column()
             removeCol.enabled = isActionButtonsEnabled and not isSelectedCommitInitial
             delOps = removeCol.operator(sourceControl.GitRemoveCommit.bl_idname,
                                         text="Remove commit", icon="CANCEL")
-            delOps.id = selectedCommitId
+            delOps.id = selectedCommit.hex
 
         # Add commits to list
         bpy.app.timers.register(addCommitsToList)
