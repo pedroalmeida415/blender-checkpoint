@@ -86,7 +86,7 @@ class GitNewBranch(Operator):
         # Clean up
         git.commitsListIndex = 0
 
-        self.newBranchName = ""
+        self.name = ""
         self.squash_commits = False
         if context.window_manager.git.newBranchName:
             context.window_manager.git.newBranchName = ""
@@ -127,6 +127,36 @@ class GitDeleteBranch(Operator):
         repo.config["user.currentCommit"] = str(repo.head.target)
 
         bpy.ops.wm.revert_mainfile()
+
+        return {'FINISHED'}
+
+
+class GitEditBranch(Operator):
+    """Edit current branch's name"""
+
+    bl_label = __doc__
+    bl_idname = "git.edit_branch"
+
+    name: StringProperty(
+        name="",
+        options={'TEXTEDIT_UPDATE'},
+        description="New branch name. (will be slugified)"
+    )
+
+    def execute(self, context):
+        filepath = bpy.path.abspath("//")
+
+        # Get repo
+        try:
+            repo = gitHelpers.getRepo(filepath)
+        except GitError:
+            return {'CANCELLED'}
+
+        repo.branches[repo.head.shorthand].rename(slugify(self.name))
+
+        self.name = ""
+        if context.window_manager.git.newBranchName:
+            context.window_manager.git.newBranchName = ""
 
         return {'FINISHED'}
 
@@ -293,7 +323,7 @@ class GitRemoveCommit(Operator):
         return {'FINISHED'}
 
 
-classes = (GitNewBranch, GitDeleteBranch,
+classes = (GitNewBranch, GitDeleteBranch, GitEditBranch,
            GitRevertToCommit, GitCommit, GitRemoveCommit)
 
 

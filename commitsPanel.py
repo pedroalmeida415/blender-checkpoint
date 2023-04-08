@@ -118,7 +118,7 @@ class GitPanelData(PropertyGroup):
     newBranchName: StringProperty(
         name="Name",
         options={'TEXTEDIT_UPDATE'},
-        description="Name of new Branch. (will be slugified)"
+        description="New branch name. (will be slugified)"
     )
 
     commitMessage: StringProperty(
@@ -252,7 +252,7 @@ class GitNewBranchPanel(GitPanelMixin, Panel):
         layout = self.layout
         layout.ui_units_x = 11
 
-        layout.label(text="New Branch from selected commit.", icon=BRANCH_ICON)
+        layout.label(text="New Branch from selected commit", icon=BRANCH_ICON)
 
         layout.prop(git, "newBranchName")
         name = git.newBranchName
@@ -294,7 +294,7 @@ class GitDeleteBranchPanel(GitPanelMixin, Panel):
             layout.ui_units_x = 11.5
             row = layout.row()
             row.label(
-                text='You cannot delete the master branch.', icon="FAKE_USER_ON")
+                text='You cannot delete the master branch', icon="FAKE_USER_ON")
         else:
             layout.ui_units_x = 16.5
             layout.separator()
@@ -312,6 +312,47 @@ class GitDeleteBranchPanel(GitPanelMixin, Panel):
             row = layout.row()
             row.operator(sourceControl.GitDeleteBranch.bl_idname,
                          text="Delete Branch")
+
+
+class GitEditBranchPanel(GitPanelMixin, Panel):
+    """Edit branch name"""
+
+    bl_idname = "GIT_PT_edit_branch_panel"
+    bl_label = ""
+    bl_options = {'INSTANCED'}
+
+    def draw(self, context):
+        filepath = bpy.path.abspath("//")
+        # Get repo
+        try:
+            repo = gitHelpers.getRepo(filepath)
+        except GitError:
+            return {'CANCELLED'}
+
+        is_master_branch = repo.head.shorthand == "master"
+
+        layout = self.layout
+
+        if is_master_branch:
+            layout.ui_units_x = 10.5
+            row = layout.row()
+            row.label(
+                text='You cannot rename master branch', icon="FAKE_USER_ON")
+        else:
+            git = context.window_manager.git
+
+            layout.label(text="Edit branch name", icon=BRANCH_ICON)
+
+            layout.prop(git, "newBranchName")
+            name = git.newBranchName
+
+            row = layout.row()
+            if not name:
+                row.enabled = False
+
+            branch = row.operator(sourceControl.GitEditBranch.bl_idname,
+                                  text="Rename")
+            branch.name = name
 
 
 class SwitchBranchErrorTooltip(GitPanelMixin, Panel):
@@ -368,6 +409,8 @@ class GitSubPanel1(GitPanelMixin, Panel):
                                icon=NEW_BRANCH_ICON)
             row_button.popover(GitDeleteBranchPanel.bl_idname,
                                icon="REMOVE")
+            row_button.popover(GitEditBranchPanel.bl_idname,
+                               icon="CURRENT_FILE")
 
     def draw(self, context):
         filepath = bpy.path.abspath("//")
@@ -531,7 +574,7 @@ def format_size(size):
 
 """ORDER MATTERS"""
 classes = (GitCommitsListItem, GitPanelData, StartVersionControl, GitPanel,
-           GitCommitsList, GitNewBranchPanel, GitDeleteBranchPanel, SwitchBranchErrorTooltip, GitSubPanel1,
+           GitCommitsList, GitNewBranchPanel, GitDeleteBranchPanel, GitEditBranchPanel, SwitchBranchErrorTooltip, GitSubPanel1,
            GitSubPanel2)
 
 
