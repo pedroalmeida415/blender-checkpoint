@@ -184,7 +184,7 @@ class StartVersionControl(bpy.types.Operator):
 
 class GitPanel(GitPanelMixin, Panel):
     bl_idname = "GIT_PT_panel"
-    bl_label = "Git"
+    bl_label = "Version Control"
 
     def draw(self, context):
         filepath = bpy.path.abspath("//")

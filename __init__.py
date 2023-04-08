@@ -4,11 +4,11 @@ import importlib
 import sys
 import os
 bl_info = {
-    "name": "Blender Git Integration",
+    "name": "Blender Backup - Version Control Supercharged",
     "authon": "Nameless",
     "description": "Version control for Blender.",
     "blender": (3, 4, 1),
-    "category": "Git"
+    "category": "Backup"
 }
 
 
