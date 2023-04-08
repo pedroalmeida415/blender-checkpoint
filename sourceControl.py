@@ -33,7 +33,7 @@ def slugify(text):
 
 
 class GitNewBranch(Operator):
-    """Create New Branch from selected commit."""
+    """Create New Branch from selected commit"""
 
     bl_label = __doc__
     bl_idname = "git.new_branch"
@@ -90,6 +90,39 @@ class GitNewBranch(Operator):
         self.squash_commits = False
         if context.window_manager.git.newBranchName:
             context.window_manager.git.newBranchName = ""
+
+        repo.config["user.currentCommit"] = str(repo.head.target)
+
+        bpy.ops.wm.revert_mainfile()
+
+        return {'FINISHED'}
+
+
+class GitDeleteBranch(Operator):
+    """Delete current branch"""
+
+    bl_label = __doc__
+    bl_idname = "git.delete_branch"
+
+    def execute(self, context):
+        filepath = bpy.path.abspath("//")
+        git = context.window_manager.git
+
+        # Get repo
+        try:
+            repo = gitHelpers.getRepo(filepath)
+        except GitError:
+            return {'CANCELLED'}
+
+        delete_branch = repo.branches[repo.head.shorthand]
+
+        master_ref = repo.branches["master"]
+
+        git.commitsListIndex = 0
+
+        repo.checkout(master_ref)
+
+        delete_branch.delete()
 
         repo.config["user.currentCommit"] = str(repo.head.target)
 
@@ -260,7 +293,8 @@ class GitRemoveCommit(Operator):
         return {'FINISHED'}
 
 
-classes = (GitNewBranch, GitRevertToCommit, GitCommit, GitRemoveCommit)
+classes = (GitNewBranch, GitDeleteBranch,
+           GitRevertToCommit, GitCommit, GitRemoveCommit)
 
 
 def register():

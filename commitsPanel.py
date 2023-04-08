@@ -271,6 +271,49 @@ class GitNewBranchPanel(GitPanelMixin, Panel):
         branch.squash_commits = squash_commits
 
 
+class GitDeleteBranchPanel(GitPanelMixin, Panel):
+    """Deletes current Branch"""
+
+    bl_idname = "GIT_PT_delete_branch_panel"
+    bl_label = ""
+    bl_options = {'INSTANCED'}
+
+    def draw(self, context):
+        filepath = bpy.path.abspath("//")
+        # Get repo
+        try:
+            repo = gitHelpers.getRepo(filepath)
+        except GitError:
+            return {'CANCELLED'}
+
+        is_master_branch = repo.head.shorthand == "master"
+
+        layout = self.layout
+
+        if is_master_branch:
+            layout.ui_units_x = 11.5
+            row = layout.row()
+            row.label(
+                text='You cannot delete the master branch.', icon="FAKE_USER_ON")
+        else:
+            layout.ui_units_x = 16.5
+            layout.separator()
+
+            row = layout.row()
+            row.alignment = 'CENTER'
+            row.label(text="ARE YOU SURE?")
+
+            layout.separator()
+
+            row = layout.row()
+            row.label(
+                text='This will delete the current branch. There is no going back.', icon="TRASH")
+
+            row = layout.row()
+            row.operator(sourceControl.GitDeleteBranch.bl_idname,
+                         text="Delete Branch")
+
+
 class SwitchBranchErrorTooltip(GitPanelMixin, Panel):
     """You must commit your changes before switching branches."""
 
@@ -310,7 +353,7 @@ class GitSubPanel1(GitPanelMixin, Panel):
         row = layout.row()
         row.prop(context.window_manager.git, "branches")
 
-        row_button = layout.row()
+        row_button = layout.row(align=True)
         row_button.scale_x = 0.8
 
         isFileModified = str(
@@ -323,6 +366,8 @@ class GitSubPanel1(GitPanelMixin, Panel):
         else:
             row_button.popover(GitNewBranchPanel.bl_idname,
                                icon=NEW_BRANCH_ICON)
+            row_button.popover(GitDeleteBranchPanel.bl_idname,
+                               icon="REMOVE")
 
     def draw(self, context):
         filepath = bpy.path.abspath("//")
@@ -470,7 +515,7 @@ class GitSubPanel2(GitPanelMixin, Panel):
         col2 = row.column()
         col2.alignment = 'RIGHT'
         col2.label(
-            text=f"Backup total size: {format_size(backupSize)}")
+            text=f"Backups total size: {format_size(backupSize)}")
 
 
 def format_size(size):
@@ -486,7 +531,7 @@ def format_size(size):
 
 """ORDER MATTERS"""
 classes = (GitCommitsListItem, GitPanelData, StartVersionControl, GitPanel,
-           GitCommitsList, GitNewBranchPanel, SwitchBranchErrorTooltip, GitSubPanel1,
+           GitCommitsList, GitNewBranchPanel, GitDeleteBranchPanel, SwitchBranchErrorTooltip, GitSubPanel1,
            GitSubPanel2)
 
 
