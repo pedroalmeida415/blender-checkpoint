@@ -443,7 +443,8 @@ class GitSubPanel1(GitPanelMixin, Panel):
             isFileModified = str(
                 GIT_STATUS_INDEX_MODIFIED) in str(repo.status_file(f"{filename}.blend"))
 
-            shouldShowError = isActionButtonsEnabled and isBlenderDirty and isFileModified
+            shouldShowError = (
+                isActionButtonsEnabled and isFileModified) or isBlenderDirty
             if shouldShowError:
                 row = layout.row()
                 row.label(
