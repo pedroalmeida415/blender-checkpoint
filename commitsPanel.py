@@ -475,6 +475,23 @@ class GitSubPanel1(GitPanelMixin, Panel):
                                         text="Remove commit", icon="CANCEL")
             delOps.id = selectedCommit.hex
 
+            '''
+            EDIT AND UNDO PREVIOUS COMMIT WIP
+            '''
+            # row = layout.row()
+
+            # swtichCol = row.column()
+            # swtichCol.enabled = isActionButtonsEnabled
+            # switchOps = swtichCol.operator(sourceControl.GitRevertToCommit.bl_idname,
+            #                                text="Undo last", icon="LOOP_BACK")
+            # switchOps.id = selectedCommit.hex
+
+            # removeCol = row.column()
+            # removeCol.enabled = isActionButtonsEnabled and not isSelectedCommitInitial
+            # delOps = removeCol.operator(sourceControl.GitRemoveCommit.bl_idname,
+            #                             text="Edit", icon="CURRENT_FILE")
+            # delOps.id = selectedCommit.hex
+
         # Add commits to list
         bpy.app.timers.register(addCommitsToList)
 
