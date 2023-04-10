@@ -80,7 +80,7 @@ print(f"{git.__name__} is installed.")
 # Local imports implemented to support Blender refreshes
 """ORDER MATTERS"""
 modulesNames = ("sourceControl", "postSaveDialog",
-                "versionControlPanel", "iconsPanel", "appHandlers", "preferences")
+                "versionControlPanel", "appHandlers", "preferences")
 for module in modulesNames:
     if module in sys.modules:
         importlib.reload(sys.modules[module])
