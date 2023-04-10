@@ -18,9 +18,9 @@ NEW_PROJECT_ICON = 'NEWFOLDER'
 
 
 class GitPostSaveDialog(bpy.types.Operator):
-    """Dialog to commit changes after saving file"""
+    """Dialog to quickly make a backup of your changes after saving project"""
 
-    bl_label = "Commit changes"
+    bl_label = "Backup your changes"
     bl_idname = "git.post_save_dialog"
 
     def invoke(self, context, event):
@@ -63,7 +63,7 @@ class GitPostSaveDialog(bpy.types.Operator):
 
         commitOperator('INVOKE_DEFAULT', message=message)
 
-        self.report({"INFO"}, "Successfully saved commit changes!")
+        self.report({"INFO"}, "Successfully saved backup!")
 
         return {'FINISHED'}
 

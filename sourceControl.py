@@ -33,7 +33,7 @@ def slugify(text):
 
 
 class GitNewBranch(Operator):
-    """Create New Branch from selected commit"""
+    """Create new Timeline from selected backup"""
 
     bl_label = __doc__
     bl_idname = "git.new_branch"
@@ -41,12 +41,12 @@ class GitNewBranch(Operator):
     name: StringProperty(
         name="",
         options={'TEXTEDIT_UPDATE'},
-        description="Name of new Branch. (will be slugified)"
+        description="Name of new Timeline. (will be slugified)"
     )
 
     squash_commits: BoolProperty(
         name="",
-        description="Commits in the new branch will be merged into a single one"
+        description="Backups in the new timeline will be merged into a single one"
     )
 
     def execute(self, context):

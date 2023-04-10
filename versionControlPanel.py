@@ -20,36 +20,21 @@ for module in modulesNames:
         globals()[module] = importlib.import_module(f"{parent}.{module}")
 
 
-# BRANCH_ICON = 'GRAPH'
-# BRANCH_ICON = 'MOD_SIMPLIFY'
-# BRANCH_ICON = 'EVENT_TAB'
-# BRANCH_ICON = 'ORIENTATION_VIEW'
 BRANCH_ICON = 'WINDOW'
-
-# COMMENT_ICON = 'RADIOBUT_OFF'
-# ACTIVE_COMMENT_ICON = 'RADIOBUT_ON'
-# COMMENT_ICON = 'HIDE_ON'
-# ACTIVE_COMMENT_ICON = 'HIDE_OFF'
 COMMENT_ICON = 'KEYFRAME'
 ACTIVE_COMMENT_ICON = 'KEYTYPE_KEYFRAME_VEC'
-
-# SWITCH_ICON = 'LOOP_BACK'
-# SWITCH_ICON = 'CON_TRACKTO'
-# SWITCH_ICON = 'UV_SYNC_SELECT'
 SWITCH_ICON = 'DECORATE_OVERRIDE'
-
 NEW_BRANCH_ICON = 'ADD'
 CLEAR_ICON = 'X'
-
 BACKUP_SIZE_ICONS = ('IMPORT', 'FILE_BLEND')
 
 
 class GitCommitsListItem(PropertyGroup):
-    id: StringProperty(description="Unique ID of commit")
-    name: StringProperty(description="Name of commiter")
-    email: StringProperty(description="Email of commiter")
-    date: StringProperty(description="Date of commit")
-    message: StringProperty(description="Commit message")
+    id: StringProperty(description="Unique ID of backup")
+    name: StringProperty(description="Name of user")
+    email: StringProperty(description="Email of user")
+    date: StringProperty(description="Date of backup")
+    message: StringProperty(description="Backup message")
 
 # def errorPopupDraw(self, context):
 #     self.layout.label(text="You have done something you shouldn't do!")
@@ -71,7 +56,7 @@ class GitPanelData(PropertyGroup):
         for index, branch in enumerate(branches):
             if branch == activeBranch:
                 index = -1
-            branchList.append((branch, branch, f"Branch: '{branch}'",
+            branchList.append((branch, branch, f"Timeline: '{branch}'",
                                BRANCH_ICON, index))
 
         return branchList
@@ -107,8 +92,8 @@ class GitPanelData(PropertyGroup):
         bpy.ops.wm.revert_mainfile()
 
     branches: EnumProperty(
-        name="Branch",
-        description="Current Branch",
+        name="Timeline",
+        description="Current Timeline",
         items=getBranches,
         default=-1,
         options={'ANIMATABLE'},
@@ -118,7 +103,7 @@ class GitPanelData(PropertyGroup):
     newBranchName: StringProperty(
         name="Name",
         options={'TEXTEDIT_UPDATE'},
-        description="New branch name. (will be slugified)"
+        description="New Timeline name. (will be slugified)"
     )
 
     commitMessage: StringProperty(
@@ -133,7 +118,7 @@ class GitPanelData(PropertyGroup):
 
     currentCommitId: StringProperty(
         name="",
-        description="Current active commit ID"
+        description="Current active backup ID"
     )
 
     backupSize: IntProperty(default=0)
@@ -143,10 +128,11 @@ class GitPanelData(PropertyGroup):
         default=False,
     )
 
+    # Change naming to "keep history" or something, squash backups don't make much sense
     squash_commits: BoolProperty(
-        name=" Squash commits",
+        name=" Squash backups",
         default=False,
-        description="Commits in the new branch will be merged into a single one"
+        description="Backups in the new Timeline will be merged into the selected one"
     )
 
 
@@ -211,7 +197,7 @@ class GitPanel(GitPanelMixin, Panel):
 
 
 class GitCommitsList(UIList):
-    """List of Commits in project."""
+    """List of backups of the current project."""
 
     def draw_item(self, context, layout, data, item, icon, active_data,
                   active_propname, index):
@@ -240,7 +226,7 @@ class GitCommitsList(UIList):
 
 
 class GitNewBranchPanel(GitPanelMixin, Panel):
-    """Add New Branch"""
+    """Add new timeline"""
 
     bl_idname = "GIT_PT_new_branch_panel"
     bl_label = ""
@@ -252,7 +238,8 @@ class GitNewBranchPanel(GitPanelMixin, Panel):
         layout = self.layout
         layout.ui_units_x = 11
 
-        layout.label(text="New Branch from selected commit", icon=BRANCH_ICON)
+        layout.label(text="New Timeline from selected backup",
+                     icon=BRANCH_ICON)
 
         layout.prop(git, "newBranchName")
         name = git.newBranchName
@@ -266,13 +253,13 @@ class GitNewBranchPanel(GitPanelMixin, Panel):
             row.enabled = False
 
         branch = row.operator(sourceControl.GitNewBranch.bl_idname,
-                              text="Create Branch")
+                              text="Create Timeline")
         branch.name = name
         branch.squash_commits = squash_commits
 
 
 class GitDeleteBranchPanel(GitPanelMixin, Panel):
-    """Deletes current Branch"""
+    """Deletes current Timeline"""
 
     bl_idname = "GIT_PT_delete_branch_panel"
     bl_label = ""
@@ -294,7 +281,7 @@ class GitDeleteBranchPanel(GitPanelMixin, Panel):
             layout.ui_units_x = 11.5
             row = layout.row()
             row.label(
-                text='You cannot delete the master branch', icon="FAKE_USER_ON")
+                text='You cannot delete the master Timeline', icon="FAKE_USER_ON")
         else:
             layout.ui_units_x = 16.5
             layout.separator()
@@ -307,15 +294,15 @@ class GitDeleteBranchPanel(GitPanelMixin, Panel):
 
             row = layout.row()
             row.label(
-                text='This will delete the current branch. There is no going back.', icon="TRASH")
+                text='This will delete the current timeline. There is no going back.', icon="TRASH")
 
             row = layout.row()
             row.operator(sourceControl.GitDeleteBranch.bl_idname,
-                         text="Delete Branch")
+                         text="Delete Timeline")
 
 
 class GitEditBranchPanel(GitPanelMixin, Panel):
-    """Edit branch name"""
+    """Edit Timeline name"""
 
     bl_idname = "GIT_PT_edit_branch_panel"
     bl_label = ""
@@ -337,11 +324,11 @@ class GitEditBranchPanel(GitPanelMixin, Panel):
             layout.ui_units_x = 10.5
             row = layout.row()
             row.label(
-                text='You cannot rename master branch', icon="FAKE_USER_ON")
+                text='You cannot rename master Timeline', icon="FAKE_USER_ON")
         else:
             git = context.window_manager.git
 
-            layout.label(text="Edit branch name", icon=BRANCH_ICON)
+            layout.label(text="Edit Timeline name", icon=BRANCH_ICON)
 
             layout.prop(git, "newBranchName")
             name = git.newBranchName
@@ -356,7 +343,7 @@ class GitEditBranchPanel(GitPanelMixin, Panel):
 
 
 class SwitchBranchErrorTooltip(GitPanelMixin, Panel):
-    """You must commit your changes before switching branches."""
+    """You must save a backup of your changes before switching timelines."""
 
     bl_idname = "GIT_PT_switch_branch_error_panel"
     bl_label = ""
@@ -364,7 +351,7 @@ class SwitchBranchErrorTooltip(GitPanelMixin, Panel):
 
     def draw(self, context):
         layout = self.layout
-        layout.ui_units_x = 15.5
+        layout.ui_units_x = 17.5
 
         row = layout.row()
         row.label(text=self.bl_description)
@@ -459,7 +446,8 @@ class GitSubPanel1(GitPanelMixin, Panel):
             shouldShowError = isActionButtonsEnabled and isBlenderDirty and isFileModified
             if shouldShowError:
                 row = layout.row()
-                row.label(text="Uncommited will be lost.", icon='ERROR')
+                row.label(
+                    text="Changes without backup will be lost.", icon='ERROR')
 
             row = layout.row()
 
