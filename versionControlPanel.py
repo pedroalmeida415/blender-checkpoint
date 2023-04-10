@@ -165,6 +165,8 @@ class StartVersionControl(bpy.types.Operator):
             gitHelpers.initialRepoSetup(filepath)
 
             git.isRepoInitialized = True
+
+            self.report({"INFO"}, "Version control initialized!")
             return {'FINISHED'}
 
 

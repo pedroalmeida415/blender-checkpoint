@@ -158,6 +158,8 @@ class GitEditBranch(Operator):
         if context.window_manager.git.newBranchName:
             context.window_manager.git.newBranchName = ""
 
+        self.report({"INFO"}, "Renamed timeline")
+
         return {'FINISHED'}
 
 
@@ -319,7 +321,7 @@ class GitRemoveCommit(Operator):
         # in order to preserve icons, since the all the commits above the deleted get assigned a new id
         # context.window_manager.git.currentCommitId
 
-        self.report({"INFO"}, "Commit removed successfully!")
+        self.report({"INFO"}, "Backup removed successfully!")
         return {'FINISHED'}
 
 
