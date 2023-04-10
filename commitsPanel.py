@@ -466,13 +466,13 @@ class GitSubPanel1(GitPanelMixin, Panel):
             swtichCol = row.column()
             swtichCol.enabled = isActionButtonsEnabled
             switchOps = swtichCol.operator(sourceControl.GitRevertToCommit.bl_idname,
-                                           text="Switch back to commit", icon=SWITCH_ICON)
+                                           text="Restore", icon="EXPORT")
             switchOps.id = selectedCommit.hex
 
             removeCol = row.column()
             removeCol.enabled = isActionButtonsEnabled and not isSelectedCommitInitial
             delOps = removeCol.operator(sourceControl.GitRemoveCommit.bl_idname,
-                                        text="Remove commit", icon="CANCEL")
+                                        text="Remove", icon="CANCEL")
             delOps.id = selectedCommit.hex
 
             '''

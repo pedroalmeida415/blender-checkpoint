@@ -162,7 +162,7 @@ class GitEditBranch(Operator):
 
 
 class GitRevertToCommit(Operator):
-    """Switch to selected commit"""
+    """Restore selected backup"""
 
     bl_label = __doc__
     bl_idname = "git.revert_to_commit"
@@ -218,7 +218,7 @@ class GitRevertToCommit(Operator):
 
 
 class GitCommit(Operator):
-    """Commit changes"""
+    """Save backup"""
 
     bl_label = __doc__
     bl_idname = "git.commit"
