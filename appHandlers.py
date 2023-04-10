@@ -18,7 +18,7 @@ for module in modulesNames:
 @persistent
 def savePostHandler(_):
     prefs = preferences.get_user_preferences()
-    if prefs.shouldDisplayCommitDialog:
+    if prefs.shouldDisplayPostSaveDialog:
         bpy.ops.git.post_save_dialog('INVOKE_DEFAULT')
 
     if prefs.shouldAutoStartVersionControl:

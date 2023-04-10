@@ -81,9 +81,9 @@ class RemoveVersionControlOperator(bpy.types.Operator):
 class MyAddonPreferences(bpy.types.AddonPreferences):
     bl_idname = __package__
 
-    shouldDisplayCommitDialog: bpy.props.BoolProperty(
-        name="Show Commit Dialog",
-        description="Should display commit dialog after saving project?",
+    shouldDisplayPostSaveDialog: bpy.props.BoolProperty(
+        name="Show Post Save Dialog",
+        description="Should display dialog after saving project?",
         default=True,
     )
 
@@ -97,7 +97,7 @@ class MyAddonPreferences(bpy.types.AddonPreferences):
         layout = self.layout
 
         row = layout.row()
-        row.prop(self, "shouldDisplayCommitDialog")
+        row.prop(self, "shouldDisplayPostSaveDialog")
 
         row = layout.row()
         row.prop(self, "shouldAutoStartVersionControl")
