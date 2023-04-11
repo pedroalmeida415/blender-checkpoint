@@ -8,7 +8,7 @@ import bpy
 from bpy.types import Operator
 from bpy.props import (StringProperty, BoolProperty)
 
-from pygit2._pygit2 import GitError
+from pygit2._pygit2 import GitError, AlreadyExistsError
 from pygit2 import GIT_RESET_SOFT, GIT_RESET_HARD
 
 # Local imports implemented to support Blender refreshes
@@ -64,8 +64,11 @@ class GitNewBranch(Operator):
             f'HEAD~{git.commitsListIndex}')
 
         # Create new Branch from selected commit
-        new_branch_ref = repo.branches.create(
-            slugify(self.name), selectedCommit)
+        try:
+            new_branch_ref = repo.branches.create(
+                slugify(self.name), selectedCommit)
+        except AlreadyExistsError:
+            return {'CANCELLED'}
 
         repo.checkout(new_branch_ref)
 
@@ -153,7 +156,10 @@ class GitEditBranch(Operator):
         except GitError:
             return {'CANCELLED'}
 
-        repo.branches[repo.head.shorthand].rename(slugify(self.name))
+        try:
+            repo.branches[repo.head.shorthand].rename(slugify(self.name))
+        except AlreadyExistsError:
+            return {'CANCELLED'}
 
         self.name = ""
         if context.window_manager.git.newBranchName:
