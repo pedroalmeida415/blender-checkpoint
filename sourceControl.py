@@ -133,7 +133,7 @@ class GitDeleteBranch(Operator):
 
 
 class GitEditBranch(Operator):
-    """Edit current branch's name"""
+    """Edit current timeline name"""
 
     bl_label = __doc__
     bl_idname = "git.edit_branch"
@@ -141,7 +141,7 @@ class GitEditBranch(Operator):
     name: StringProperty(
         name="",
         options={'TEXTEDIT_UPDATE'},
-        description="New branch name. (will be slugified)"
+        description="New timeline name. (will be slugified)"
     )
 
     def execute(self, context):

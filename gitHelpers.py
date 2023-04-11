@@ -168,7 +168,7 @@ def initialRepoSetup(filepath):
     configUser(repo, username, email)
 
     # Initial commit
-    commit(repo, "Initial commit - created project")
+    commit(repo, "Initial backup - created project")
 
 
 def removeCommitFromHistory(repo, commit_id):
