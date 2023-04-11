@@ -25,6 +25,8 @@ COMMENT_ICON = 'KEYFRAME'
 ACTIVE_COMMENT_ICON = 'KEYTYPE_KEYFRAME_VEC'
 SWITCH_ICON = 'DECORATE_OVERRIDE'
 NEW_BRANCH_ICON = 'ADD'
+EDIT_BRANCH_ICON = 'OUTLINER_DATA_GP_LAYER' if (
+    3, 0, 0) > bpy.app.version else 'CURRENT_FILE'
 CLEAR_ICON = 'X'
 BACKUP_SIZE_ICONS = ('IMPORT', 'FILE_BLEND')
 
@@ -398,7 +400,7 @@ class GitSubPanel1(GitPanelMixin, Panel):
             row_button.popover(GitDeleteBranchPanel.bl_idname,
                                icon="REMOVE")
             row_button.popover(GitEditBranchPanel.bl_idname,
-                               icon="CURRENT_FILE")
+                               icon=EDIT_BRANCH_ICON)
 
     def draw(self, context):
         filepath = bpy.path.abspath("//")
