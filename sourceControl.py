@@ -68,6 +68,7 @@ class GitNewBranch(Operator):
             new_branch_ref = repo.branches.create(
                 slugify(self.name), selectedCommit)
         except AlreadyExistsError:
+            self.report({"ERROR"}, "A timeline with that name already exists")
             return {'CANCELLED'}
 
         repo.checkout(new_branch_ref)
@@ -159,6 +160,7 @@ class GitEditBranch(Operator):
         try:
             repo.branches[repo.head.shorthand].rename(slugify(self.name))
         except AlreadyExistsError:
+            self.report({"ERROR"}, "A timeline with that name already exists")
             return {'CANCELLED'}
 
         self.name = ""
