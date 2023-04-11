@@ -128,11 +128,10 @@ class GitPanelData(PropertyGroup):
         default=False,
     )
 
-    # Change naming to "keep history" or something, squash backups don't make much sense
     squash_commits: BoolProperty(
-        name=" Squash backups",
-        default=False,
-        description="Backups in the new Timeline will be merged into the selected one"
+        name=" Keep history",
+        default=True,
+        description="Carry previous backups over to the new timeline"
     )
 
 
@@ -323,7 +322,7 @@ class GitEditBranchPanel(GitPanelMixin, Panel):
         layout = self.layout
 
         if is_master_branch:
-            layout.ui_units_x = 10.5
+            layout.ui_units_x = 11
             row = layout.row()
             row.label(
                 text='You cannot rename master Timeline', icon="FAKE_USER_ON")

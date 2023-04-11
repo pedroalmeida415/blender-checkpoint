@@ -69,7 +69,8 @@ class GitNewBranch(Operator):
 
         repo.checkout(new_branch_ref)
 
-        if self.squash_commits:
+        # squash_commits changed to "keep history", so now it has to be in negative form
+        if not self.squash_commits:
             # Squash commits by soft reseting head to initial commit
             # and amending it with the selected commit's message and changes
             commits = gitHelpers.getCommits(repo)
