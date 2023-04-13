@@ -9,7 +9,7 @@ No more making copies of your blender project with arbitrary namings, only to fo
 - Automatically start version control on new projects (toggleable): (insert gif)
 - Quickly save a backup after each save with the backup dialog (toggleable): (insert gif)
 - Browse through all saved backups of the current project in the Version Control panel: (gif)
-- Go back to a savepoint at any time, and continue development without any trouble.
+- Go back to a save point at any time, and continue development without any trouble.
 - Want to go back and make serious changes from further saves? Initialize a new timeline, and work from the selected starting point
 - Select if previous saves should go along with the new timeline or not
 - Easily add, edit, or remove timelines!
@@ -17,7 +17,7 @@ No more making copies of your blender project with arbitrary namings, only to fo
   \*This won't delete the backup from disk, see more details [**here**](sasd)
 - Check how much storage space your backups are taking with each new save
 - Finished project and want to clear out backups? Just head over to preferences and delete version control from the project. Done.
-- Want to save versions of texture files along with the project? You got it! check out [**here**](asdasd) how to make it work
+- Want to save versions of textures/materials or other assets along with the project? You got it! check out [**here**](asdasd) how to make it work
 
 ## How to use it
 
@@ -38,6 +38,9 @@ Blender backup uses [Git](https://git-scm.com/about) behind the curtains to keep
 - [ ] Search for backups by description or version
 - [ ] Action button to undo last save
 - [ ] Action button to edit selected save description
+- [ ] Make checkpoints accessable from file explorer (Also improving "remove checkpoint" action, enabling it to delete the checkpoint from disk)
+- [ ] Display preview image of the checkpoint
+- [ ] Checkpoints of individual objects inside the Scene
 - [ ] Editable file/folder(s) pattern that gets versioned along with project (instead of just "/textures" folder)
 - [ ] Action button to delete unused backups that got removed but are still in disk (garbage collector)
 - [ ] Show size of each backup in the list
