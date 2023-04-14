@@ -138,9 +138,9 @@ class GitPanelData(PropertyGroup):
 
 
 class GitPanelMixin:
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'UI'
-    bl_category = 'Tool'
+    bl_space_type = 'PROPERTIES'
+    bl_region_type = 'WINDOW'
+    bl_category = 'Scene'
 
 
 class StartVersionControl(bpy.types.Operator):
