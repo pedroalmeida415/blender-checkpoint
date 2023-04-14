@@ -4,11 +4,13 @@ import importlib
 import sys
 import os
 bl_info = {
-    "name": "Blender Backup - Version Control Supercharged",
+    "name": "Checkpoint",
     "authon": "Nameless",
-    "description": "Version control for Blender.",
+    "description": "Backup and version control for Blender - Supercharged",
     "blender": (3, 4, 1),
-    "category": "Backup"
+    "category": "",
+    "version": (1, 0, 0),
+    "location": "Properties > Scene > Version Control Panel",
 }
 
 
@@ -67,7 +69,7 @@ except ModuleNotFoundError:
         subprocess.check_call(
             [executable, "-m", "pip", "install", "-U", "pip", "--no-cache-dir"])
     except subprocess.CalledProcessError as e:
-        print(f"Pip is upto data. {e}")
+        print(f"Pip is upto date. {e}")
 
     # Install Pygit2
     subprocess.check_call(
