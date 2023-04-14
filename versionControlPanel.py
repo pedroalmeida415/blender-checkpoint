@@ -151,6 +151,7 @@ class StartVersionControl(bpy.types.Operator):
 
     def execute(self, context):
         filepath = bpy.path.abspath("//")
+        filename = bpy.path.basename(bpy.data.filepath).split(".")[0]
 
         git = context.window_manager.git
 
@@ -163,7 +164,7 @@ class StartVersionControl(bpy.types.Operator):
             return {'CANCELLED'}
         except GitError:
             # Setup repo if not initiated yet
-            gitHelpers.initialRepoSetup(filepath)
+            gitHelpers.initialRepoSetup(filepath, filename)
 
             git.isRepoInitialized = True
 

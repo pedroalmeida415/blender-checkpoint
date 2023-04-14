@@ -153,7 +153,7 @@ def getRepo(filepath):
     return repo
 
 
-def initialRepoSetup(filepath):
+def initialRepoSetup(filepath, filename):
     # Make .gitignore file
     makeGitIgnore(filepath)
 
@@ -176,7 +176,7 @@ def initialRepoSetup(filepath):
     configUser(repo, username, email)
 
     # Initial commit
-    commit(repo, "Initial backup - created project")
+    commit(repo, f"{filename}.blend - Initial checkpoint")
 
 
 def removeCommitFromHistory(repo, commit_id):
