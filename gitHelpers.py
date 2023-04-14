@@ -137,9 +137,13 @@ def configUser(repo, name, email):
     repo.config["user.backupSize"] = "0"
 
 
+def discover_repo(filepath):
+    return git.discover_repository(filepath)
+
+
 def getRepo(filepath):
    # Try to find repository path from subdirectory to make sure there is no repo above
-    repo_path = git.discover_repository(filepath)
+    repo_path = discover_repo(filepath)
 
     if not repo_path:
         repo_path = filepath

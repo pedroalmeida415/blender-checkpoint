@@ -64,7 +64,13 @@ class RemoveVersionControlOperator(bpy.types.Operator):
 
     def execute(self, context):
         current_dir = bpy.path.abspath("//")
-        git_folder_path = os.path.join(current_dir, ".git")
+
+        repo_path = gitHelpers.discover_repo(current_dir)
+
+        if not repo_path:
+            repo_path = current_dir
+
+        git_folder_path = os.path.join(repo_path, ".git")
         if os.path.exists(git_folder_path):
             shutil.rmtree(git_folder_path, onerror=self.remove_readonly)
 
