@@ -138,9 +138,14 @@ def configUser(repo, name, email):
 
 
 def getRepo(filepath):
-    # Set up repository
-    repo = git.Repository(filepath)
+   # Try to find repository path from subdirectory to make sure there is no repo above
+    repo_path = git.discover_repository(filepath)
 
+    if not repo_path:
+        repo_path = filepath
+
+    # Set up repository
+    repo = git.Repository(repo_path)
     return repo
 
 
