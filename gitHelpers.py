@@ -114,15 +114,14 @@ def makeGitIgnore(path):
     """Generates .gitignore file for Git project at given path"""
 
     content = (
-        "# Ignore all files\n"
         "*\n"
         "\n"
-        "# except for main file\n"
         "!*.blend\n"
-        "\n"
-        "# Custom rules\n"
-        "!*/\n"
+        "!textures\n"
         "!textures/*\n"
+        "textures/*.blend\n"
+        "\n"
+        "*.blend1\n"
     )
 
     with open(os.path.join(path, ".gitignore"), "w") as file:
