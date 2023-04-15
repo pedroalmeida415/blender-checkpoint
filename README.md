@@ -2,7 +2,7 @@
 
 No more making copies of your blender project with arbitrary namings, only to forget what is exactly inside them. Checkout features
 
-**INSERT PRESENTATION VIDEO IN FIRESHIP STYLE (BLENDER BACKUP IN 100 SECONDS**
+**INSERT PRESENTATION VIDEO IN FIRESHIP STYLE (BLENDER BACKUP IN 100 SECONDS)**
 
 ## Features
 
