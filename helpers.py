@@ -11,6 +11,27 @@ from pygit2._pygit2 import GitError, GIT_SORT_TIME, GIT_SORT_REVERSE, GIT_RESET_
 # Format: Fri Sep  2 19:36:07 2022 +0530
 GIT_TIME_FORMAT = "%c %z"
 
+CHECKPOINTS_FOLDER_NAME = ".checkpoints"
+TIMELINES_FOLDER_NAME = "timelines"
+SAVES_FOLDER_NAME = "saves"
+ORIGINAL_TIMELINE_NAME = "original.json"
+
+
+def get_data_folders_path(filepath):
+    CHECKPOINTS_FOLDER_PATH = os.path.join(
+        filepath, CHECKPOINTS_FOLDER_NAME)
+
+    TIMELINES_FOLDER_PATH = os.path.join(
+        CHECKPOINTS_FOLDER_PATH, TIMELINES_FOLDER_NAME)
+
+    SAVES_FOLDER_PATH = os.path.join(
+        CHECKPOINTS_FOLDER_PATH, SAVES_FOLDER_NAME)
+
+    ORIGINAL_TIMELINE_PATH = os.path.join(
+        TIMELINES_FOLDER_PATH, ORIGINAL_TIMELINE_NAME)
+
+    return CHECKPOINTS_FOLDER_PATH, TIMELINES_FOLDER_PATH, SAVES_FOLDER_PATH, ORIGINAL_TIMELINE_PATH
+
 
 def getLastModifiedStr(date):
     """
@@ -157,40 +178,24 @@ def getRepo(filepath):
     return repo
 
 
-def initialRepoSetup(filepath, filename):
-    # gerar uma pasta ".checkpoints"
-    CHECKPOINTS_FOLDER_NAME = ".checkpoints"
-    CHECKPOINTS_FOLDER_PATH = os.path.join(
-        filepath, CHECKPOINTS_FOLDER_NAME)
+def initialize_version_control(filepath, filename):
+    CHECKPOINTS_FOLDER_PATH, TIMELINES_FOLDER_PATH, SAVES_FOLDER_PATH, ORIGINAL_TIMELINE_PATH = get_data_folders_path(
+        filepath)
 
+    # generate folder structure
     if not os.path.exists(CHECKPOINTS_FOLDER_PATH):
         os.mkdir(CHECKPOINTS_FOLDER_PATH)
-
-    # gerar sub-pastas para estrutura de versionamento
-    TIMELINES_FOLDER_NAME = "timelines"
-    TIMELINES_FOLDER_PATH = os.path.join(
-        CHECKPOINTS_FOLDER_PATH, TIMELINES_FOLDER_NAME)
 
     if not os.path.exists(TIMELINES_FOLDER_PATH):
         os.mkdir(TIMELINES_FOLDER_PATH)
 
-    SAVES_FOLDER_NAME = "saves"
-    SAVES_FOLDER_PATH = os.path.join(
-        CHECKPOINTS_FOLDER_PATH, SAVES_FOLDER_NAME)
-
     if not os.path.exists(SAVES_FOLDER_PATH):
         os.mkdir(SAVES_FOLDER_PATH)
 
-    # dentro de timelines, gerar primeira timeline "original"
-    ORIGINAL_TIMELINE_NAME = "original.json"
-    ORIGINAL_TIMELINE_PATH = os.path.join(
-        TIMELINES_FOLDER_PATH, ORIGINAL_TIMELINE_NAME)
-
     if not os.path.exists(ORIGINAL_TIMELINE_PATH):
-
+        # generate first checkpoint
         checkpoint_id = uuid.uuid4().hex
 
-        # gerar primeira copia
         source_file = f"{filepath}{filename}"
         destination_file = f"{SAVES_FOLDER_PATH}/{checkpoint_id}.blend"
         shutil.copy(source_file, destination_file)
