@@ -1,4 +1,8 @@
 import os
+import json
+import uuid
+import shutil
+
 from datetime import datetime, timezone, timedelta
 
 import pygit2 as git
@@ -154,29 +158,50 @@ def getRepo(filepath):
 
 
 def initialRepoSetup(filepath, filename):
-    # Make .gitignore file
-    makeGitIgnore(filepath)
+    # gerar uma pasta ".checkpoints"
+    CHECKPOINTS_FOLDER_NAME = ".checkpoints"
+    CHECKPOINTS_FOLDER_PATH = os.path.join(
+        filepath, CHECKPOINTS_FOLDER_NAME)
 
-    # Init git repo
-    repo = git.init_repository(filepath)
+    if not os.path.exists(CHECKPOINTS_FOLDER_PATH):
+        os.mkdir(CHECKPOINTS_FOLDER_PATH)
 
-    # Get global/default git config if .gitconfig or .git/config exists
-    try:
-        defaultConfig = git.Config.get_global_config()
-    except OSError:
-        defaultConfig = {}
+    # gerar sub-pastas para estrutura de versionamento
+    TIMELINES_FOLDER_NAME = "timelines"
+    TIMELINES_FOLDER_PATH = os.path.join(
+        CHECKPOINTS_FOLDER_PATH, TIMELINES_FOLDER_NAME)
 
-    username = (defaultConfig["user.name"]
-                if "user.name" in defaultConfig else "Blender Version Control")
+    if not os.path.exists(TIMELINES_FOLDER_PATH):
+        os.mkdir(TIMELINES_FOLDER_PATH)
 
-    email = (defaultConfig["user.email"]
-             if "user.email" in defaultConfig else "blenderversioncontrol.415@gmail.com")
+    SAVES_FOLDER_NAME = "saves"
+    SAVES_FOLDER_PATH = os.path.join(
+        CHECKPOINTS_FOLDER_PATH, SAVES_FOLDER_NAME)
 
-    # Configure git repo
-    configUser(repo, username, email)
+    if not os.path.exists(SAVES_FOLDER_PATH):
+        os.mkdir(SAVES_FOLDER_PATH)
 
-    # Initial commit
-    commit(repo, f"{filename}.blend - Initial checkpoint")
+    # dentro de timelines, gerar primeira timeline "original"
+    ORIGINAL_TIMELINE_NAME = "original.json"
+    ORIGINAL_TIMELINE_PATH = os.path.join(
+        TIMELINES_FOLDER_PATH, ORIGINAL_TIMELINE_NAME)
+
+    if not os.path.exists(ORIGINAL_TIMELINE_PATH):
+
+        checkpoint_id = uuid.uuid4().hex
+
+        # gerar primeira copia
+        source_file = f"{filepath}{filename}"
+        destination_file = f"{SAVES_FOLDER_PATH}/{checkpoint_id}.blend"
+        shutil.copy(source_file, destination_file)
+
+        with open(ORIGINAL_TIMELINE_PATH, "w") as file:
+            first_checkpoint = [{
+                "id": checkpoint_id,
+                "message": f"{filename} - Initial checkpoint",
+                "date": str(datetime.now(timezone.utc))
+            }]
+            json.dump(first_checkpoint, file)
 
 
 def removeCommitFromHistory(repo, commit_id):

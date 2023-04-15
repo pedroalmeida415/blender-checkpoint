@@ -151,25 +151,20 @@ class StartVersionControl(bpy.types.Operator):
 
     def execute(self, context):
         filepath = bpy.path.abspath("//")
-        filename = bpy.path.basename(bpy.data.filepath).split(".")[0]
+        filename = bpy.path.basename(bpy.data.filepath)
 
         git = context.window_manager.git
 
         if git.isRepoInitialized:
             return {'CANCELLED'}
 
-        try:
-            gitHelpers.getRepo(filepath)
+        # Setup repo if not initiated yet
+        gitHelpers.initialRepoSetup(filepath, filename)
 
-            return {'CANCELLED'}
-        except GitError:
-            # Setup repo if not initiated yet
-            gitHelpers.initialRepoSetup(filepath, filename)
+        git.isRepoInitialized = True
 
-            git.isRepoInitialized = True
-
-            self.report({"INFO"}, "Version control initialized!")
-            return {'FINISHED'}
+        self.report({"INFO"}, "Version control initialized!")
+        return {'FINISHED'}
 
 
 class GitPanel(GitPanelMixin, Panel):
