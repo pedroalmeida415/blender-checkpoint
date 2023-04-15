@@ -11,26 +11,29 @@ from pygit2._pygit2 import GitError, GIT_SORT_TIME, GIT_SORT_REVERSE, GIT_RESET_
 # Format: Fri Sep  2 19:36:07 2022 +0530
 CP_TIME_FORMAT = "%c %z"
 
-CHECKPOINTS_FOLDER_NAME = ".checkpoints"
-TIMELINES_FOLDER_NAME = "timelines"
-SAVES_FOLDER_NAME = "saves"
-ORIGINAL_TIMELINE_NAME = "original.json"
+CHECKPOINTS = ".checkpoints"
+TIMELINES = "timelines"
+SAVES = "saves"
+PERSISTED_STATE = "_persisted_state.json"
 
 
-def get_data_folders_path(filepath):
-    CHECKPOINTS_FOLDER_PATH = os.path.join(
-        filepath, CHECKPOINTS_FOLDER_NAME)
+def _get_paths(filepath):
+    _checkpoints_folder_path = os.path.join(
+        filepath, CHECKPOINTS)
 
-    TIMELINES_FOLDER_PATH = os.path.join(
-        CHECKPOINTS_FOLDER_PATH, TIMELINES_FOLDER_NAME)
+    _timelines_folder_path = os.path.join(
+        _checkpoints_folder_path, TIMELINES)
 
-    SAVES_FOLDER_PATH = os.path.join(
-        CHECKPOINTS_FOLDER_PATH, SAVES_FOLDER_NAME)
+    _saves_folder_path = os.path.join(
+        _checkpoints_folder_path, SAVES)
 
-    ORIGINAL_TIMELINE_PATH = os.path.join(
-        TIMELINES_FOLDER_PATH, ORIGINAL_TIMELINE_NAME)
+    _persisted_state_path = os.path.join(
+        _checkpoints_folder_path, PERSISTED_STATE)
 
-    return CHECKPOINTS_FOLDER_PATH, TIMELINES_FOLDER_PATH, SAVES_FOLDER_PATH, ORIGINAL_TIMELINE_PATH
+    return {CHECKPOINTS: _checkpoints_folder_path,
+            TIMELINES: _timelines_folder_path,
+            SAVES: _saves_folder_path,
+            PERSISTED_STATE: _persisted_state_path}
 
 
 def getLastModifiedStr(date):
@@ -179,34 +182,50 @@ def getRepo(filepath):
 
 
 def initialize_version_control(filepath, filename):
-    CHECKPOINTS_FOLDER_PATH, TIMELINES_FOLDER_PATH, SAVES_FOLDER_PATH, ORIGINAL_TIMELINE_PATH = get_data_folders_path(
-        filepath)
+    _paths = _get_paths(filepath)
+
+    _checkpoints = _paths[CHECKPOINTS]
+    _timelines = _paths[TIMELINES]
+    _saves = _paths[SAVES]
+    _persisted_state = _paths[PERSISTED_STATE]
 
     # generate folder structure
-    if not os.path.exists(CHECKPOINTS_FOLDER_PATH):
-        os.mkdir(CHECKPOINTS_FOLDER_PATH)
+    if not os.path.exists(_checkpoints):
+        os.mkdir(_checkpoints)
 
-    if not os.path.exists(TIMELINES_FOLDER_PATH):
-        os.mkdir(TIMELINES_FOLDER_PATH)
+    if not os.path.exists(_timelines):
+        os.mkdir(_timelines)
 
-    if not os.path.exists(SAVES_FOLDER_PATH):
-        os.mkdir(SAVES_FOLDER_PATH)
+    if not os.path.exists(_saves):
+        os.mkdir(_saves)
 
-    if not os.path.exists(ORIGINAL_TIMELINE_PATH):
+    _original_tl_name = "original.json"
+    _original_tl_path = os.path.join(_timelines, _original_tl_name)
+    if not os.path.exists(_original_tl_path):
         # generate first checkpoint
-        checkpoint_id = uuid.uuid4().hex
+        _initial_checkpoint_id = uuid.uuid4().hex
 
         source_file = f"{filepath}{filename}"
-        destination_file = f"{SAVES_FOLDER_PATH}/{checkpoint_id}.blend"
+        destination_file = f"{_saves}/{_initial_checkpoint_id}.blend"
         shutil.copy(source_file, destination_file)
 
-        with open(ORIGINAL_TIMELINE_PATH, "w") as file:
+        with open(_original_tl_path, "w") as file:
             first_checkpoint = [{
-                "id": checkpoint_id,
+                "id": _initial_checkpoint_id,
                 "description": f"{filename} - Initial checkpoint",
                 "date": str(datetime.now(timezone.utc))
             }]
             json.dump(first_checkpoint, file)
+
+    if not os.path.exists(_persisted_state):
+        # generate initial state
+        with open(_persisted_state, "w") as file:
+            initial_state = [{
+                "active_timeline": _original_tl_name,
+                "active_commit": _initial_checkpoint_id,
+                "disk_usage": 0
+            }]
+            json.dump(initial_state, file)
 
 
 def removeCommitFromHistory(repo, commit_id):
@@ -255,3 +274,9 @@ def removeCommitFromHistory(repo, commit_id):
 
     repo.reset(repo.head.target, GIT_RESET_HARD)
     repo.branches[old_branch_name].delete()
+
+
+def listall_timelines(filepath):
+    _paths = _get_paths(
+        filepath)
+    return os.listdir(_paths[TIMELINES])
