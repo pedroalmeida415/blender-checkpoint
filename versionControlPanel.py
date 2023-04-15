@@ -7,11 +7,8 @@ from bpy.types import Panel, PropertyGroup, UIList
 from bpy.props import (CollectionProperty, EnumProperty, IntProperty,
                        PointerProperty, StringProperty, BoolProperty)
 
-from pygit2._pygit2 import GitError
-from pygit2 import GIT_STATUS_INDEX_MODIFIED
-
 # Local imports implemented to support Blender refreshes
-modulesNames = ("gitHelpers", "sourceControl")
+modulesNames = ("helpers", "sourceControl")
 for module in modulesNames:
     if module in sys.modules:
         importlib.reload(sys.modules[module])
@@ -20,174 +17,170 @@ for module in modulesNames:
         globals()[module] = importlib.import_module(f"{parent}.{module}")
 
 
-BRANCH_ICON = 'WINDOW'
-COMMENT_ICON = 'KEYFRAME'
-ACTIVE_COMMENT_ICON = 'KEYTYPE_KEYFRAME_VEC'
-SWITCH_ICON = 'DECORATE_OVERRIDE'
-NEW_BRANCH_ICON = 'ADD'
-EDIT_BRANCH_ICON = 'OUTLINER_DATA_GP_LAYER' if (
+TIMELINE_ICON = 'WINDOW'
+CHECKPOINT_ICON = 'KEYFRAME'
+ACTIVE_CHECKPOINT_ICON = 'KEYTYPE_KEYFRAME_VEC'
+LOAD_CHECKPOINT_ICON = 'DECORATE_OVERRIDE'
+NEW_TIMELINE_ICON = 'ADD'
+DELETE_TIMELINE_ICON = "REMOVE"
+EDIT_TIMELINE_ICON = 'OUTLINER_DATA_GP_LAYER' if (
     3, 0, 0) > bpy.app.version else 'CURRENT_FILE'
 CLEAR_ICON = 'X'
-BACKUP_SIZE_ICONS = ('IMPORT', 'FILE_BLEND')
+CHECKPOINTS_DISK_USAGE_ICONS = ('IMPORT', 'FILE_BLEND')
+PROTECTED_ICON = "FAKE_USER_ON"
+DELETE_ICON = "TRASH"
 
 
-class GitCommitsListItem(PropertyGroup):
-    id: StringProperty(description="Unique ID of backup")
-    name: StringProperty(description="Name of user")
-    email: StringProperty(description="Email of user")
-    date: StringProperty(description="Date of backup")
-    message: StringProperty(description="Backup message")
+class CheckpointsListItem(PropertyGroup):
+    id: StringProperty(description="Unique ID of checkpoint")
+    date: StringProperty(description="Date of checkpoint")
+    description: StringProperty(description="Checkpoint description")
 
 # def errorPopupDraw(self, context):
 #     self.layout.label(text="You have done something you shouldn't do!")
 # bpy.context.window_manager.popup_menu(errorPopupDraw, title="Error", icon='ERROR')
 
 
-class GitPanelData(PropertyGroup):
-    def getBranches(self, context):
+class CheckpointsPanelData(PropertyGroup):
+    def getTimelines(self, context):
         filepath = bpy.path.abspath("//")
-        try:
-            repo = gitHelpers.getRepo(filepath)
-        except GitError:
-            return []
 
-        branches = repo.listall_branches()
-        activeBranch = repo.head.shorthand
+        timelines = helpers.listall_timelines(filepath)
+        # TODO think about how to get current active timeline
+        activeTimeline = repo.head.shorthand
 
-        branchList = []
-        for index, branch in enumerate(branches):
-            if branch == activeBranch:
+        timelinesList = []
+        for index, timeline in enumerate(timelines):
+            if timeline == activeTimeline:
                 index = -1
-            branchList.append((branch, branch, f"Timeline: '{branch}'",
-                               BRANCH_ICON, index))
+            timelinesList.append((timeline, timeline, f"Timeline: '{timeline}'",
+                                  TIMELINE_ICON, index))
 
-        return branchList
+        return timelinesList
 
-    def setActiveBranch(self, context):
+    def setActiveTimeline(self, context):
         filepath = bpy.path.abspath("//")
 
-        try:
-            repo = gitHelpers.getRepo(filepath)
-        except GitError:
+        # Ensure value is not active timeline
+        value = context.window_manager.cps.timelines
+        # TODO think about how to get current active timeline
+        activeTimeline = repo.head.shorthand
+
+        if value == activeTimeline:
             return
 
-        # Ensure value is not active branch
-        value = context.window_manager.git.branches
-        activeBranch = repo.head.shorthand
-        if value == activeBranch:
+        # TODO Get timeline fullname
+        timeline = repo.lookup_branch(value)
+        if not timeline:
             return
 
-        # Get branch fullname
-        branch = repo.lookup_branch(value)
-        if not branch:
-            return
-
-        # InvalidSpecError: cannot locate local branch '', GitError: checkout conflict
-
-        # Checkout branch
-        ref = repo.lookup_reference(branch.name)
+        # TODO Checkout timeline
+        ref = repo.lookup_reference(timeline.name)
         repo.checkout(ref)
 
-        repo.config["user.currentCommit"] = str(repo.head.target)
+        # TODO probably should have a file inside .checkpoints that refers to the current state of the addon "_checkpoints_state.json"
+        # that will serve as what was being done through Git config
+        # repo.config["user.currentCommit"] = str(repo.head.target)
 
         # Load the reverted file
         bpy.ops.wm.revert_mainfile()
 
-    branches: EnumProperty(
+    timelines: EnumProperty(
         name="Timeline",
-        description="Current Timeline",
-        items=getBranches,
+        description="Current timeline",
+        items=getTimelines,
         default=-1,
         options={'ANIMATABLE'},
-        update=setActiveBranch
+        update=setActiveTimeline
     )
 
-    newBranchName: StringProperty(
+    newTimelineName: StringProperty(
         name="Name",
         options={'TEXTEDIT_UPDATE'},
-        description="New Timeline name. (will be slugified)"
+        description="New timeline name (will be slugified)"
     )
 
-    commitMessage: StringProperty(
+    checkpointDescription: StringProperty(
         name="",
         options={'TEXTEDIT_UPDATE'},
         description="A short description of the changes made"
     )
 
-    commitsList: CollectionProperty(type=GitCommitsListItem)
+    checkpoints: CollectionProperty(type=CheckpointsListItem)
 
-    commitsListIndex: IntProperty(default=0)
+    selectedListIndex: IntProperty(default=0)
 
-    currentCommitId: StringProperty(
+    activeCheckpointId: StringProperty(
         name="",
-        description="Current active backup ID"
+        description="Current/last active checkpoint ID"
     )
 
-    backupSize: IntProperty(default=0)
+    diskUsage: IntProperty(default=0)
 
-    isRepoInitialized: BoolProperty(
+    isInitialized: BoolProperty(
         name="Version Control Status",
         default=False,
     )
 
-    squash_commits: BoolProperty(
+    new_tl_keep_history: BoolProperty(
         name=" Keep history",
         default=True,
-        description="Carry previous backups over to the new timeline"
+        description="Carry previous checkpoints over to the new timeline"
     )
 
 
-class GitPanelMixin:
+class CheckpointsPanelMixin:
     bl_space_type = 'PROPERTIES'
     bl_region_type = 'WINDOW'
     bl_category = 'Scene'
 
 
+# Mover para "Source control"
 class StartVersionControl(bpy.types.Operator):
-    '''Initialize version control on the current folder'''
+    '''Initialize version control on the current project'''
 
-    bl_idname = "git.start_version_control"
+    bl_idname = "cps.start_version_control"
     bl_label = "Start Version Control"
 
     def execute(self, context):
         filepath = bpy.path.abspath("//")
         filename = bpy.path.basename(bpy.data.filepath)
 
-        git = context.window_manager.git
+        cps = context.window_manager.cps
 
-        if git.isRepoInitialized:
+        if cps.isInitialized:
             return {'CANCELLED'}
 
-        # Setup repo if not initiated yet
-        gitHelpers.initialRepoSetup(filepath, filename)
+        helpers.initialize_version_control(filepath, filename)
 
-        git.isRepoInitialized = True
+        cps.isInitialized = True
 
-        self.report({"INFO"}, "Version control initialized!")
+        self.report({"INFO"}, "Checkpoints initialized!")
         return {'FINISHED'}
 
 
-class GitPanel(GitPanelMixin, Panel):
-    bl_idname = "GIT_PT_panel"
-    bl_label = "Version Control"
+class CheckpointsPanel(CheckpointsPanelMixin, Panel):
+    bl_idname = "CPS_PT_checkpoints"
+    bl_label = "Checkpoints"
 
     def draw(self, context):
         filepath = bpy.path.abspath("//")
-        git = context.window_manager.git
+        cps_context = context.window_manager.cps
 
-        if git.isRepoInitialized:
+        if cps_context.isInitialized:
             pass
 
+        # TODO ajustart lógica
         try:
-            gitHelpers.getRepo(filepath)
-            git.isRepoInitialized = True
+            helpers.getRepo(filepath)
+            cps_context.isInitialized = True
             pass
         except GitError:
             layout = self.layout
 
             row = layout.row()
             row.operator(StartVersionControl.bl_idname,
-                         text="Start Version Control", icon="WINDOW")
+                         text="Start", icon=TIMELINE_ICON)
             if not bpy.data.is_saved:
                 row.enabled = False
                 row = layout.row()
@@ -195,92 +188,88 @@ class GitPanel(GitPanelMixin, Panel):
                 row.label(text="You must save your project first")
 
 
-class GitCommitsList(UIList):
-    """List of backups of the current project."""
+class CheckpointsList(UIList):
+    """List of checkpoints of the current project."""
 
     def draw_item(self, context, layout, data, item, icon, active_data,
                   active_propname, index):
 
         split = layout.split(factor=0.8)
 
-        currentCommitId = context.window_manager.git.currentCommitId
+        activeCheckpointId = context.window_manager.cps.activeCheckpointId
 
-        if currentCommitId:
-            isActiveCommit = item.id == currentCommitId
-        else:
-            isActiveCommit = True if index == 0 else False
-
-        isActiveCommit = item.id == currentCommitId if currentCommitId else index == 0
+        isActiveCommit = item.id == activeCheckpointId if activeCheckpointId else index == 0
 
         col1 = split.column()
-        col1.label(text=item.message,
-                   icon=ACTIVE_COMMENT_ICON if isActiveCommit else COMMENT_ICON)
+        col1.label(text=item.description,
+                   icon=ACTIVE_CHECKPOINT_ICON if isActiveCommit else CHECKPOINT_ICON)
 
         # Get last mofied string
-        commitTime = datetime.strptime(item.date, gitHelpers.GIT_TIME_FORMAT)
-        lastModified = gitHelpers.getLastModifiedStr(commitTime)
+        commitTime = datetime.strptime(item.date, helpers.CP_TIME_FORMAT)
+        lastModified = helpers.getLastModifiedStr(commitTime)
 
         col2 = split.column()
         col2.label(text=lastModified)
 
 
-class GitNewBranchPanel(GitPanelMixin, Panel):
+class NewTimelinePanel(CheckpointsPanelMixin, Panel):
     """Add new timeline"""
 
-    bl_idname = "GIT_PT_new_branch_panel"
+    bl_idname = "CPS_PT_new_timeline_panel"
     bl_label = ""
     bl_options = {'INSTANCED'}
 
     def draw(self, context):
-        git = context.window_manager.git
+        cps_context = context.window_manager.cps
 
         layout = self.layout
-        layout.ui_units_x = 11
+        layout.ui_units_x = 11.5
 
-        layout.label(text="New Timeline from selected backup",
-                     icon=BRANCH_ICON)
+        layout.label(text="New Timeline from selected checkpoint",
+                     icon=TIMELINE_ICON)
 
-        layout.prop(git, "newBranchName")
-        name = git.newBranchName
+        layout.prop(cps_context, "newTimelineName")
+        name = cps_context.newTimelineName
 
         row = layout.row()
-        row.prop(git, "squash_commits")
-        squash_commits = git.squash_commits
+        row.prop(cps_context, "new_tl_keep_history")
+        new_tl_keep_history = cps_context.new_tl_keep_history
 
         row = layout.row()
         if not name:
             row.enabled = False
 
-        branch = row.operator(sourceControl.GitNewBranch.bl_idname,
+        tl_ops = row.operator(sourceControl.GitNewBranch.bl_idname,
                               text="Create Timeline")
-        branch.name = name
-        branch.squash_commits = squash_commits
+        tl_ops.name = name
+        tl_ops.new_tl_keep_history = new_tl_keep_history
 
 
-class GitDeleteBranchPanel(GitPanelMixin, Panel):
+class DeleteTimelinePanel(CheckpointsPanelMixin, Panel):
     """Deletes current Timeline"""
 
-    bl_idname = "GIT_PT_delete_branch_panel"
+    bl_idname = "CPS_PT_delete_timeline_panel"
     bl_label = ""
     bl_options = {'INSTANCED'}
 
     def draw(self, context):
         filepath = bpy.path.abspath("//")
-        # Get repo
+        # TODO refatorar lógica
         try:
-            repo = gitHelpers.getRepo(filepath)
+            repo = helpers.getRepo(filepath)
         except GitError:
             return {'CANCELLED'}
 
-        is_master_branch = repo.head.shorthand == "master"
+        # TODO refatorar lógica
+        is_original_timeline = repo.head.shorthand == "original"
 
         layout = self.layout
 
-        if is_master_branch:
+        if is_original_timeline:
             layout.ui_units_x = 11.5
             row = layout.row()
             row.label(
-                text='You cannot delete the master Timeline', icon="FAKE_USER_ON")
+                text='You cannot delete the original timeline', icon=PROTECTED_ICON)
         else:
             layout.ui_units_x = 16.5
             layout.separator()
@@ -293,58 +282,61 @@ class GitDeleteBranchPanel(GitPanelMixin, Panel):
 
             row = layout.row()
             row.label(
-                text='This will delete the current timeline. There is no going back.', icon="TRASH")
+                text='This will delete the current timeline. There is no going back.', icon=DELETE_ICON)
 
             row = layout.row()
+            # TODO refatorar operador
             row.operator(sourceControl.GitDeleteBranch.bl_idname,
                          text="Delete Timeline")
 
 
-class GitEditBranchPanel(GitPanelMixin, Panel):
-    """Edit Timeline name"""
+class EditTimelinePanel(CheckpointsPanelMixin, Panel):
+    """Edit timeline name"""
 
-    bl_idname = "GIT_PT_edit_branch_panel"
+    bl_idname = "CPS_PT_edit_timeline_panel"
     bl_label = ""
     bl_options = {'INSTANCED'}
 
     def draw(self, context):
         filepath = bpy.path.abspath("//")
-        # Get repo
+        # TODO
         try:
-            repo = gitHelpers.getRepo(filepath)
+            repo = helpers.getRepo(filepath)
         except GitError:
             return {'CANCELLED'}
 
-        is_master_branch = repo.head.shorthand == "master"
+        # TODO
+        is_original_timeline = repo.head.shorthand == "original"
 
         layout = self.layout
 
-        if is_master_branch:
-            layout.ui_units_x = 11
+        if is_original_timeline:
+            layout.ui_units_x = 11.5
             row = layout.row()
             row.label(
-                text='You cannot rename master Timeline', icon="FAKE_USER_ON")
+                text='You cannot edit the original timeline', icon=PROTECTED_ICON)
         else:
-            git = context.window_manager.git
+            cps_context = context.window_manager.cps
 
-            layout.label(text="Edit Timeline name", icon=BRANCH_ICON)
+            layout.label(text="Edit Timeline name", icon=TIMELINE_ICON)
 
-            layout.prop(git, "newBranchName")
-            name = git.newBranchName
+            layout.prop(cps_context, "newTimelineName")
+            name = cps_context.newTimelineName
 
             row = layout.row()
             if not name:
                 row.enabled = False
 
-            branch = row.operator(sourceControl.GitEditBranch.bl_idname,
-                                  text="Rename")
-            branch.name = name
+            # TODO
+            operator = row.operator(sourceControl.GitEditBranch.bl_idname,
+                                    text="Rename")
+            operator.name = name
 
 
-class SwitchBranchErrorTooltip(GitPanelMixin, Panel):
-    """You must save a backup of your changes before switching timelines."""
+class SwitchTimelineErrorTooltip(CheckpointsPanelMixin, Panel):
+    """You must save a checkpoint of your changes before switching timelines."""
 
-    bl_idname = "GIT_PT_switch_branch_error_panel"
+    bl_idname = "CPS_PT_switch_timeline_error_panel"
     bl_label = ""
     bl_options = {'INSTANCED'}
 
@@ -356,86 +348,88 @@ class SwitchBranchErrorTooltip(GitPanelMixin, Panel):
         row.label(text=self.bl_description)
 
 
-class GitSubPanel1(GitPanelMixin, Panel):
-    bl_idname = "GIT_PT_sub_panel_1"
-    bl_parent_id = GitPanel.bl_idname
+class SubPanelList(CheckpointsPanelMixin, Panel):
+    bl_idname = "CPS_PT_sub_panel_list"
+    bl_parent_id = CheckpointsPanel.bl_idname
     bl_label = ""
     bl_options = {'DEFAULT_CLOSED'}
 
     @classmethod
     def poll(cls, context):
-        return context.window_manager.git.isRepoInitialized
+        return context.window_manager.cps.isInitialized
 
     def draw_header(self, context):
         filepath = bpy.path.abspath("//")
-        filename = bpy.path.basename(bpy.data.filepath).split(".")[0]
+        filename = bpy.path.basename(bpy.data.filepath)
 
+        # TODO
         try:
-            repo = gitHelpers.getRepo(filepath)
+            repo = helpers.getRepo(filepath)
         except GitError:
             return
 
         layout = self.layout
 
         row = layout.row()
-        row.prop(context.window_manager.git, "branches")
+        row.prop(context.window_manager.cps, "timelines")
 
         row_button = layout.row(align=True)
         row_button.scale_x = 0.8
 
         isFileModified = str(
-            GIT_STATUS_INDEX_MODIFIED) in str(repo.status_file(f"{filename}.blend"))
+            GIT_STATUS_INDEX_MODIFIED) in str(repo.status_file(f"{filename}"))
 
         if isFileModified:
             row.enabled = False
             row_button.popover(
-                SwitchBranchErrorTooltip.bl_idname, icon="ERROR")
+                SwitchTimelineErrorTooltip.bl_idname, icon="ERROR")
         else:
-            row_button.popover(GitNewBranchPanel.bl_idname,
-                               icon=NEW_BRANCH_ICON)
-            row_button.popover(GitDeleteBranchPanel.bl_idname,
-                               icon="REMOVE")
-            row_button.popover(GitEditBranchPanel.bl_idname,
-                               icon=EDIT_BRANCH_ICON)
+            row_button.popover(NewTimelinePanel.bl_idname,
+                               icon=NEW_TIMELINE_ICON)
+            row_button.popover(DeleteTimelinePanel.bl_idname,
+                               icon=DELETE_TIMELINE_ICON)
+            row_button.popover(EditTimelinePanel.bl_idname,
+                               icon=EDIT_TIMELINE_ICON)
 
     def draw(self, context):
         filepath = bpy.path.abspath("//")
-        filename = bpy.path.basename(bpy.data.filepath).split(".")[0]
+        filename = bpy.path.basename(bpy.data.filepath)
 
-        git_context = context.window_manager.git
+        cps_context = context.window_manager.cps
 
         layout = self.layout
 
-        # List of Commits
+        # List of Checkpoints
         row = layout.row()
         row.template_list(
-            listtype_name="GitCommitsList",
+            listtype_name="CheckpointsList",
             # "" takes the name of the class used to define the UIList
             list_id="",
-            dataptr=git_context,
-            propname="commitsList",
-            active_dataptr=git_context,
-            active_propname="commitsListIndex",
+            dataptr=cps_context,
+            propname="checkpoints",
+            active_dataptr=cps_context,
+            active_propname="selectedListIndex",
             item_dyntip_propname="message",
             sort_lock=True,
             rows=5,
             maxrows=10
         )
 
-        if git_context.commitsList:
+        if cps_context.checkpoints:
+            # TODO
             try:
-                repo = gitHelpers.getRepo(filepath)
+                repo = helpers.getRepo(filepath)
             except GitError:
                 return
 
-            selectedCommit = repo.revparse_single(
-                f'HEAD~{git_context.commitsListIndex}')
+            selectedCheckpoint = repo.revparse_single(
+                f'HEAD~{cps_context.selectedListIndex}')
 
-            isSelectedCommitInitial = selectedCommit.hex == git_context.commitsList[-1]["id"]
+            isSelectedCommitInitial = selectedCheckpoint.hex == cps_context.checkpoints[-1]["id"]
 
-            isSelectedCommitCurrent = selectedCommit.hex == git_context.currentCommitId
+            isSelectedCommitCurrent = selectedCheckpoint.hex == cps_context.activeCheckpointId
 
-            isActionButtonsEnabled = not isSelectedCommitCurrent if git_context.currentCommitId else git_context.commitsListIndex != 0
+            isActionButtonsEnabled = not isSelectedCommitCurrent if cps_context.activeCheckpointId else cps_context.selectedListIndex != 0
 
             isBlenderDirty = bpy.data.is_dirty
 
@@ -453,15 +447,17 @@ class GitSubPanel1(GitPanelMixin, Panel):
 
             swtichCol = row.column()
             swtichCol.enabled = isActionButtonsEnabled
+            # TODO Add Edit and Export methods
+            # TODO change icon "export" of add method
             switchOps = swtichCol.operator(sourceControl.GitRevertToCommit.bl_idname,
-                                           text="Restore", icon="EXPORT")
-            switchOps.id = selectedCommit.hex
+                                           text="Load", icon="EXPORT")
+            switchOps.id = selectedCheckpoint.hex
 
             removeCol = row.column()
             removeCol.enabled = isActionButtonsEnabled and not isSelectedCommitInitial
             delOps = removeCol.operator(sourceControl.GitRemoveCommit.bl_idname,
-                                        text="Remove", icon="CANCEL")
-            delOps.id = selectedCommit.hex
+                                        text="Delete", icon=DELETE_ICON)
+            delOps.id = selectedCheckpoint.hex
 
             '''
             EDIT AND UNDO PREVIOUS COMMIT WIP
@@ -472,58 +468,57 @@ class GitSubPanel1(GitPanelMixin, Panel):
             # swtichCol.enabled = isActionButtonsEnabled
             # switchOps = swtichCol.operator(sourceControl.GitRevertToCommit.bl_idname,
             #                                text="Undo last", icon="LOOP_BACK")
-            # switchOps.id = selectedCommit.hex
+            # switchOps.id = selectedCheckpoint.hex
 
             # removeCol = row.column()
             # removeCol.enabled = isActionButtonsEnabled and not isSelectedCommitInitial
             # delOps = removeCol.operator(sourceControl.GitRemoveCommit.bl_idname,
             #                             text="Edit", icon="CURRENT_FILE")
-            # delOps.id = selectedCommit.hex
+            # delOps.id = selectedCheckpoint.hex
 
-        # Add commits to list
-        bpy.app.timers.register(addCommitsToList)
+        bpy.app.timers.register(addCheckpointsToList)
 
 
-def addCommitsToList():
-    """Add commits to list"""
+def addCheckpointsToList():
+    """Add checkpoints to list"""
 
-    git_context = bpy.context.window_manager.git
+    cps_context = bpy.context.window_manager.cps
 
     # Get list
-    commitsList = git_context.commitsList
+    checkpoints = cps_context.checkpoints
 
     # Clear list
-    commitsList.clear()
+    checkpoints.clear()
 
-    # Get commits
     filepath = bpy.path.abspath("//")
+    # TODO
     try:
-        repo = gitHelpers.getRepo(filepath)
+        repo = helpers.getRepo(filepath)
     except GitError:
         return
 
-    git_context.currentCommitId = repo.config["user.currentCommit"]
-    git_context.backupSize = int(repo.config["user.backupSize"])
+    # TODO consume JSON state
+    cps_context.activeCheckpointId = repo.config["user.currentCommit"]
+    cps_context.diskUsage = int(
+        repo.config["user.diskUsage"])
 
-    commits = gitHelpers.getCommits(repo)
-    for commit in commits:
-        item = commitsList.add()
-        item.id = commit["id"]
-        item.name = commit["name"]
-        item.email = commit["email"]
-        item.date = commit["date"]
-        item.message = commit["message"]
+    cps = helpers.getCommits(repo)
+    for cp in cps:
+        item = cps.add()
+        item.id = cp["id"]
+        item.date = cp["date"]
+        item.description = cp["description"]
 
 
-class GitSubPanel2(GitPanelMixin, Panel):
-    bl_idname = "GIT_PT_sub_panel_2"
-    bl_parent_id = GitPanel.bl_idname
+class SubPanelAdd(CheckpointsPanelMixin, Panel):
+    bl_idname = "CPS_PT_sub_panel_add"
+    bl_parent_id = CheckpointsPanel.bl_idname
     bl_label = ""
     bl_options = {'HIDE_HEADER'}
 
     @classmethod
     def poll(cls, context):
-        return context.window_manager.git.isRepoInitialized
+        return context.window_manager.cps.isInitialized
 
     def draw(self, context):
         layout = self.layout
@@ -537,33 +532,34 @@ class GitSubPanel2(GitPanelMixin, Panel):
 
         col2 = row.column()
         col2.alignment = 'EXPAND'
-        col2.prop(context.window_manager.git, "commitMessage")
+        col2.prop(context.window_manager.cps, "checkpointDescription")
 
         row = layout.row()
         row.scale_y = 2
         commitCol = row.column()
 
-        message = context.window_manager.git.commitMessage
+        message = context.window_manager.cps.checkpointDescription
         if not message:
             commitCol.enabled = False
 
+        # TODO
         commit = commitCol.operator(sourceControl.GitCommit.bl_idname)
         commit.message = message
 
         layout.separator()
 
-        backupSize = context.window_manager.git.backupSize
+        diskUsage = context.window_manager.cps.diskUsage
 
         row = layout.row()
         col1 = row.column()
         subRow = col1.row(align=True)
-        subRow.label(text="", icon=BACKUP_SIZE_ICONS[0])
-        subRow.label(text="", icon=BACKUP_SIZE_ICONS[1])
+        subRow.label(text="", icon=CHECKPOINTS_DISK_USAGE_ICONS[0])
+        subRow.label(text="", icon=CHECKPOINTS_DISK_USAGE_ICONS[1])
 
         col2 = row.column()
         col2.alignment = 'RIGHT'
         col2.label(
-            text=f"Backups total size: {format_size(backupSize)}")
+            text=f"Checkpoints disk usage: {format_size(diskUsage)}")
 
 
 def format_size(size):
@@ -578,16 +574,16 @@ def format_size(size):
 
 
 """ORDER MATTERS"""
-classes = (GitCommitsListItem, GitPanelData, StartVersionControl, GitPanel,
-           GitCommitsList, GitNewBranchPanel, GitDeleteBranchPanel, GitEditBranchPanel, SwitchBranchErrorTooltip, GitSubPanel1,
-           GitSubPanel2)
+classes = (CheckpointsListItem, CheckpointsPanelData, StartVersionControl, CheckpointsPanel,
+           CheckpointsList, NewTimelinePanel, DeleteTimelinePanel, EditTimelinePanel, SwitchTimelineErrorTooltip, SubPanelList,
+           SubPanelAdd)
 
 
 def register():
     for cls in classes:
         bpy.utils.register_class(cls)
 
-    bpy.types.WindowManager.git = PointerProperty(type=GitPanelData)
+    bpy.types.WindowManager.cps = PointerProperty(type=CheckpointsPanelData)
 
 
 def unregister():

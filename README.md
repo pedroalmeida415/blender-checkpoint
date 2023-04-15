@@ -39,6 +39,7 @@ Blender backup uses [Git](https://git-scm.com/about) behind the curtains to keep
 - [ ] Action button to undo last save
 - [ ] Action button to edit selected save description
 - [ ] Make checkpoints accessable from file explorer (Also improving "remove checkpoint" action, enabling it to delete the checkpoint from disk)
+- [ ] Button to retrieve/"export" selected checkpoint, generating a folder outside ".checkpoints" with all the files inside the selected checkpoint, for easy retrieval of the desired checkpoint, without needing the user to manually enter the folder and figure out where it is the checkpoint he wants
 - [ ] Display preview image of the checkpoint
 - [ ] Checkpoints of individual objects inside the Scene
 - [ ] Editable file/folder(s) pattern that gets versioned along with project (instead of just "/textures" folder)

@@ -9,7 +9,7 @@ import pygit2 as git
 from pygit2._pygit2 import GitError, GIT_SORT_TIME, GIT_SORT_REVERSE, GIT_RESET_HARD
 
 # Format: Fri Sep  2 19:36:07 2022 +0530
-GIT_TIME_FORMAT = "%c %z"
+CP_TIME_FORMAT = "%c %z"
 
 CHECKPOINTS_FOLDER_NAME = ".checkpoints"
 TIMELINES_FOLDER_NAME = "timelines"
@@ -121,7 +121,7 @@ def getCommits(repo):
     for commit in repo.walk(last.id, GIT_SORT_TIME):
         timezoneInfo = timezone(timedelta(minutes=commit.author.offset))
         datetimeString = datetime.fromtimestamp(float(commit.author.time),
-                                                timezoneInfo).strftime(GIT_TIME_FORMAT)
+                                                timezoneInfo).strftime(CP_TIME_FORMAT)
 
         commitDict = {}
         commitDict["id"] = commit.hex
@@ -203,7 +203,7 @@ def initialize_version_control(filepath, filename):
         with open(ORIGINAL_TIMELINE_PATH, "w") as file:
             first_checkpoint = [{
                 "id": checkpoint_id,
-                "message": f"{filename} - Initial checkpoint",
+                "description": f"{filename} - Initial checkpoint",
                 "date": str(datetime.now(timezone.utc))
             }]
             json.dump(first_checkpoint, file)
