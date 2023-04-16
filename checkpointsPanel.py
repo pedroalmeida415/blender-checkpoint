@@ -134,12 +134,10 @@ class CheckpointsPanel(CheckpointsPanelMixin, Panel):
         if cps_context.isInitialized:
             pass
 
-        # TODO ajustart lógica
         try:
-            helpers.getRepo(filepath)
-            cps_context.isInitialized = True
+            helpers.get_state(filepath)
             pass
-        except GitError:
+        except FileNotFoundError:
             layout = self.layout
 
             row = layout.row()
