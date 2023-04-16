@@ -34,6 +34,7 @@ Blender backup uses [Git](https://git-scm.com/about) behind the curtains to keep
 
 ### Future changes roadmap
 
+- [ ] MAKE HELPER FUNCTION TO CHECK IF FILE NAME CHANGED AND WARN USER
 - [ ] Automatic incremental version counter with control for major versions (v1.0, v1.1, v1.2... v2.0, v2.1... etc)
 - [ ] Search for backups by description or version
 - [ ] Action button to undo last save

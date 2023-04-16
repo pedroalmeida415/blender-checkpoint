@@ -46,11 +46,11 @@ class CheckpointsPanelData(PropertyGroup):
         state = helpers.get_state(filepath)
         timelines = helpers.listall_timelines(filepath)
 
-        activeTimeline = state.get("active_timeline")
+        currentTimeline = state.get("current_timeline")
 
         timelinesList = []
         for index, timeline in enumerate(timelines):
-            if timeline == activeTimeline:
+            if timeline == currentTimeline:
                 index = -1
             timelinesList.append((timeline, timeline, f"Timeline: '{timeline}'",
                                   TIMELINE_ICON, index))
@@ -59,27 +59,16 @@ class CheckpointsPanelData(PropertyGroup):
 
     def setActiveTimeline(self, context):
         filepath = bpy.path.abspath("//")
+        state = helpers.get_state(filepath)
+        timelines = helpers.listall_timelines(filepath)
 
-        # Ensure value is not active timeline
-        value = context.window_manager.cps.timelines
-        # TODO think about how to get current active timeline
-        activeTimeline = repo.head.shorthand
+        selectedTimeline = context.window_manager.cps.timelines
+        currentTimeline = state.get("current_timeline")
 
-        if value == activeTimeline:
+        if not selectedTimeline in timelines or selectedTimeline == currentTimeline:
             return
 
-        # TODO Get timeline fullname
-        timeline = repo.lookup_branch(value)
-        if not timeline:
-            return
-
-        # TODO Checkout timeline
-        ref = repo.lookup_reference(timeline.name)
-        repo.checkout(ref)
-
-        # TODO probably should have a file inside .checkpoints that refers to the current state of the addon "_persisted_state.json"
-        # that will serve as what was being done through Git config
-        # repo.config["user.currentCommit"] = str(repo.head.target)
+        helpers.switch_timeline(filepath, selectedTimeline)
 
         # Load the reverted file
         bpy.ops.wm.revert_mainfile()

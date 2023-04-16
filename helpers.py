@@ -11,28 +11,28 @@ from pygit2._pygit2 import GitError, GIT_SORT_TIME, GIT_SORT_REVERSE, GIT_RESET_
 # Format: Fri Sep  2 19:36:07 2022 +0530
 CP_TIME_FORMAT = "%c %z"
 
-CHECKPOINTS = ".checkpoints"
+ROOT = ".checkpoints"
 TIMELINES = "timelines"
-SAVES = "saves"
+CHECKPOINTS = "saves"
 PERSISTED_STATE = "_persisted_state.json"
 
 
 def _get_paths(filepath):
-    _checkpoints_folder_path = os.path.join(
-        filepath, CHECKPOINTS)
+    _root_folder_path = os.path.join(
+        filepath, ROOT)
 
     _timelines_folder_path = os.path.join(
-        _checkpoints_folder_path, TIMELINES)
+        _root_folder_path, TIMELINES)
 
     _saves_folder_path = os.path.join(
-        _checkpoints_folder_path, SAVES)
+        _root_folder_path, CHECKPOINTS)
 
     _persisted_state_path = os.path.join(
-        _checkpoints_folder_path, PERSISTED_STATE)
+        _root_folder_path, PERSISTED_STATE)
 
-    return {CHECKPOINTS: _checkpoints_folder_path,
+    return {ROOT: _root_folder_path,
             TIMELINES: _timelines_folder_path,
-            SAVES: _saves_folder_path,
+            CHECKPOINTS: _saves_folder_path,
             PERSISTED_STATE: _persisted_state_path}
 
 
@@ -184,14 +184,14 @@ def getRepo(filepath):
 def initialize_version_control(filepath, filename):
     _paths = _get_paths(filepath)
 
-    _checkpoints = _paths[CHECKPOINTS]
+    _root = _paths[ROOT]
     _timelines = _paths[TIMELINES]
-    _saves = _paths[SAVES]
+    _saves = _paths[CHECKPOINTS]
     _persisted_state = _paths[PERSISTED_STATE]
 
     # generate folder structure
-    if not os.path.exists(_checkpoints):
-        os.mkdir(_checkpoints)
+    if not os.path.exists(_root):
+        os.mkdir(_root)
 
     if not os.path.exists(_timelines):
         os.mkdir(_timelines)
@@ -211,7 +211,7 @@ def initialize_version_control(filepath, filename):
 
         with open(_original_tl_path, "w") as file:
             first_checkpoint = [{
-                "id": _initial_checkpoint_id,
+                "id": f"{_initial_checkpoint_id}.blend",
                 "description": f"{filename} - Initial checkpoint",
                 "date": str(datetime.now(timezone.utc))
             }]
@@ -221,9 +221,10 @@ def initialize_version_control(filepath, filename):
         # generate initial state
         with open(_persisted_state, "w") as file:
             initial_state = [{
-                "active_timeline": _original_tl_name,
+                "current_timeline": _original_tl_name,
                 "active_commit": _initial_checkpoint_id,
-                "disk_usage": 0
+                "disk_usage": 0,
+                "filename": filename
             }]
             json.dump(initial_state, file)
 
@@ -281,6 +282,7 @@ def listall_timelines(filepath):
         filepath)
     return os.listdir(_paths[TIMELINES])
 
+
 def get_state(filepath):
     _paths = _get_paths(
         filepath)
@@ -288,3 +290,35 @@ def get_state(filepath):
     with open(_paths[PERSISTED_STATE]) as f:
         state = json.load(f)
         return state
+
+
+def set_state(filepath, prop, value):
+    _paths = _get_paths(filepath)
+    with open(_paths[PERSISTED_STATE], 'r+') as f:
+        state = json.load(f)
+
+        if prop in state:
+            state[prop] = value
+        else:
+            raise ValueError(f"Property '{prop}' not found in state")
+
+        f.seek(0)
+        json.dump(state, f, indent=4)
+        f.truncate()
+
+
+def switch_timeline(filepath, timeline):
+    _paths = _get_paths(filepath)
+    state = get_state(filepath)
+
+    set_state(filepath, "current_timeline", timeline)
+
+    timeline_path = os.path.join(_paths[TIMELINES], timeline)
+    with open(timeline_path) as f:
+        timeline_history = json.load(f)  # [{},{},{}...]
+        first_checkpoint = timeline_history[0]
+        checkpoint = os.path.join(_paths[CHECKPOINTS], first_checkpoint["id"])
+
+        filename = state["filename"]
+        destination_file = f"{filepath}/{filename}"
+        shutil.copy(checkpoint, destination_file)
