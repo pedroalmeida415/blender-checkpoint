@@ -31,6 +31,27 @@ def slugify(text):
     text = re.sub(r'[-\s\'"]+', '-', text)
     return text
 
+class StartVersionControl(bpy.types.Operator):
+    '''Initialize version control on the current project'''
+
+    bl_idname = "cps.start_version_control"
+    bl_label = "Start Version Control"
+
+    def execute(self, context):
+        filepath = bpy.path.abspath("//")
+        filename = bpy.path.basename(bpy.data.filepath)
+
+        cps = context.window_manager.cps
+
+        if cps.isInitialized:
+            return {'CANCELLED'}
+
+        helpers.initialize_version_control(filepath, filename)
+
+        cps.isInitialized = True
+
+        self.report({"INFO"}, "Checkpoints initialized!")
+        return {'FINISHED'}
 
 class GitNewBranch(Operator):
     """Create new Timeline from selected backup"""
@@ -334,7 +355,7 @@ class GitRemoveCommit(Operator):
         return {'FINISHED'}
 
 
-classes = (GitNewBranch, GitDeleteBranch, GitEditBranch,
+classes = (GitNewBranch, GitDeleteBranch, GitEditBranch, StartVersionControl,
            GitRevertToCommit, GitCommit, GitRemoveCommit)
 
 

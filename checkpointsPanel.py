@@ -123,30 +123,6 @@ class CheckpointsPanelMixin:
     bl_category = 'Scene'
 
 
-# Mover para "Source control"
-class StartVersionControl(bpy.types.Operator):
-    '''Initialize version control on the current project'''
-
-    bl_idname = "cps.start_version_control"
-    bl_label = "Start Version Control"
-
-    def execute(self, context):
-        filepath = bpy.path.abspath("//")
-        filename = bpy.path.basename(bpy.data.filepath)
-
-        cps = context.window_manager.cps
-
-        if cps.isInitialized:
-            return {'CANCELLED'}
-
-        helpers.initialize_version_control(filepath, filename)
-
-        cps.isInitialized = True
-
-        self.report({"INFO"}, "Checkpoints initialized!")
-        return {'FINISHED'}
-
-
 class CheckpointsPanel(CheckpointsPanelMixin, Panel):
     bl_idname = "CPS_PT_checkpoints"
     bl_label = "Checkpoints"
@@ -167,7 +143,7 @@ class CheckpointsPanel(CheckpointsPanelMixin, Panel):
             layout = self.layout
 
             row = layout.row()
-            row.operator(StartVersionControl.bl_idname,
+            row.operator(sourceControl.StartVersionControl.bl_idname,
                          text="Start", icon=TIMELINE_ICON)
             if not bpy.data.is_saved:
                 row.enabled = False
@@ -562,7 +538,7 @@ def format_size(size):
 
 
 """ORDER MATTERS"""
-classes = (CheckpointsListItem, CheckpointsPanelData, StartVersionControl, CheckpointsPanel,
+classes = (CheckpointsListItem, CheckpointsPanelData, CheckpointsPanel,
            CheckpointsList, NewTimelinePanel, DeleteTimelinePanel, EditTimelinePanel, SwitchTimelineErrorTooltip, SubPanelList,
            SubPanelAdd)
 
