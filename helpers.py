@@ -280,3 +280,11 @@ def listall_timelines(filepath):
     _paths = _get_paths(
         filepath)
     return os.listdir(_paths[TIMELINES])
+
+def get_state(filepath):
+    _paths = _get_paths(
+        filepath)
+
+    with open(_paths[PERSISTED_STATE]) as f:
+        state = json.load(f)
+        return state

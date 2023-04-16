@@ -20,10 +20,9 @@ for module in modulesNames:
 TIMELINE_ICON = 'WINDOW'
 CHECKPOINT_ICON = 'KEYFRAME'
 ACTIVE_CHECKPOINT_ICON = 'KEYTYPE_KEYFRAME_VEC'
-LOAD_CHECKPOINT_ICON = 'DECORATE_OVERRIDE'
-NEW_TIMELINE_ICON = 'ADD'
-DELETE_TIMELINE_ICON = "REMOVE"
-EDIT_TIMELINE_ICON = 'OUTLINER_DATA_GP_LAYER' if (
+LOAD_ICON = 'DECORATE_OVERRIDE'
+ADD_ICON = 'ADD'
+EDIT_ICON = 'OUTLINER_DATA_GP_LAYER' if (
     3, 0, 0) > bpy.app.version else 'CURRENT_FILE'
 CLEAR_ICON = 'X'
 CHECKPOINTS_DISK_USAGE_ICONS = ('IMPORT', 'FILE_BLEND')
@@ -44,10 +43,10 @@ class CheckpointsListItem(PropertyGroup):
 class CheckpointsPanelData(PropertyGroup):
     def getTimelines(self, context):
         filepath = bpy.path.abspath("//")
-
+        state = helpers.get_state(filepath)
         timelines = helpers.listall_timelines(filepath)
-        # TODO think about how to get current active timeline
-        activeTimeline = repo.head.shorthand
+
+        activeTimeline = state.get("active_timeline")
 
         timelinesList = []
         for index, timeline in enumerate(timelines):
@@ -78,7 +77,7 @@ class CheckpointsPanelData(PropertyGroup):
         ref = repo.lookup_reference(timeline.name)
         repo.checkout(ref)
 
-        # TODO probably should have a file inside .checkpoints that refers to the current state of the addon "_checkpoints_state.json"
+        # TODO probably should have a file inside .checkpoints that refers to the current state of the addon "_persisted_state.json"
         # that will serve as what was being done through Git config
         # repo.config["user.currentCommit"] = str(repo.head.target)
 
@@ -385,11 +384,11 @@ class SubPanelList(CheckpointsPanelMixin, Panel):
                 SwitchTimelineErrorTooltip.bl_idname, icon="ERROR")
         else:
             row_button.popover(NewTimelinePanel.bl_idname,
-                               icon=NEW_TIMELINE_ICON)
+                               icon=ADD_ICON)
             row_button.popover(DeleteTimelinePanel.bl_idname,
-                               icon=DELETE_TIMELINE_ICON)
+                               icon=DELETE_ICON)
             row_button.popover(EditTimelinePanel.bl_idname,
-                               icon=EDIT_TIMELINE_ICON)
+                               icon=EDIT_ICON)
 
     def draw(self, context):
         filepath = bpy.path.abspath("//")
