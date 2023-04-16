@@ -15,6 +15,7 @@ ROOT = ".checkpoints"
 TIMELINES = "timelines"
 CHECKPOINTS = "saves"
 PERSISTED_STATE = "_persisted_state.json"
+ORIGINAL_TL = "original.json"
 
 
 def _get_paths(filepath):
@@ -199,8 +200,7 @@ def initialize_version_control(filepath, filename):
     if not os.path.exists(_saves):
         os.mkdir(_saves)
 
-    _original_tl_name = "original.json"
-    _original_tl_path = os.path.join(_timelines, _original_tl_name)
+    _original_tl_path = os.path.join(_timelines, ORIGINAL_TL)
     if not os.path.exists(_original_tl_path):
         # generate first checkpoint
         _initial_checkpoint_id = uuid.uuid4().hex
@@ -221,8 +221,8 @@ def initialize_version_control(filepath, filename):
         # generate initial state
         with open(_persisted_state, "w") as file:
             initial_state = [{
-                "current_timeline": _original_tl_name,
-                "active_commit": _initial_checkpoint_id,
+                "current_timeline": ORIGINAL_TL,
+                "active_checkpoint": f"{_initial_checkpoint_id}.blend",
                 "disk_usage": 0,
                 "filename": filename
             }]
@@ -319,6 +319,24 @@ def switch_timeline(filepath, timeline):
         first_checkpoint = timeline_history[0]
         checkpoint = os.path.join(_paths[CHECKPOINTS], first_checkpoint["id"])
 
+        set_state(filepath, "active_checkpoint", first_checkpoint["id"])
+
         filename = state["filename"]
         destination_file = f"{filepath}/{filename}"
         shutil.copy(checkpoint, destination_file)
+
+
+def check_is_modified(filepath):
+    state = get_state(filepath)
+    _paths = _get_paths(filepath)
+    _saves = _paths[CHECKPOINTS]
+
+    filename = state["filename"]
+    active_checkpoint = state["active_checkpoint"]
+
+    source_file = f"{filepath}{filename}"
+    active_checkpoint_file = os.path.join(_saves, active_checkpoint)
+
+    stat1 = os.stat(source_file)
+    stat2 = os.stat(active_checkpoint_file)
+    return stat1.st_size != stat2.st_size

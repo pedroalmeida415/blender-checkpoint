@@ -141,6 +141,7 @@ class CheckpointsPanel(CheckpointsPanelMixin, Panel):
             layout = self.layout
 
             row = layout.row()
+            # TODO refatorar operador
             row.operator(sourceControl.StartVersionControl.bl_idname,
                          text="Start", icon=TIMELINE_ICON)
             if not bpy.data.is_saved:
@@ -167,8 +168,8 @@ class CheckpointsList(UIList):
                    icon=ACTIVE_CHECKPOINT_ICON if isActiveCommit else CHECKPOINT_ICON)
 
         # Get last mofied string
-        commitTime = datetime.strptime(item.date, helpers.CP_TIME_FORMAT)
-        lastModified = helpers.getLastModifiedStr(commitTime)
+        checkpoint_time = datetime.strptime(item.date, helpers.CP_TIME_FORMAT)
+        lastModified = helpers.getLastModifiedStr(checkpoint_time)
 
         col2 = split.column()
         col2.label(text=lastModified)
@@ -201,6 +202,7 @@ class NewTimelinePanel(CheckpointsPanelMixin, Panel):
         if not name:
             row.enabled = False
 
+        # TODO refatorar operador
         tl_ops = row.operator(sourceControl.GitNewBranch.bl_idname,
                               text="Create Timeline")
         tl_ops.name = name
@@ -216,14 +218,10 @@ class DeleteTimelinePanel(CheckpointsPanelMixin, Panel):
 
     def draw(self, context):
         filepath = bpy.path.abspath("//")
-        # TODO refatorar lógica
-        try:
-            repo = helpers.getRepo(filepath)
-        except GitError:
-            return {'CANCELLED'}
+        state = helpers.get_state(filepath)
+        currentTimeline = state.get("current_timeline")
 
-        # TODO refatorar lógica
-        is_original_timeline = repo.head.shorthand == "original"
+        is_original_timeline = currentTimeline == helpers.ORIGINAL_TL
 
         layout = self.layout
 
@@ -261,14 +259,10 @@ class EditTimelinePanel(CheckpointsPanelMixin, Panel):
 
     def draw(self, context):
         filepath = bpy.path.abspath("//")
-        # TODO
-        try:
-            repo = helpers.getRepo(filepath)
-        except GitError:
-            return {'CANCELLED'}
+        state = helpers.get_state(filepath)
+        currentTimeline = state.get("current_timeline")
 
-        # TODO
-        is_original_timeline = repo.head.shorthand == "original"
+        is_original_timeline = currentTimeline == helpers.ORIGINAL_TL
 
         layout = self.layout
 
@@ -322,13 +316,6 @@ class SubPanelList(CheckpointsPanelMixin, Panel):
 
     def draw_header(self, context):
         filepath = bpy.path.abspath("//")
-        filename = bpy.path.basename(bpy.data.filepath)
-
-        # TODO
-        try:
-            repo = helpers.getRepo(filepath)
-        except GitError:
-            return
 
         layout = self.layout
 
@@ -338,8 +325,8 @@ class SubPanelList(CheckpointsPanelMixin, Panel):
         row_button = layout.row(align=True)
         row_button.scale_x = 0.8
 
-        isFileModified = str(
-            GIT_STATUS_INDEX_MODIFIED) in str(repo.status_file(f"{filename}"))
+        # TODO melhorar para não travar mais as ações, e sim exibir aviso de que alterações serão perdidas
+        isFileModified = helpers.check_is_modified(filepath)
 
         if isFileModified:
             row.enabled = False
@@ -417,6 +404,7 @@ class SubPanelList(CheckpointsPanelMixin, Panel):
 
             removeCol = row.column()
             removeCol.enabled = isActionButtonsEnabled and not isSelectedCommitInitial
+            # TODO refatorar operador
             delOps = removeCol.operator(sourceControl.GitRemoveCommit.bl_idname,
                                         text="Delete", icon=DELETE_ICON)
             delOps.id = selectedCheckpoint.hex
