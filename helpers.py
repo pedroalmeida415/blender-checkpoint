@@ -213,7 +213,7 @@ def add_checkpoint(filepath, description):
             "date": datetimeString
         }
 
-        timeline_history.append(checkpoint)
+        timeline_history.insert(0, checkpoint)
 
         f.seek(0)
         json.dump(timeline_history, f, indent=4)

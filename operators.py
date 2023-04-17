@@ -180,7 +180,7 @@ class LoadCheckpoint(Operator):
 
 
 class AddCheckpoint(Operator):
-    """Add checkpoint"""
+    """Save"""
 
     bl_label = __doc__
     bl_idname = "cps.add_checkpoint"
@@ -197,6 +197,7 @@ class AddCheckpoint(Operator):
         helpers.add_checkpoint(filepath, self.description)
 
         self.description = ""
+        context.window_manager.cps.selectedListIndex = 0
         if context.window_manager.cps.checkpointDescription:
             context.window_manager.cps.checkpointDescription = ""
 
