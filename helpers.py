@@ -247,9 +247,9 @@ def remove_checkpoint(filepath, checkpoint_id):
         timeline_history = json.load(f)
 
         selected_cp_index = [i for i, obj in enumerate(
-            timeline_history) if obj['id'] == checkpoint_id]
+            timeline_history) if obj['id'] == checkpoint_id][0]
 
-        timeline_history.pop(selected_cp_index)
+        del timeline_history[selected_cp_index]
 
         f.seek(0)
         json.dump(timeline_history, f, indent=4)

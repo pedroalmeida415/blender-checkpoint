@@ -205,7 +205,7 @@ class AddCheckpoint(Operator):
 
 
 class RemoveCheckpoint(Operator):
-    """Remove selected checkpoint"""
+    """Remove checkpoint"""
 
     bl_label = __doc__
     bl_idname = "cps.remove_checkpoint"
@@ -218,7 +218,7 @@ class RemoveCheckpoint(Operator):
     def invoke(self, context, event):
         wm = context.window_manager
 
-        return wm.invoke_props_dialog(self, width=290)
+        return wm.invoke_props_dialog(self, width=240)
 
     def draw(self, context):
         layout = self.layout
