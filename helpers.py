@@ -5,9 +5,6 @@ import shutil
 
 from datetime import datetime, timezone, timedelta
 
-import pygit2 as git
-from pygit2._pygit2 import GitError, GIT_SORT_TIME, GIT_SORT_REVERSE, GIT_RESET_HARD
-
 # Format: Fri Sep  2 19:36:07 2022 +0530
 CP_TIME_FORMAT = "%c %z"
 

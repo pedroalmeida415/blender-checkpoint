@@ -2,7 +2,6 @@ import sys
 import importlib
 
 import bpy
-from pygit2._pygit2 import GitError
 
 # Local imports implemented to support Blender refreshes
 modulesNames = ("helpers", "operators")
