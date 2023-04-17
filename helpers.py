@@ -12,7 +12,7 @@ ROOT = ".checkpoints"
 TIMELINES = "timelines"
 CHECKPOINTS = "saves"
 PERSISTED_STATE = "_persisted_state.json"
-ORIGINAL_TL = "original.json"
+ORIGINAL_TL = "Original.json"
 
 
 def _get_disk_usage(filepath):

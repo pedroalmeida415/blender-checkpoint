@@ -53,7 +53,8 @@ class CheckpointsPanelData(PropertyGroup):
         for index, timeline in enumerate(timelines):
             if timeline == currentTimeline:
                 index = -1
-            timelinesList.append((timeline, timeline, f"Timeline: '{timeline}'",
+            tl_format_name = timeline.replace(".json", "")
+            timelinesList.append((timeline, tl_format_name, f"Timeline: '{tl_format_name}'",
                                   TIMELINE_ICON, index))
 
         return timelinesList
