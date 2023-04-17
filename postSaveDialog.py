@@ -5,7 +5,7 @@ import bpy
 from pygit2._pygit2 import GitError
 
 # Local imports implemented to support Blender refreshes
-modulesNames = ("gitHelpers", "sourceControl")
+modulesNames = ("gitHelpers", "operators")
 for module in modulesNames:
     if module in sys.modules:
         importlib.reload(sys.modules[module])
@@ -56,7 +56,7 @@ class GitPostSaveDialog(bpy.types.Operator):
                         "Description cannot be empty.")
             return {'CANCELLED'}
 
-        operatorName = sourceControl.GitCommit.bl_idname.split(".")
+        operatorName = operators.GitCommit.bl_idname.split(".")
 
         commitOperator = getattr(
             getattr(bpy.ops, operatorName[0]), operatorName[1])

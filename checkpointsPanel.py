@@ -8,7 +8,7 @@ from bpy.props import (CollectionProperty, EnumProperty, IntProperty,
                        PointerProperty, StringProperty, BoolProperty)
 
 # Local imports implemented to support Blender refreshes
-modulesNames = ("helpers", "sourceControl")
+modulesNames = ("helpers", "operators")
 for module in modulesNames:
     if module in sys.modules:
         importlib.reload(sys.modules[module])
@@ -143,7 +143,7 @@ class CheckpointsPanel(CheckpointsPanelMixin, Panel):
 
             row = layout.row()
             # TODO refatorar operador
-            row.operator(sourceControl.StartVersionControl.bl_idname,
+            row.operator(operators.StartVersionControl.bl_idname,
                          text="Start", icon=TIMELINE_ICON)
             if not bpy.data.is_saved:
                 row.enabled = False
@@ -204,7 +204,7 @@ class NewTimelinePanel(CheckpointsPanelMixin, Panel):
             row.enabled = False
 
         # TODO refatorar operador
-        tl_ops = row.operator(sourceControl.GitNewBranch.bl_idname,
+        tl_ops = row.operator(operators.GitNewBranch.bl_idname,
                               text="Create Timeline")
         tl_ops.name = name
         tl_ops.new_tl_keep_history = new_tl_keep_history
@@ -247,7 +247,7 @@ class DeleteTimelinePanel(CheckpointsPanelMixin, Panel):
 
             row = layout.row()
             # TODO refatorar operador
-            row.operator(sourceControl.GitDeleteBranch.bl_idname,
+            row.operator(operators.GitDeleteBranch.bl_idname,
                          text="Delete Timeline")
 
 
@@ -285,7 +285,7 @@ class EditTimelinePanel(CheckpointsPanelMixin, Panel):
                 row.enabled = False
 
             # TODO
-            operator = row.operator(sourceControl.GitEditBranch.bl_idname,
+            operator = row.operator(operators.GitEditBranch.bl_idname,
                                     text="Rename")
             operator.name = name
 
@@ -389,14 +389,14 @@ class SubPanelList(CheckpointsPanelMixin, Panel):
             swtichCol.enabled = isActionButtonsEnabled
             # TODO Add Edit and Export methods
             # TODO change icon "export" of add method
-            switchOps = swtichCol.operator(sourceControl.GitRevertToCommit.bl_idname,
+            switchOps = swtichCol.operator(operators.GitRevertToCommit.bl_idname,
                                            text="Load", icon="EXPORT")
             switchOps.id = selectedCheckpointId
 
             removeCol = row.column()
             removeCol.enabled = isActionButtonsEnabled and not isSelectedCommitInitial
             # TODO refatorar operador
-            delOps = removeCol.operator(sourceControl.GitRemoveCommit.bl_idname,
+            delOps = removeCol.operator(operators.GitRemoveCommit.bl_idname,
                                         text="Delete", icon=DELETE_ICON)
             delOps.id = selectedCheckpointId
 
@@ -407,13 +407,13 @@ class SubPanelList(CheckpointsPanelMixin, Panel):
 
             # swtichCol = row.column()
             # swtichCol.enabled = isActionButtonsEnabled
-            # switchOps = swtichCol.operator(sourceControl.GitRevertToCommit.bl_idname,
+            # switchOps = swtichCol.operator(operators.GitRevertToCommit.bl_idname,
             #                                text="Undo last", icon="LOOP_BACK")
             # switchOps.id = selectedCheckpoint.hex
 
             # removeCol = row.column()
             # removeCol.enabled = isActionButtonsEnabled and not isSelectedCommitInitial
-            # delOps = removeCol.operator(sourceControl.GitRemoveCommit.bl_idname,
+            # delOps = removeCol.operator(operators.GitRemoveCommit.bl_idname,
             #                             text="Edit", icon="CURRENT_FILE")
             # delOps.id = selectedCheckpoint.hex
 
@@ -478,7 +478,7 @@ class SubPanelAdd(CheckpointsPanelMixin, Panel):
             commitCol.enabled = False
 
         # TODO
-        commit = commitCol.operator(sourceControl.GitCommit.bl_idname)
+        commit = commitCol.operator(operators.GitCommit.bl_idname)
         commit.message = message
 
         layout.separator()

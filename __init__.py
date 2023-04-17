@@ -81,7 +81,7 @@ print(f"{git.__name__} is installed.")
 
 # Local imports implemented to support Blender refreshes
 """ORDER MATTERS"""
-modulesNames = ("sourceControl", "postSaveDialog",
+modulesNames = ("operators", "postSaveDialog",
                 "checkpointsPanel", "appHandlers", "preferences")
 for module in modulesNames:
     if module in sys.modules:
