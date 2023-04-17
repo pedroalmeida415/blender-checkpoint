@@ -205,15 +205,15 @@ class AddCheckpoint(Operator):
         return {'FINISHED'}
 
 
-class GitRemoveCommit(Operator):
-    """Remove selected commit"""
+class RemoveCheckpoint(Operator):
+    """Remove selected checkpoint"""
 
     bl_label = __doc__
-    bl_idname = "git.remove_commit"
+    bl_idname = "cps.remove_checkpoint"
 
     id: StringProperty(
         name="",
-        description="ID of commit to remove"
+        description="ID of checkpoint to remove"
     )
 
     def invoke(self, context, event):
@@ -234,38 +234,29 @@ class GitRemoveCommit(Operator):
 
         row = layout.row()
         row.label(
-            text="This will remove the selected commit from the list.", icon="UNLINKED")
+            text="This will remove the selected checkpoint", icon="UNLINKED")
 
     def execute(self, context):
-        git_context = context.window_manager.git
-        currentCommitId = git_context.currentCommitId
+        cps_context = context.window_manager.cps
+        activeCheckpointId = cps_context.activeCheckpointId
 
-        if currentCommitId == self.id:
+        if activeCheckpointId == self.id:
             return {'CANCELLED'}
 
         filepath = bpy.path.abspath("//")
 
-        try:
-            repo = gitHelpers.getRepo(filepath)
-        except GitError:
-            return {'CANCELLED'}
-
-        gitHelpers.removeCommitFromHistory(repo, self.id)
+        helpers.remove_checkpoint(filepath, self.id)
 
         # Clean up
         self.id = ""
-        git_context.commitsListIndex = 0
+        cps_context.selectedListIndex = 0
 
-        # get index of the currentCommitId and set the commit of that index as the current when deleting commits below the current one
-        # in order to preserve icons, since the all the commits above the deleted get assigned a new id
-        # context.window_manager.git.currentCommitId
-
-        self.report({"INFO"}, "Backup removed successfully!")
+        self.report({"INFO"}, "Checkpoint removed successfully!")
         return {'FINISHED'}
 
 
 classes = (NewTimeline, DeleteTimeline, RenameTimeline, StartGame,
-           LoadCheckpoint, AddCheckpoint, GitRemoveCommit)
+           LoadCheckpoint, AddCheckpoint, RemoveCheckpoint)
 
 
 def register():

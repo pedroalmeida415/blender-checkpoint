@@ -396,7 +396,7 @@ class SubPanelList(CheckpointsPanelMixin, Panel):
             removeCol = row.column()
             removeCol.enabled = isActionButtonsEnabled and not isSelectedCommitInitial
             # TODO refatorar operador
-            delOps = removeCol.operator(operators.GitRemoveCommit.bl_idname,
+            delOps = removeCol.operator(operators.RemoveCheckpoint.bl_idname,
                                         text="Delete", icon=DELETE_ICON)
             delOps.id = selectedCheckpointId
 
@@ -413,7 +413,7 @@ class SubPanelList(CheckpointsPanelMixin, Panel):
 
             # removeCol = row.column()
             # removeCol.enabled = isActionButtonsEnabled and not isSelectedCommitInitial
-            # delOps = removeCol.operator(operators.GitRemoveCommit.bl_idname,
+            # delOps = removeCol.operator(operators.RemoveCheckpoint.bl_idname,
             #                             text="Edit", icon="CURRENT_FILE")
             # delOps.id = selectedCheckpoint.hex
 

@@ -379,6 +379,25 @@ def load_checkpoint(filepath, checkpoint_id):
     shutil.copy(checkpoint_path, destination_file)
 
 
+def remove_checkpoint(filepath, checkpoint_id):
+    _paths = _get_paths(filepath)
+    state = get_state(filepath)
+
+    current_timeline = os.path.join(
+        _paths[TIMELINES], state["current_timeline"])
+    with open(current_timeline, "r+") as f:
+        timeline_history = json.load(f)
+
+        selected_cp_index = [i for i, obj in enumerate(
+            timeline_history) if obj['id'] == checkpoint_id]
+
+        timeline_history.pop(selected_cp_index)
+
+        f.seek(0)
+        json.dump(timeline_history, f, indent=4)
+        f.truncate()
+
+
 def switch_timeline(filepath, timeline):
     _paths = _get_paths(filepath)
     state = get_state(filepath)
