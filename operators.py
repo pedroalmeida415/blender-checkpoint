@@ -8,11 +8,8 @@ import bpy
 from bpy.types import Operator
 from bpy.props import (StringProperty, BoolProperty)
 
-from pygit2._pygit2 import GitError, AlreadyExistsError
-from pygit2 import GIT_RESET_SOFT, GIT_RESET_HARD
-
 # Local imports implemented to support Blender refreshes
-modulesNames = ("gitHelpers",)
+modulesNames = ("helpers",)
 for module in modulesNames:
     if module in sys.modules:
         importlib.reload(sys.modules[module])
@@ -31,93 +28,72 @@ def slugify(text):
     text = re.sub(r'[-\s\'"]+', '-', text)
     return text
 
-class StartVersionControl(bpy.types.Operator):
-    '''Initialize version control on the current project'''
 
-    bl_idname = "cps.start_version_control"
-    bl_label = "Start Version Control"
+class StartGame(Operator):
+    '''Initialize addon on the current project'''
+
+    bl_idname = "cps.start_game"
+    bl_label = "Start"
 
     def execute(self, context):
         filepath = bpy.path.abspath("//")
         filename = bpy.path.basename(bpy.data.filepath)
 
-        cps = context.window_manager.cps
+        cps_context = context.window_manager.cps
 
-        if cps.isInitialized:
+        if cps_context.isInitialized:
             return {'CANCELLED'}
 
         helpers.initialize_version_control(filepath, filename)
 
-        cps.isInitialized = True
+        cps_context.isInitialized = True
 
-        self.report({"INFO"}, "Checkpoints initialized!")
+        self.report({"INFO"}, "Game started!")
         return {'FINISHED'}
 
-class GitNewBranch(Operator):
-    """Create new Timeline from selected backup"""
+
+class NewTimeline(Operator):
+    """Creates a new timeline from the selected checkpoint"""
 
     bl_label = __doc__
-    bl_idname = "git.new_branch"
+    bl_idname = "cps.new_timeline"
 
     name: StringProperty(
         name="",
         options={'TEXTEDIT_UPDATE'},
-        description="Name of new Timeline. (will be slugified)"
+        description="Name of new timeline. (will be slugified)"
     )
 
-    squash_commits: BoolProperty(
+    keep_history: BoolProperty(
         name="",
-        description="Backups in the new timeline will be merged into a single one"
+        description="Should keep previous checkpoints"
     )
 
     def execute(self, context):
         filepath = bpy.path.abspath("//")
-        git = context.window_manager.git
-
-        # Get repo
-        try:
-            repo = gitHelpers.getRepo(filepath)
-        except GitError:
-            return {'CANCELLED'}
+        cps_context = context.window_manager.cps
 
         # Get selected commit
-        selectedCommit = repo.revparse_single(
-            f'HEAD~{git.commitsListIndex}')
+        selectedCheckpointId = cps_context.checkpoints[cps_context.selectedListIndex]["id"]
 
+        new_tl_name = slugify(self.name)
         # Create new Branch from selected commit
         try:
-            new_branch_ref = repo.branches.create(
-                slugify(self.name), selectedCommit)
-        except AlreadyExistsError:
-            self.report({"ERROR"}, "A timeline with that name already exists")
+            helpers.create_new_timeline(
+                filepath, new_tl_name, selectedCheckpointId, self.keep_history)
+        except FileExistsError:
+            self.report({"ERROR"}, f"Timeline '{self.name}' already exists")
             return {'CANCELLED'}
 
-        repo.checkout(new_branch_ref)
-
-        # squash_commits changed to "keep history", so now it has to be in negative form
-        if not self.squash_commits:
-            # Squash commits by soft reseting head to initial commit
-            # and amending it with the selected commit's message and changes
-            commits = gitHelpers.getCommits(repo)
-
-            initialCommit = commits[-1]["id"]
-
-            repo.reset(initialCommit, GIT_RESET_SOFT)
-
-            tree_id = repo.index.write_tree()
-
-            repo.amend_commit(initialCommit, 'HEAD',
-                              message=selectedCommit.message, tree=tree_id)
+        helpers.switch_timeline(filepath, new_tl_name)
 
         # Clean up
-        git.commitsListIndex = 0
+        cps_context.commitsListIndex = 0
 
         self.name = ""
-        self.squash_commits = False
-        if context.window_manager.git.newBranchName:
-            context.window_manager.git.newBranchName = ""
-
-        repo.config["user.currentCommit"] = str(repo.head.target)
+        self.keep_history = False
+        if context.window_manager.cps_context.newTimelineName:
+            context.window_manager.cps_context.newTimelineName = ""
 
         bpy.ops.wm.revert_mainfile()
 
@@ -355,7 +331,7 @@ class GitRemoveCommit(Operator):
         return {'FINISHED'}
 
 
-classes = (GitNewBranch, GitDeleteBranch, GitEditBranch, StartVersionControl,
+classes = (NewTimeline, GitDeleteBranch, GitEditBranch, StartGame,
            GitRevertToCommit, GitCommit, GitRemoveCommit)
 
 

@@ -143,7 +143,7 @@ class CheckpointsPanel(CheckpointsPanelMixin, Panel):
 
             row = layout.row()
             # TODO refatorar operador
-            row.operator(operators.StartVersionControl.bl_idname,
+            row.operator(operators.StartGame.bl_idname,
                          text="Start", icon=TIMELINE_ICON)
             if not bpy.data.is_saved:
                 row.enabled = False
@@ -204,7 +204,7 @@ class NewTimelinePanel(CheckpointsPanelMixin, Panel):
             row.enabled = False
 
         # TODO refatorar operador
-        tl_ops = row.operator(operators.GitNewBranch.bl_idname,
+        tl_ops = row.operator(operators.NewTimeline.bl_idname,
                               text="Create Timeline")
         tl_ops.name = name
         tl_ops.new_tl_keep_history = new_tl_keep_history
@@ -437,7 +437,8 @@ def addCheckpointsToList():
     cps_context.activeCheckpointId = state["active_checkpoint"]
     cps_context.diskUsage = state["disk_usage"]
 
-    cps = helpers.get_checkpoints(filepath)
+    current_timeline = state["current_timeline"]
+    cps = helpers.get_checkpoints(filepath, current_timeline)
     for cp in cps:
         item = checkpoints.add()
         item.id = cp["id"]

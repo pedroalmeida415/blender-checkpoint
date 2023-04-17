@@ -365,3 +365,30 @@ def check_is_modified(filepath):
 #         selected_checkpoint = timeline_history[index]
 
 #         return selected_checkpoint["id"]
+
+
+def create_new_timeline(filepath, name, start_checkpoint_id, keep_history):
+    state = get_state(filepath)
+    _paths = _get_paths(filepath)
+    _timelines = _paths[TIMELINES]
+    # check if already exists timeline with name, raising AlreadyExistsError error if True
+    new_tl_path = os.path.join(_timelines, f"{name}.json")
+
+    if os.path.exists(new_tl_path):
+        raise FileExistsError(f"File '{name}' already exists")
+
+    # Get current timeline history
+    current_timeline = state["current_timeline"]
+    timeline_history = get_checkpoints(filepath, current_timeline)
+
+    # get index of selected one, make a splice of list with new values starting from the selected one (only it if keep_history = False)
+    selected_cp_index = [i for i, obj in enumerate(
+        timeline_history) if obj['id'] == start_checkpoint_id]
+    if keep_history:
+        new_tl_history = timeline_history[selected_cp_index:]
+    else:
+        new_tl_history = [timeline_history[selected_cp_index]]
+
+    # create new timeline file
+    with open(new_tl_path, "w") as file:
+        json.dump(new_tl_history, file)

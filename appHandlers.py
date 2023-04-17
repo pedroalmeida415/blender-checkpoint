@@ -22,7 +22,7 @@ def savePostHandler(_):
         bpy.ops.git.post_save_dialog('INVOKE_DEFAULT')
 
     if prefs.shouldAutoStartVersionControl:
-        bpy.ops.git.start_version_control('INVOKE_DEFAULT')
+        bpy.ops.git.start_game('INVOKE_DEFAULT')
 
 
 def register():
