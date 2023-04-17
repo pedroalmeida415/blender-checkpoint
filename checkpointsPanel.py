@@ -162,11 +162,11 @@ class CheckpointsList(UIList):
 
         activeCheckpointId = context.window_manager.cps.activeCheckpointId
 
-        isActiveCommit = item.id == activeCheckpointId if activeCheckpointId else index == 0
+        isActiveCheckpoint = item.id == activeCheckpointId if activeCheckpointId else index == 0
 
         col1 = split.column()
         col1.label(text=item.description,
-                   icon=ACTIVE_CHECKPOINT_ICON if isActiveCommit else CHECKPOINT_ICON)
+                   icon=ACTIVE_CHECKPOINT_ICON if isActiveCheckpoint else CHECKPOINT_ICON)
 
         # Get last mofied string
         checkpoint_time = datetime.strptime(item.date, helpers.CP_TIME_FORMAT)
@@ -366,11 +366,11 @@ class SubPanelList(CheckpointsPanelMixin, Panel):
         if cps_context.checkpoints:
             selectedCheckpointId = cps_context.checkpoints[cps_context.selectedListIndex]["id"]
 
-            isSelectedCommitInitial = selectedCheckpointId == cps_context.checkpoints[-1]["id"]
+            isSelectedCheckpointInitial = selectedCheckpointId == cps_context.checkpoints[-1]["id"]
 
-            isSelectedCommitCurrent = selectedCheckpointId == cps_context.activeCheckpointId
+            isSelectedCheckpointActive = selectedCheckpointId == cps_context.activeCheckpointId
 
-            isActionButtonsEnabled = not isSelectedCommitCurrent if cps_context.activeCheckpointId else cps_context.selectedListIndex != 0
+            isActionButtonsEnabled = not isSelectedCheckpointActive if cps_context.activeCheckpointId else cps_context.selectedListIndex != 0
 
             isBlenderDirty = bpy.data.is_dirty
 
@@ -394,7 +394,7 @@ class SubPanelList(CheckpointsPanelMixin, Panel):
             switchOps.id = selectedCheckpointId
 
             removeCol = row.column()
-            removeCol.enabled = isActionButtonsEnabled and not isSelectedCommitInitial
+            removeCol.enabled = isActionButtonsEnabled and not isSelectedCheckpointInitial
             # TODO refatorar operador
             delOps = removeCol.operator(operators.RemoveCheckpoint.bl_idname,
                                         text="Delete", icon=DELETE_ICON)
@@ -412,7 +412,7 @@ class SubPanelList(CheckpointsPanelMixin, Panel):
             # switchOps.id = selectedCheckpoint.hex
 
             # removeCol = row.column()
-            # removeCol.enabled = isActionButtonsEnabled and not isSelectedCommitInitial
+            # removeCol.enabled = isActionButtonsEnabled and not isSelectedCheckpointInitial
             # delOps = removeCol.operator(operators.RemoveCheckpoint.bl_idname,
             #                             text="Edit", icon="CURRENT_FILE")
             # delOps.id = selectedCheckpoint.hex

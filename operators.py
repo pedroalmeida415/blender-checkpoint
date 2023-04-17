@@ -87,7 +87,7 @@ class NewTimeline(Operator):
         helpers.switch_timeline(filepath, new_tl_name)
 
         # Clean up
-        cps_context.commitsListIndex = 0
+        cps_context.selectedListIndex = 0
 
         self.name = ""
         self.keep_history = False
