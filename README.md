@@ -30,8 +30,6 @@ There's also a known bug if you are running Blender in portable mode (zip). [Cli
 
 ## How it works
 
-Blender backup uses [Git](https://git-scm.com/about) behind the curtains to keep track of changes and save versions
-
 ### Future changes roadmap
 
 - [ ] GAMEFICAR O PROCESSO TODO, ADICIONANDO "ACHIEVEMENTS" PARA CERTAS METAS ALCANÇADAS - DIFÍCIL

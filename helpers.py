@@ -95,102 +95,6 @@ def getLastModifiedStr(date):
     return output
 
 
-def commit(repo, message):
-    """Add all and commit changes to current branch"""
-
-    # Add all
-    repo.index.add_all()
-    repo.index.write()
-
-    name = repo.config["User.name"]
-    email = repo.config["User.email"]
-    signature = git.Signature(name, email)
-    tree = repo.index.write_tree()
-
-    try:
-        # Assuming prior commits exist
-        ref = repo.head.name
-        parents = [repo.head.target]
-    except GitError:
-        # Initial Commit
-        ref = "HEAD"
-        parents = []
-
-    repo.create_commit(
-        ref,
-        signature,
-        signature,
-        message,
-        tree,
-        parents
-    )
-
-
-def getCommits(repo):
-    """Returns a list commit objects"""
-
-    commits = []
-    last = repo[repo.head.target]
-    for commit in repo.walk(last.id, GIT_SORT_TIME):
-        timezoneInfo = timezone(timedelta(minutes=commit.author.offset))
-        datetimeString = datetime.fromtimestamp(float(commit.author.time),
-                                                timezoneInfo).strftime(CP_TIME_FORMAT)
-
-        commitDict = {}
-        commitDict["id"] = commit.hex
-        commitDict["name"] = commit.author.name
-        commitDict["email"] = commit.author.email
-        commitDict["date"] = datetimeString
-        commitDict["message"] = commit.message.strip(" \t\n\r")
-
-        commits.append(commitDict)
-
-    return commits
-
-
-def makeGitIgnore(path):
-    """Generates .gitignore file for Git project at given path"""
-
-    content = (
-        "*\n"
-        "\n"
-        "!*.blend\n"
-        "!textures\n"
-        "!textures/*\n"
-        "textures/*.blend\n"
-        "\n"
-        "*.blend1\n"
-    )
-
-    with open(os.path.join(path, ".gitignore"), "w") as file:
-        file.write(content)
-
-
-def configUser(repo, name, email):
-    """Set user.name and user.email to the given Repo object"""
-
-    repo.config["user.name"] = name
-    repo.config["user.email"] = email
-    repo.config["user.currentCommit"] = ""
-    repo.config["user.backupSize"] = "0"
-
-
-def discover_repo(filepath):
-    return git.discover_repository(filepath)
-
-
-def getRepo(filepath):
-   # Try to find repository path from subdirectory to make sure there is no repo above
-    repo_path = discover_repo(filepath)
-
-    if not repo_path:
-        repo_path = filepath
-
-    # Set up repository
-    repo = git.Repository(repo_path)
-    return repo
-
-
 def initialize_version_control(filepath, filename):
     _paths = _get_paths(filepath)
 
@@ -238,54 +142,6 @@ def initialize_version_control(filepath, filename):
             json.dump(initial_state, file)
 
 
-def removeCommitFromHistory(repo, commit_id):
-    repo.reset(repo.head.target, GIT_RESET_HARD)
-
-    previous_branch_ref = repo.branches[repo.head.shorthand]
-    previous_branch_shorthand = previous_branch_ref.shorthand
-
-    old_branch_name = f"remove_commit_{commit_id}"
-
-    previous_branch_ref.rename(old_branch_name)
-
-    old_branch_iter = repo.walk(
-        previous_branch_ref.target, GIT_SORT_REVERSE).__iter__()
-
-    initial_commit = next(old_branch_iter)
-
-    new_branch_ref = repo.branches.local.create(
-        previous_branch_shorthand, initial_commit)
-    repo.checkout(new_branch_ref)
-
-    remove_commit_parents = None
-
-    for commit in old_branch_iter:
-        if commit.hex == commit_id:
-            remove_commit_parents = commit.parent_ids[:]
-            continue
-
-        index = repo.index
-
-        if remove_commit_parents:
-            index = repo.merge_commits(
-                commit.id, remove_commit_parents[0], favor="ours")
-        else:
-            repo.cherrypick(commit.id)
-
-        parents = remove_commit_parents if str(
-            commit.parent_ids[0]) == commit_id else [repo.head.target]
-
-        tree_id = index.write_tree()
-
-        repo.create_commit(repo.head.name, commit.author, commit.committer,
-                           commit.message, tree_id, parents)
-
-        repo.state_cleanup()
-
-    repo.reset(repo.head.target, GIT_RESET_HARD)
-    repo.branches[old_branch_name].delete()
-
-
 def listall_timelines(filepath):
     _paths = _get_paths(
         filepath)
@@ -298,6 +154,20 @@ def get_checkpoints(filepath, timeline=ORIGINAL_TL):
     timeline_path = os.path.join(_paths[TIMELINES], timeline)
     with open(timeline_path) as f:
         timeline_history = json.load(f)
+
+        # checkpoints = []
+        # for cp in timeline_history:
+        #     timezoneInfo = timezone(timedelta(minutes=commit.author.offset))
+        #     datetimeString = datetime.fromtimestamp(float(commit.author.time),
+        #                                             timezoneInfo).strftime(CP_TIME_FORMAT)
+
+        #     checkpointDict = {}
+        #     checkpointDict["id"] = cp.id
+        #     checkpointDict["date"] = cp.date
+        #     checkpointDict["description"] = cp.descripion.strip(" \t\n\r")
+
+        #     checkpoints.append(checkpointDict)
+
         return timeline_history
 
 

@@ -73,11 +73,9 @@ class NewTimeline(Operator):
         filepath = bpy.path.abspath("//")
         cps_context = context.window_manager.cps
 
-        # Get selected commit
         selectedCheckpointId = cps_context.checkpoints[cps_context.selectedListIndex]["id"]
 
         new_tl_name = slugify(self.name)
-        # Create new Branch from selected commit
         try:
             helpers.create_new_timeline(
                 filepath, new_tl_name, selectedCheckpointId, self.keep_history)
@@ -147,8 +145,8 @@ class RenameTimeline(Operator):
             return {'CANCELLED'}
 
         self.name = ""
-        if context.window_manager.git.newBranchName:
-            context.window_manager.git.newBranchName = ""
+        if context.window_manager.cps.newTimelineName:
+            context.window_manager.cps.newTimelineName = ""
 
         self.report({"INFO"}, "Renamed timeline")
 
@@ -196,7 +194,7 @@ class AddCheckpoint(Operator):
     def execute(self, context):
         filepath = bpy.path.abspath("//")
 
-        gitHelpers.add_checkpoint(filepath, self.description)
+        helpers.add_checkpoint(filepath, self.description)
 
         self.description = ""
         if context.window_manager.cps.checkpointDescription:
