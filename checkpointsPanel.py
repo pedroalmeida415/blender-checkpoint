@@ -47,7 +47,7 @@ class CheckpointsPanelData(PropertyGroup):
         state = helpers.get_state(filepath)
         timelines = helpers.listall_timelines(filepath)
 
-        currentTimeline = state.get("current_timeline")
+        currentTimeline = state["current_timeline"]
 
         timelinesList = []
         for index, timeline in enumerate(timelines):
@@ -64,7 +64,7 @@ class CheckpointsPanelData(PropertyGroup):
         timelines = helpers.listall_timelines(filepath)
 
         selectedTimeline = context.window_manager.cps.timelines
-        currentTimeline = state.get("current_timeline")
+        currentTimeline = state["current_timeline"]
 
         if not selectedTimeline in timelines or selectedTimeline == currentTimeline:
             return

@@ -122,23 +122,25 @@ def initialize_version_control(filepath, filename):
         destination_file = f"{_saves}/{_initial_checkpoint_id}"
         shutil.copy(source_file, destination_file)
 
+        datetimeString = datetime.now(timezone.utc).strftime(CP_TIME_FORMAT)
+
         with open(_original_tl_path, "w") as file:
             first_checkpoint = [{
                 "id": _initial_checkpoint_id,
                 "description": f"{filename} - Initial checkpoint",
-                "date": str(datetime.now(timezone.utc))
+                "date": datetimeString
             }]
             json.dump(first_checkpoint, file)
 
     if not os.path.exists(_persisted_state):
         # generate initial state
         with open(_persisted_state, "w") as file:
-            initial_state = [{
+            initial_state = {
                 "current_timeline": ORIGINAL_TL,
                 "active_checkpoint": _initial_checkpoint_id,
                 "disk_usage": 0,
                 "filename": filename
-            }]
+            }
             json.dump(initial_state, file)
 
 
@@ -154,19 +156,6 @@ def get_checkpoints(filepath, timeline=ORIGINAL_TL):
     timeline_path = os.path.join(_paths[TIMELINES], timeline)
     with open(timeline_path) as f:
         timeline_history = json.load(f)
-
-        # checkpoints = []
-        # for cp in timeline_history:
-        #     timezoneInfo = timezone(timedelta(minutes=commit.author.offset))
-        #     datetimeString = datetime.fromtimestamp(float(commit.author.time),
-        #                                             timezoneInfo).strftime(CP_TIME_FORMAT)
-
-        #     checkpointDict = {}
-        #     checkpointDict["id"] = cp.id
-        #     checkpointDict["date"] = cp.date
-        #     checkpointDict["description"] = cp.descripion.strip(" \t\n\r")
-
-        #     checkpoints.append(checkpointDict)
 
         return timeline_history
 
@@ -216,10 +205,12 @@ def add_checkpoint(filepath, description):
     with open(timeline_path, 'r+') as f:
         timeline_history = json.load(f)
 
+        datetimeString = datetime.now(timezone.utc).strftime(CP_TIME_FORMAT)
+
         checkpoint = {
             "id": checkpoint_id,
-            "description": description,
-            "date": str(datetime.now(timezone.utc))
+            "description": description.strip(" \t\n\r"),
+            "date": datetimeString
         }
 
         timeline_history.append(checkpoint)
