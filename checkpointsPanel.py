@@ -20,12 +20,12 @@ for module in modulesNames:
 TIMELINE_ICON = 'WINDOW'
 CHECKPOINT_ICON = 'KEYFRAME'
 ACTIVE_CHECKPOINT_ICON = 'KEYTYPE_KEYFRAME_VEC'
-LOAD_ICON = 'DECORATE_OVERRIDE'
+LOAD_ICON = 'IMPORT'
 ADD_ICON = 'ADD'
 EDIT_ICON = 'OUTLINER_DATA_GP_LAYER' if (
     3, 0, 0) > bpy.app.version else 'CURRENT_FILE'
 CLEAR_ICON = 'X'
-CHECKPOINTS_DISK_USAGE_ICONS = ('IMPORT', 'FILE_BLEND')
+CHECKPOINTS_DISK_USAGE_ICONS = ('PACKAGE', 'FILE_BLEND')
 PROTECTED_ICON = "FAKE_USER_ON"
 DELETE_ICON = "TRASH"
 ERROR_ICON = "ERROR"
@@ -387,19 +387,18 @@ class SubPanelList(CheckpointsPanelMixin, Panel):
             swtichCol = row.column()
             swtichCol.enabled = isActionButtonsEnabled
             # TODO Add Edit and Export methods
-            # TODO change icon "export" of add method
             switchOps = swtichCol.operator(operators.LoadCheckpoint.bl_idname,
-                                           text="Load", icon="EXPORT")
+                                           text="Load", icon=LOAD_ICON)
             switchOps.id = selectedCheckpointId
 
             removeCol = row.column()
             removeCol.enabled = isActionButtonsEnabled and not isSelectedCheckpointInitial
             delOps = removeCol.operator(operators.RemoveCheckpoint.bl_idname,
-                                        text="Delete", icon=DELETE_ICON)
+                                        text="Remove", icon=DELETE_ICON)
             delOps.id = selectedCheckpointId
 
             '''
-            EDIT AND UNDO PREVIOUS COMMIT WIP
+            EDIT AND EXPORT WIP
             '''
             # row = layout.row()
 
