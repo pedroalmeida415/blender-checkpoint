@@ -316,6 +316,19 @@ def set_state(filepath, prop, value):
         f.truncate()
 
 
+def load_checkpoint(filepath, checkpoint_id):
+    _paths = _get_paths(filepath)
+    state = get_state(filepath)
+
+    set_state(filepath, "active_checkpoint", checkpoint_id)
+
+    checkpoint_path = os.path.join(_paths[CHECKPOINTS], checkpoint_id)
+    filename = state["filename"]
+    destination_file = f"{filepath}/{filename}"
+
+    shutil.copy(checkpoint_path, destination_file)
+
+
 def switch_timeline(filepath, timeline):
     _paths = _get_paths(filepath)
     state = get_state(filepath)
@@ -324,7 +337,7 @@ def switch_timeline(filepath, timeline):
 
     timeline_path = os.path.join(_paths[TIMELINES], timeline)
     with open(timeline_path) as f:
-        timeline_history = json.load(f)  # [{},{},{}...]
+        timeline_history = json.load(f)
         first_checkpoint = timeline_history[0]
         checkpoint = os.path.join(_paths[CHECKPOINTS], first_checkpoint["id"])
 
@@ -349,22 +362,6 @@ def check_is_modified(filepath):
     stat1 = os.stat(source_file)
     stat2 = os.stat(active_checkpoint_file)
     return stat1.st_size != stat2.st_size
-
-# Probably not necessary
-# def get_checkpoint_from_index(filepath, index):
-#     state = get_state(filepath)
-#     _paths = _get_paths(filepath)
-#     _saves = _paths[CHECKPOINTS]
-
-#     current_timeline = state["current_timeline"]
-
-#     timeline_path = os.path.join(_paths[TIMELINES], current_timeline)
-#     # instead of opening the file everytime, check if there is a version saved in memory and use that, if not then load the file
-#     with open(timeline_path) as f:
-#         timeline_history = json.load(f)  # [{},{},{}...]
-#         selected_checkpoint = timeline_history[index]
-
-#         return selected_checkpoint["id"]
 
 
 def create_new_timeline(filepath, name, start_checkpoint_id, keep_history):

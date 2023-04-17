@@ -82,7 +82,8 @@ class NewTimeline(Operator):
             helpers.create_new_timeline(
                 filepath, new_tl_name, selectedCheckpointId, self.keep_history)
         except FileExistsError:
-            self.report({"ERROR"}, f"A timeline with name {self.name} already exists")
+            self.report(
+                {"ERROR"}, f"A timeline with name {self.name} already exists")
             return {'CANCELLED'}
 
         helpers.switch_timeline(filepath, new_tl_name)
@@ -141,7 +142,8 @@ class RenameTimeline(Operator):
         try:
             helpers.rename_timeline(filepath)
         except FileExistsError:
-            self.report({"ERROR"}, f"A timeline with name {self.name} already exists")
+            self.report(
+                {"ERROR"}, f"A timeline with name {self.name} already exists")
             return {'CANCELLED'}
 
         self.name = ""
@@ -153,57 +155,27 @@ class RenameTimeline(Operator):
         return {'FINISHED'}
 
 
-class GitRevertToCommit(Operator):
-    """Restore selected backup"""
+class LoadCheckpoint(Operator):
+    """Load selected checkpoint"""
 
     bl_label = __doc__
-    bl_idname = "git.revert_to_commit"
+    bl_idname = "cps.load_checkpoint"
 
     id: StringProperty(
         name="",
-        description="ID of commit to switch to"
+        description="ID of checkpoint to load"
     )
 
     def execute(self, context):
         filepath = bpy.path.abspath("//")
 
-        currentCommitId = context.window_manager.git.currentCommitId
+        activeCheckpointId = context.window_manager.cps.activeCheckpointId
 
-        if currentCommitId == self.id:
+        if activeCheckpointId == self.id:
             return {'CANCELLED'}
 
-        # ABSTRACT IN A GITHELPER
-        # Get repo
-        try:
-            repo = gitHelpers.getRepo(filepath)
-        except GitError:
-            return {'CANCELLED'}
+        helpers.load_checkpoint(filepath, self.id)
 
-        latestCommit = repo[repo.head.target]
-        revertCommit = repo.get(self.id)
-
-        """
-            https://stackoverflow.com/a/1470452
-
-            A <-- B <-- C <-- D            <-- master <-- HEAD
-            
-            Revert to A
-            
-            $ git reset A --hard
-            $ git reset D --soft
-            $ git commit
-            
-            A <-- B <-- C <-- D <-- A'     <-- master <-- HEAD
-        """
-        repo.reset(revertCommit.oid, GIT_RESET_HARD)
-        repo.reset(latestCommit.oid, GIT_RESET_SOFT)
-        # ABSTRACT IN A GITHELPER
-
-        # Used to correctly identify the active commit after revert,
-        # since there is no way to keep that after Blender's reload
-        repo.config["user.currentCommit"] = self.id
-
-        # Load the reverted file
         bpy.ops.wm.revert_mainfile()
 
         return {'FINISHED'}
@@ -316,7 +288,7 @@ class GitRemoveCommit(Operator):
 
 
 classes = (NewTimeline, DeleteTimeline, RenameTimeline, StartGame,
-           GitRevertToCommit, GitCommit, GitRemoveCommit)
+           LoadCheckpoint, GitCommit, GitRemoveCommit)
 
 
 def register():

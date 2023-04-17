@@ -389,7 +389,7 @@ class SubPanelList(CheckpointsPanelMixin, Panel):
             swtichCol.enabled = isActionButtonsEnabled
             # TODO Add Edit and Export methods
             # TODO change icon "export" of add method
-            switchOps = swtichCol.operator(operators.GitRevertToCommit.bl_idname,
+            switchOps = swtichCol.operator(operators.LoadCheckpoint.bl_idname,
                                            text="Load", icon="EXPORT")
             switchOps.id = selectedCheckpointId
 
@@ -407,7 +407,7 @@ class SubPanelList(CheckpointsPanelMixin, Panel):
 
             # swtichCol = row.column()
             # swtichCol.enabled = isActionButtonsEnabled
-            # switchOps = swtichCol.operator(operators.GitRevertToCommit.bl_idname,
+            # switchOps = swtichCol.operator(operators.LoadCheckpoint.bl_idname,
             #                                text="Undo last", icon="LOOP_BACK")
             # switchOps.id = selectedCheckpoint.hex
 
