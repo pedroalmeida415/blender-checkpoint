@@ -285,7 +285,7 @@ class EditTimelinePanel(CheckpointsPanelMixin, Panel):
                 row.enabled = False
 
             # TODO
-            operator = row.operator(operators.GitEditBranch.bl_idname,
+            operator = row.operator(operators.RenameTimeline.bl_idname,
                                     text="Rename")
             operator.name = name
 

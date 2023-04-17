@@ -82,7 +82,7 @@ class NewTimeline(Operator):
             helpers.create_new_timeline(
                 filepath, new_tl_name, selectedCheckpointId, self.keep_history)
         except FileExistsError:
-            self.report({"ERROR"}, f"Timeline '{new_tl_name}' already exists")
+            self.report({"ERROR"}, f"A timeline with name {self.name} already exists")
             return {'CANCELLED'}
 
         helpers.switch_timeline(filepath, new_tl_name)
@@ -123,11 +123,11 @@ class DeleteTimeline(Operator):
         return {'FINISHED'}
 
 
-class GitEditBranch(Operator):
+class RenameTimeline(Operator):
     """Edit current timeline name"""
 
     bl_label = __doc__
-    bl_idname = "git.edit_branch"
+    bl_idname = "cps.edit_timeline"
 
     name: StringProperty(
         name="",
@@ -138,16 +138,10 @@ class GitEditBranch(Operator):
     def execute(self, context):
         filepath = bpy.path.abspath("//")
 
-        # Get repo
         try:
-            repo = gitHelpers.getRepo(filepath)
-        except GitError:
-            return {'CANCELLED'}
-
-        try:
-            repo.branches[repo.head.shorthand].rename(slugify(self.name))
-        except AlreadyExistsError:
-            self.report({"ERROR"}, "A timeline with that name already exists")
+            helpers.rename_timeline(filepath)
+        except FileExistsError:
+            self.report({"ERROR"}, f"A timeline with name {self.name} already exists")
             return {'CANCELLED'}
 
         self.name = ""
@@ -321,7 +315,7 @@ class GitRemoveCommit(Operator):
         return {'FINISHED'}
 
 
-classes = (NewTimeline, DeleteTimeline, GitEditBranch, StartGame,
+classes = (NewTimeline, DeleteTimeline, RenameTimeline, StartGame,
            GitRevertToCommit, GitCommit, GitRemoveCommit)
 
 

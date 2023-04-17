@@ -401,3 +401,19 @@ def delete_timeline(filepath, name):
     delete_tl_path = os.path.join(_timelines, name)
 
     os.remove(delete_tl_path)
+
+
+def rename_timeline(filepath, name):
+    state = get_state(filepath)
+    _paths = _get_paths(filepath)
+    _timelines = _paths[TIMELINES]
+
+    new_tl_path = os.path.join(_timelines, f"{name}.json")
+    if os.path.exists(new_tl_path):
+        raise FileExistsError(f"File '{name}' already exists")
+
+    previous_tl_name = state["current_timeline"]
+    previous_tl_path = os.path.join(_timelines, previous_tl_name)
+
+    os.rename(previous_tl_path, new_tl_path)
+    set_state(filepath, "current_timeline", f"{name}.json")
