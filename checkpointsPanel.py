@@ -472,15 +472,14 @@ class SubPanelAdd(CheckpointsPanelMixin, Panel):
 
         row = layout.row()
         row.scale_y = 2
-        commitCol = row.column()
+        addCol = row.column()
 
-        message = context.window_manager.cps.checkpointDescription
-        if not message:
-            commitCol.enabled = False
+        description = context.window_manager.cps.checkpointDescription
+        if not description:
+            addCol.enabled = False
 
-        # TODO
-        commit = commitCol.operator(operators.GitCommit.bl_idname)
-        commit.message = message
+        checkpoint = addCol.operator(operators.AddCheckpoint.bl_idname)
+        checkpoint.description = description
 
         layout.separator()
 

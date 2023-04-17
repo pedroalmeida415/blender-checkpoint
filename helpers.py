@@ -18,6 +18,18 @@ PERSISTED_STATE = "_persisted_state.json"
 ORIGINAL_TL = "original.json"
 
 
+def _get_disk_usage(filepath):
+    total_size = 0
+    for dirpath, dirnames, filenames in os.walk(filepath):
+        for f in filenames:
+            fp = os.path.join(dirpath, f)
+            # skip if it is symbolic link
+            if not os.path.islink(fp):
+                total_size += os.path.getsize(fp)
+
+    return total_size
+
+
 def _get_paths(filepath):
     _root_folder_path = os.path.join(
         filepath, ROOT)
@@ -203,15 +215,15 @@ def initialize_version_control(filepath, filename):
     _original_tl_path = os.path.join(_timelines, ORIGINAL_TL)
     if not os.path.exists(_original_tl_path):
         # generate first checkpoint
-        _initial_checkpoint_id = uuid.uuid4().hex
+        _initial_checkpoint_id = f"{uuid.uuid4().hex}.blend"
 
         source_file = f"{filepath}{filename}"
-        destination_file = f"{_saves}/{_initial_checkpoint_id}.blend"
+        destination_file = f"{_saves}/{_initial_checkpoint_id}"
         shutil.copy(source_file, destination_file)
 
         with open(_original_tl_path, "w") as file:
             first_checkpoint = [{
-                "id": f"{_initial_checkpoint_id}.blend",
+                "id": _initial_checkpoint_id,
                 "description": f"{filename} - Initial checkpoint",
                 "date": str(datetime.now(timezone.utc))
             }]
@@ -222,7 +234,7 @@ def initialize_version_control(filepath, filename):
         with open(_persisted_state, "w") as file:
             initial_state = [{
                 "current_timeline": ORIGINAL_TL,
-                "active_checkpoint": f"{_initial_checkpoint_id}.blend",
+                "active_checkpoint": _initial_checkpoint_id,
                 "disk_usage": 0,
                 "filename": filename
             }]
@@ -314,6 +326,44 @@ def set_state(filepath, prop, value):
         f.seek(0)
         json.dump(state, f, indent=4)
         f.truncate()
+
+
+def add_checkpoint(filepath, description):
+    _paths = _get_paths(filepath)
+    _saves = _paths[CHECKPOINTS]
+    _timelines = _paths[TIMELINES]
+    state = get_state(filepath)
+    filename = state["filename"]
+    current_timeline = state["current_timeline"]
+
+    # new checkpoint ID
+    checkpoint_id = f"{uuid.uuid4().hex}.blend"
+
+    # Copy current file and pastes into saves
+    source_file = f"{filepath}{filename}"
+    destination_file = f"{_saves}/{checkpoint_id}"
+    shutil.copy(source_file, destination_file)
+
+    # updates timeline info
+    timeline_path = os.path.join(_timelines, current_timeline)
+    with open(timeline_path, 'r+') as f:
+        timeline_history = json.load(f)
+
+        checkpoint = {
+            "id": checkpoint_id,
+            "description": description,
+            "date": str(datetime.now(timezone.utc))
+        }
+
+        timeline_history.append(checkpoint)
+
+        f.seek(0)
+        json.dump(timeline_history, f, indent=4)
+        f.truncate()
+
+    set_state(filepath, "active_checkpoint", checkpoint_id)
+    set_state(filepath, "disk_usage", _get_disk_usage(
+        os.path.join(filepath, ROOT)))
 
 
 def load_checkpoint(filepath, checkpoint_id):

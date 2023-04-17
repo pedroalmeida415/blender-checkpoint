@@ -181,13 +181,13 @@ class LoadCheckpoint(Operator):
         return {'FINISHED'}
 
 
-class GitCommit(Operator):
-    """Save backup"""
+class AddCheckpoint(Operator):
+    """Add checkpoint"""
 
     bl_label = __doc__
-    bl_idname = "git.commit"
+    bl_idname = "cps.add_checkpoint"
 
-    message: StringProperty(
+    description: StringProperty(
         name="",
         options={'TEXTEDIT_UPDATE'},
         description="A short description of the changes made"
@@ -196,36 +196,13 @@ class GitCommit(Operator):
     def execute(self, context):
         filepath = bpy.path.abspath("//")
 
-        try:
-            repo = gitHelpers.getRepo(filepath)
-        except GitError:
-            return {'CANCELLED'}
+        gitHelpers.add_checkpoint(filepath, self.description)
 
-        gitHelpers.commit(repo, self.message)
-
-        # Clear commit message property
-        repo.config["user.currentCommit"] = ""
-
-        self.message = ""
-        if context.window_manager.git.commitMessage:
-            context.window_manager.git.commitMessage = ""
-
-        backupSize = getBackupFolderSize(os.path.join(filepath, ".git"))
-        repo.config["user.backupSize"] = str(backupSize)
+        self.description = ""
+        if context.window_manager.cps.checkpointDescription:
+            context.window_manager.cps.checkpointDescription = ""
 
         return {'FINISHED'}
-
-
-def getBackupFolderSize(filepath):
-    total_size = 0
-    for dirpath, dirnames, filenames in os.walk(filepath):
-        for f in filenames:
-            fp = os.path.join(dirpath, f)
-            # skip if it is symbolic link
-            if not os.path.islink(fp):
-                total_size += os.path.getsize(fp)
-
-    return total_size
 
 
 class GitRemoveCommit(Operator):
@@ -288,7 +265,7 @@ class GitRemoveCommit(Operator):
 
 
 classes = (NewTimeline, DeleteTimeline, RenameTimeline, StartGame,
-           LoadCheckpoint, GitCommit, GitRemoveCommit)
+           LoadCheckpoint, AddCheckpoint, GitRemoveCommit)
 
 
 def register():
