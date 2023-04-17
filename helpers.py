@@ -283,6 +283,15 @@ def listall_timelines(filepath):
     return os.listdir(_paths[TIMELINES])
 
 
+def get_checkpoints(filepath, timeline=ORIGINAL_TL):
+    _paths = _get_paths(filepath)
+
+    timeline_path = os.path.join(_paths[TIMELINES], timeline)
+    with open(timeline_path) as f:
+        timeline_history = json.load(f)
+        return timeline_history
+
+
 def get_state(filepath):
     _paths = _get_paths(
         filepath)
@@ -340,3 +349,19 @@ def check_is_modified(filepath):
     stat1 = os.stat(source_file)
     stat2 = os.stat(active_checkpoint_file)
     return stat1.st_size != stat2.st_size
+
+# Probably not necessary
+# def get_checkpoint_from_index(filepath, index):
+#     state = get_state(filepath)
+#     _paths = _get_paths(filepath)
+#     _saves = _paths[CHECKPOINTS]
+
+#     current_timeline = state["current_timeline"]
+
+#     timeline_path = os.path.join(_paths[TIMELINES], current_timeline)
+#     # instead of opening the file everytime, check if there is a version saved in memory and use that, if not then load the file
+#     with open(timeline_path) as f:
+#         timeline_history = json.load(f)  # [{},{},{}...]
+#         selected_checkpoint = timeline_history[index]
+
+#         return selected_checkpoint["id"]

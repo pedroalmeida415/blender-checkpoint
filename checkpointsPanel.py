@@ -28,6 +28,7 @@ CLEAR_ICON = 'X'
 CHECKPOINTS_DISK_USAGE_ICONS = ('IMPORT', 'FILE_BLEND')
 PROTECTED_ICON = "FAKE_USER_ON"
 DELETE_ICON = "TRASH"
+ERROR_ICON = "ERROR"
 
 
 class CheckpointsListItem(PropertyGroup):
@@ -331,7 +332,7 @@ class SubPanelList(CheckpointsPanelMixin, Panel):
         if isFileModified:
             row.enabled = False
             row_button.popover(
-                SwitchTimelineErrorTooltip.bl_idname, icon="ERROR")
+                SwitchTimelineErrorTooltip.bl_idname, icon=ERROR_ICON)
         else:
             row_button.popover(NewTimelinePanel.bl_idname,
                                icon=ADD_ICON)
@@ -342,8 +343,6 @@ class SubPanelList(CheckpointsPanelMixin, Panel):
 
     def draw(self, context):
         filepath = bpy.path.abspath("//")
-        filename = bpy.path.basename(bpy.data.filepath)
-
         cps_context = context.window_manager.cps
 
         layout = self.layout
@@ -365,32 +364,24 @@ class SubPanelList(CheckpointsPanelMixin, Panel):
         )
 
         if cps_context.checkpoints:
-            # TODO
-            try:
-                repo = helpers.getRepo(filepath)
-            except GitError:
-                return
+            selectedCheckpointId = cps_context.checkpoints[cps_context.selectedListIndex]["id"]
 
-            selectedCheckpoint = repo.revparse_single(
-                f'HEAD~{cps_context.selectedListIndex}')
+            isSelectedCommitInitial = selectedCheckpointId == cps_context.checkpoints[-1]["id"]
 
-            isSelectedCommitInitial = selectedCheckpoint.hex == cps_context.checkpoints[-1]["id"]
-
-            isSelectedCommitCurrent = selectedCheckpoint.hex == cps_context.activeCheckpointId
+            isSelectedCommitCurrent = selectedCheckpointId == cps_context.activeCheckpointId
 
             isActionButtonsEnabled = not isSelectedCommitCurrent if cps_context.activeCheckpointId else cps_context.selectedListIndex != 0
 
             isBlenderDirty = bpy.data.is_dirty
 
-            isFileModified = str(
-                GIT_STATUS_INDEX_MODIFIED) in str(repo.status_file(f"{filename}.blend"))
+            isFileModified = helpers.check_is_modified(filepath)
 
             shouldShowError = (
                 isActionButtonsEnabled and isFileModified) or isBlenderDirty
             if shouldShowError:
                 row = layout.row()
                 row.label(
-                    text="Changes without backup will be lost.", icon='ERROR')
+                    text="Changes without backup will be lost.", icon=ERROR_ICON)
 
             row = layout.row()
 
@@ -400,14 +391,14 @@ class SubPanelList(CheckpointsPanelMixin, Panel):
             # TODO change icon "export" of add method
             switchOps = swtichCol.operator(sourceControl.GitRevertToCommit.bl_idname,
                                            text="Load", icon="EXPORT")
-            switchOps.id = selectedCheckpoint.hex
+            switchOps.id = selectedCheckpointId
 
             removeCol = row.column()
             removeCol.enabled = isActionButtonsEnabled and not isSelectedCommitInitial
             # TODO refatorar operador
             delOps = removeCol.operator(sourceControl.GitRemoveCommit.bl_idname,
                                         text="Delete", icon=DELETE_ICON)
-            delOps.id = selectedCheckpoint.hex
+            delOps.id = selectedCheckpointId
 
             '''
             EDIT AND UNDO PREVIOUS COMMIT WIP
@@ -431,6 +422,8 @@ class SubPanelList(CheckpointsPanelMixin, Panel):
 
 def addCheckpointsToList():
     """Add checkpoints to list"""
+    filepath = bpy.path.abspath("//")
+    state = helpers.get_state(filepath)
 
     cps_context = bpy.context.window_manager.cps
 
@@ -440,21 +433,13 @@ def addCheckpointsToList():
     # Clear list
     checkpoints.clear()
 
-    filepath = bpy.path.abspath("//")
-    # TODO
-    try:
-        repo = helpers.getRepo(filepath)
-    except GitError:
-        return
+    # TODO refatorar - não é mais necessário setar o active checkpoint aqui
+    cps_context.activeCheckpointId = state["active_checkpoint"]
+    cps_context.diskUsage = state["disk_usage"]
 
-    # TODO consume JSON state
-    cps_context.activeCheckpointId = repo.config["user.currentCommit"]
-    cps_context.diskUsage = int(
-        repo.config["user.diskUsage"])
-
-    cps = helpers.getCommits(repo)
+    cps = helpers.get_checkpoints(filepath)
     for cp in cps:
-        item = cps.add()
+        item = checkpoints.add()
         item.id = cp["id"]
         item.date = cp["date"]
         item.description = cp["description"]
