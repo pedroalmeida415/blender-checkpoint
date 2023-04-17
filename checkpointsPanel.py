@@ -157,13 +157,13 @@ class CheckpointsList(UIList):
     def draw_item(self, context, layout, data, item, icon, active_data,
                   active_propname, index):
 
-        split = layout.split(factor=0.8)
+        row = layout.row(align=True)
 
         activeCheckpointId = context.window_manager.cps.activeCheckpointId
 
         isActiveCheckpoint = item.id == activeCheckpointId if activeCheckpointId else index == 0
 
-        col1 = split.column()
+        col1 = row.column()
         col1.label(text=item.description,
                    icon=ACTIVE_CHECKPOINT_ICON if isActiveCheckpoint else CHECKPOINT_ICON)
 
@@ -171,7 +171,9 @@ class CheckpointsList(UIList):
         checkpoint_time = datetime.strptime(item.date, helpers.CP_TIME_FORMAT)
         lastModified = helpers.getLastModifiedStr(checkpoint_time)
 
-        col2 = split.column()
+        col2 = row.column()
+        col2.alignment = "RIGHT"
+        col2.ui_units_x = 2.5
         col2.label(text=lastModified)
 
 
