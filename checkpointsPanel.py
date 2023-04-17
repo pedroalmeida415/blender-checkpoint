@@ -247,7 +247,7 @@ class DeleteTimelinePanel(CheckpointsPanelMixin, Panel):
 
             row = layout.row()
             # TODO refatorar operador
-            row.operator(operators.GitDeleteBranch.bl_idname,
+            row.operator(operators.DeleteTimeline.bl_idname,
                          text="Delete Timeline")
 
 

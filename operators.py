@@ -82,7 +82,7 @@ class NewTimeline(Operator):
             helpers.create_new_timeline(
                 filepath, new_tl_name, selectedCheckpointId, self.keep_history)
         except FileExistsError:
-            self.report({"ERROR"}, f"Timeline '{self.name}' already exists")
+            self.report({"ERROR"}, f"Timeline '{new_tl_name}' already exists")
             return {'CANCELLED'}
 
         helpers.switch_timeline(filepath, new_tl_name)
@@ -100,33 +100,23 @@ class NewTimeline(Operator):
         return {'FINISHED'}
 
 
-class GitDeleteBranch(Operator):
-    """Delete current branch"""
+class DeleteTimeline(Operator):
+    """Delete current timeline"""
 
     bl_label = __doc__
-    bl_idname = "git.delete_branch"
+    bl_idname = "cps.delete_timeline"
 
     def execute(self, context):
         filepath = bpy.path.abspath("//")
-        git = context.window_manager.git
+        state = helpers.get_state(filepath)
 
-        # Get repo
-        try:
-            repo = gitHelpers.getRepo(filepath)
-        except GitError:
-            return {'CANCELLED'}
+        to_delete_tl = state["current_timeline"]
 
-        delete_branch = repo.branches[repo.head.shorthand]
+        # switch to original timeline
+        helpers.switch_timeline(filepath)
 
-        master_ref = repo.branches["master"]
-
-        git.commitsListIndex = 0
-
-        repo.checkout(master_ref)
-
-        delete_branch.delete()
-
-        repo.config["user.currentCommit"] = str(repo.head.target)
+        # delete previous timeline
+        helpers.delete_timeline(filepath, to_delete_tl)
 
         bpy.ops.wm.revert_mainfile()
 
@@ -331,7 +321,7 @@ class GitRemoveCommit(Operator):
         return {'FINISHED'}
 
 
-classes = (NewTimeline, GitDeleteBranch, GitEditBranch, StartGame,
+classes = (NewTimeline, DeleteTimeline, GitEditBranch, StartGame,
            GitRevertToCommit, GitCommit, GitRemoveCommit)
 
 

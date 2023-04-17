@@ -392,3 +392,12 @@ def create_new_timeline(filepath, name, start_checkpoint_id, keep_history):
     # create new timeline file
     with open(new_tl_path, "w") as file:
         json.dump(new_tl_history, file)
+
+
+def delete_timeline(filepath, name):
+    _paths = _get_paths(filepath)
+    _timelines = _paths[TIMELINES]
+
+    delete_tl_path = os.path.join(_timelines, name)
+
+    os.remove(delete_tl_path)
