@@ -138,6 +138,7 @@ class CheckpointsPanel(CheckpointsPanelMixin, Panel):
 
         try:
             helpers.get_state(filepath)
+            context.window_manager.cps.isInitialized = True
             pass
         except FileNotFoundError:
             layout = self.layout
