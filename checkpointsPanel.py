@@ -142,7 +142,6 @@ class CheckpointsPanel(CheckpointsPanelMixin, Panel):
             layout = self.layout
 
             row = layout.row()
-            # TODO refatorar operador
             row.operator(operators.StartGame.bl_idname,
                          text="Start", icon=TIMELINE_ICON)
             if not bpy.data.is_saved:
@@ -203,7 +202,6 @@ class NewTimelinePanel(CheckpointsPanelMixin, Panel):
         if not name:
             row.enabled = False
 
-        # TODO refatorar operador
         tl_ops = row.operator(operators.NewTimeline.bl_idname,
                               text="Create Timeline")
         tl_ops.name = name
@@ -246,7 +244,6 @@ class DeleteTimelinePanel(CheckpointsPanelMixin, Panel):
                 text='This will delete the current timeline. There is no going back.', icon=DELETE_ICON)
 
             row = layout.row()
-            # TODO refatorar operador
             row.operator(operators.DeleteTimeline.bl_idname,
                          text="Delete Timeline")
 
@@ -284,7 +281,6 @@ class EditTimelinePanel(CheckpointsPanelMixin, Panel):
             if not name:
                 row.enabled = False
 
-            # TODO
             operator = row.operator(operators.RenameTimeline.bl_idname,
                                     text="Rename")
             operator.name = name
@@ -395,7 +391,6 @@ class SubPanelList(CheckpointsPanelMixin, Panel):
 
             removeCol = row.column()
             removeCol.enabled = isActionButtonsEnabled and not isSelectedCheckpointInitial
-            # TODO refatorar operador
             delOps = removeCol.operator(operators.RemoveCheckpoint.bl_idname,
                                         text="Delete", icon=DELETE_ICON)
             delOps.id = selectedCheckpointId
