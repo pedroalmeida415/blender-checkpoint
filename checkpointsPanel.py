@@ -138,7 +138,8 @@ class CheckpointsPanel(CheckpointsPanelMixin, Panel):
 
         try:
             helpers.get_state(filepath)
-            context.window_manager.cps.isInitialized = True
+            cps_context.isInitialized = True
+            addCheckpointsToList()
             pass
         except FileNotFoundError:
             layout = self.layout
