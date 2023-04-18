@@ -306,7 +306,10 @@ class ExportCheckpoint(Operator):
     def execute(self, context):
         filepath = bpy.path.abspath("//")
 
-        helpers.export_checkpoint(filepath, self.id)
+        cps_context = context.window_manager.cps
+        checkpointDescription = cps_context.checkpoints[cps_context.selectedListIndex]["description"]
+
+        helpers.export_checkpoint(filepath, self.id, checkpointDescription)
 
         # Clean up
         self.id = ""

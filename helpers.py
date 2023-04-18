@@ -357,14 +357,16 @@ def rename_timeline(filepath, name):
     set_state(filepath, "current_timeline", new_name)
 
 
-def export_checkpoint(filepath, checkpoint_id):
+def export_checkpoint(filepath, checkpoint_id, description):
     _paths = _get_paths(filepath)
 
     # get checkpoint wth the provided id
     checkpoint = os.path.join(_paths[CHECKPOINTS], checkpoint_id)
 
-    # create folder "exported" with it
+    # create folder "exported"
     export_path = os.path.join(filepath, "exported")
     if not os.path.exists(export_path):
         os.mkdir(export_path)
-    shutil.copy(checkpoint, export_path)
+
+    export_name = os.path.join(export_path, f"{description}.blend")
+    shutil.copy(checkpoint, export_name)
