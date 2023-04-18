@@ -296,7 +296,8 @@ def create_new_timeline(filepath, name, start_checkpoint_id, keep_history):
     _paths = _get_paths(filepath)
     _timelines = _paths[TIMELINES]
     # check if already exists timeline with name, raising AlreadyExistsError error if True
-    new_tl_path = os.path.join(_timelines, f"{name}.json")
+    new_name = f"{name}.json"
+    new_tl_path = os.path.join(_timelines, new_name)
 
     if os.path.exists(new_tl_path):
         raise FileExistsError(f"File '{name}' already exists")
@@ -307,7 +308,7 @@ def create_new_timeline(filepath, name, start_checkpoint_id, keep_history):
 
     # get index of selected one, make a splice of list with new values starting from the selected one (only it if keep_history = False)
     selected_cp_index = [i for i, obj in enumerate(
-        timeline_history) if obj['id'] == start_checkpoint_id]
+        timeline_history) if obj['id'] == start_checkpoint_id][0]
     if keep_history:
         new_tl_history = timeline_history[selected_cp_index:]
     else:
@@ -316,6 +317,8 @@ def create_new_timeline(filepath, name, start_checkpoint_id, keep_history):
     # create new timeline file
     with open(new_tl_path, "w") as file:
         json.dump(new_tl_history, file)
+
+    return new_name
 
 
 def delete_timeline(filepath, name):

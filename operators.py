@@ -64,7 +64,7 @@ class NewTimeline(Operator):
         description="Name of new timeline. (will be slugified)"
     )
 
-    keep_history: BoolProperty(
+    new_tl_keep_history: BoolProperty(
         name="",
         description="Should keep previous checkpoints"
     )
@@ -75,24 +75,24 @@ class NewTimeline(Operator):
 
         selectedCheckpointId = cps_context.checkpoints[cps_context.selectedListIndex]["id"]
 
-        new_tl_name = slugify(self.name)
+        slugfied_name = slugify(self.name)
         try:
-            helpers.create_new_timeline(
-                filepath, new_tl_name, selectedCheckpointId, self.keep_history)
+            new_name = helpers.create_new_timeline(
+                filepath, slugfied_name, selectedCheckpointId, self.new_tl_keep_history)
         except FileExistsError:
             self.report(
                 {"ERROR"}, f"A timeline with name {self.name} already exists")
             return {'CANCELLED'}
 
-        helpers.switch_timeline(filepath, new_tl_name)
+        helpers.switch_timeline(filepath, new_name)
 
         # Clean up
         cps_context.selectedListIndex = 0
 
         self.name = ""
-        self.keep_history = False
-        if context.window_manager.cps_context.newTimelineName:
-            context.window_manager.cps_context.newTimelineName = ""
+        self.new_tl_keep_history = False
+        if context.window_manager.cps.newTimelineName:
+            context.window_manager.cps.newTimelineName = ""
 
         bpy.ops.wm.revert_mainfile()
 
