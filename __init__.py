@@ -5,9 +5,9 @@ bl_info = {
     "authon": "Nameless",
     "description": "Backup and version control for Blender - Supercharged",
     "blender": (3, 4, 1),
-    "category": "",
+    "category": "Development",
     "version": (1, 0, 0),
-    "location": "Properties > Scene > Version Control Panel",
+    "location": "Properties > Scene > Checkpoints Panel",
 }
 
 # Local imports implemented to support Blender refreshes
