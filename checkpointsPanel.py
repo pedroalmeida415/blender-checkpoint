@@ -394,20 +394,19 @@ class SubPanelList(CheckpointsPanelMixin, Panel):
 
             removeCol = row.column()
             removeCol.enabled = isActionButtonsEnabled and not isSelectedCheckpointInitial
-            delOps = removeCol.operator(operators.RemoveCheckpoint.bl_idname,
-                                        text="Remove", icon=DELETE_ICON)
-            delOps.id = selectedCheckpointId
+            removeOps = removeCol.operator(operators.RemoveCheckpoint.bl_idname,
+                                           text="Remove", icon=DELETE_ICON)
+            removeOps.id = selectedCheckpointId
 
             '''
             EDIT AND EXPORT WIP
             '''
-            # row = layout.row()
+            row = layout.row()
 
-            # swtichCol = row.column()
-            # swtichCol.enabled = isActionButtonsEnabled
-            # switchOps = swtichCol.operator(operators.LoadCheckpoint.bl_idname,
-            #                                text="Undo last", icon="LOOP_BACK")
-            # switchOps.id = selectedCheckpoint.hex
+            exportCol = row.column()
+            exportOps = exportCol.operator(operators.ExportCheckpoint.bl_idname,
+                                           text="Export", icon="EXPORT")
+            exportOps.id = selectedCheckpointId
 
             # removeCol = row.column()
             # removeCol.enabled = isActionButtonsEnabled and not isSelectedCheckpointInitial

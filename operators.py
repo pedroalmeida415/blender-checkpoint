@@ -256,8 +256,30 @@ class RemoveCheckpoint(Operator):
         return {'FINISHED'}
 
 
+class ExportCheckpoint(Operator):
+    """Export checkpoint"""
+
+    bl_label = __doc__
+    bl_idname = "cps.export_checkpoint"
+
+    id: StringProperty(
+        name="",
+        description="ID of checkpoint to export"
+    )
+
+    def execute(self, context):
+        filepath = bpy.path.abspath("//")
+
+        helpers.export_checkpoint(filepath, self.id)
+
+        # Clean up
+        self.id = ""
+        self.report({"INFO"}, "Checkpoint exported successfully!")
+        return {'FINISHED'}
+
+
 classes = (NewTimeline, DeleteTimeline, RenameTimeline, StartGame,
-           LoadCheckpoint, AddCheckpoint, RemoveCheckpoint)
+           LoadCheckpoint, AddCheckpoint, RemoveCheckpoint, ExportCheckpoint)
 
 
 def register():

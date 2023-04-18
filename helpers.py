@@ -344,3 +344,16 @@ def rename_timeline(filepath, name):
 
     os.rename(previous_tl_path, new_tl_path)
     set_state(filepath, "current_timeline", f"{name}.json")
+
+
+def export_checkpoint(filepath, checkpoint_id):
+    _paths = _get_paths(filepath)
+
+    # get checkpoint wth the provided id
+    checkpoint = os.path.join(_paths[CHECKPOINTS], checkpoint_id)
+
+    # create folder "exported" with it
+    export_path = os.path.join(filepath, "exported")
+    if not os.path.exists(export_path):
+        os.mkdir(export_path)
+    shutil.copy(checkpoint, export_path)
