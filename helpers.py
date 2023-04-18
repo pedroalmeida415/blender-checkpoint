@@ -256,7 +256,7 @@ def remove_checkpoint(filepath, checkpoint_id):
         f.truncate()
 
 
-def switch_timeline(filepath, timeline):
+def switch_timeline(filepath, timeline=ORIGINAL_TL):
     _paths = _get_paths(filepath)
     state = get_state(filepath)
 
