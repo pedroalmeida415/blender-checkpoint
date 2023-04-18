@@ -73,21 +73,19 @@ class NewTimeline(Operator):
         filepath = bpy.path.abspath("//")
         cps_context = context.window_manager.cps
 
-        selectedCheckpointId = cps_context.checkpoints[cps_context.selectedListIndex]["id"]
-
         slugfied_name = slugify(self.name)
         try:
             new_name = helpers.create_new_timeline(
-                filepath, slugfied_name, selectedCheckpointId, self.new_tl_keep_history)
+                filepath, slugfied_name, cps_context.selectedListIndex, self.new_tl_keep_history)
         except FileExistsError:
             self.report(
                 {"ERROR"}, f"A timeline with name {self.name} already exists")
             return {'CANCELLED'}
 
-        helpers.switch_timeline(filepath, new_name)
-
         # Clean up
         cps_context.selectedListIndex = 0
+
+        helpers.switch_timeline(filepath, new_name)
 
         self.name = ""
         self.new_tl_keep_history = False
@@ -246,7 +244,7 @@ class RemoveCheckpoint(Operator):
 
         filepath = bpy.path.abspath("//")
 
-        helpers.remove_checkpoint(filepath, self.id)
+        helpers.remove_checkpoint(filepath, cps_context.selectedListIndex)
 
         # Clean up
         self.id = ""

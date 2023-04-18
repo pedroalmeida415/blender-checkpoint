@@ -385,12 +385,11 @@ class SubPanelList(CheckpointsPanelMixin, Panel):
 
             row = layout.row()
 
-            swtichCol = row.column()
-            swtichCol.enabled = isActionButtonsEnabled
-            # TODO Add Edit and Export methods
-            switchOps = swtichCol.operator(operators.LoadCheckpoint.bl_idname,
-                                           text="Load", icon=LOAD_ICON)
-            switchOps.id = selectedCheckpointId
+            loadCol = row.column()
+            loadCol.enabled = isActionButtonsEnabled
+            loadOps = loadCol.operator(operators.LoadCheckpoint.bl_idname,
+                                       text="Load", icon=LOAD_ICON)
+            loadOps.id = selectedCheckpointId
 
             removeCol = row.column()
             removeCol.enabled = isActionButtonsEnabled and not isSelectedCheckpointInitial

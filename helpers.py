@@ -237,7 +237,7 @@ def load_checkpoint(filepath, checkpoint_id):
     shutil.copy(checkpoint_path, destination_file)
 
 
-def remove_checkpoint(filepath, checkpoint_id):
+def remove_checkpoint(filepath, checkpoint_index):
     _paths = _get_paths(filepath)
     state = get_state(filepath)
 
@@ -246,10 +246,7 @@ def remove_checkpoint(filepath, checkpoint_id):
     with open(current_timeline, "r+") as f:
         timeline_history = json.load(f)
 
-        selected_cp_index = [i for i, obj in enumerate(
-            timeline_history) if obj['id'] == checkpoint_id][0]
-
-        del timeline_history[selected_cp_index]
+        del timeline_history[checkpoint_index]
 
         f.seek(0)
         json.dump(timeline_history, f, indent=4)
@@ -291,11 +288,11 @@ def check_is_modified(filepath):
     return stat1.st_size != stat2.st_size
 
 
-def create_new_timeline(filepath, name, start_checkpoint_id, keep_history):
+def create_new_timeline(filepath, name, start_checkpoint_index, keep_history):
     state = get_state(filepath)
     _paths = _get_paths(filepath)
     _timelines = _paths[TIMELINES]
-    # check if already exists timeline with name, raising AlreadyExistsError error if True
+
     new_name = f"{name}.json"
     new_tl_path = os.path.join(_timelines, new_name)
 
@@ -306,13 +303,10 @@ def create_new_timeline(filepath, name, start_checkpoint_id, keep_history):
     current_timeline = state["current_timeline"]
     timeline_history = get_checkpoints(filepath, current_timeline)
 
-    # get index of selected one, make a splice of list with new values starting from the selected one (only it if keep_history = False)
-    selected_cp_index = [i for i, obj in enumerate(
-        timeline_history) if obj['id'] == start_checkpoint_id][0]
     if keep_history:
-        new_tl_history = timeline_history[selected_cp_index:]
+        new_tl_history = timeline_history[start_checkpoint_index:]
     else:
-        new_tl_history = [timeline_history[selected_cp_index]]
+        new_tl_history = [timeline_history[start_checkpoint_index]]
 
     # create new timeline file
     with open(new_tl_path, "w") as file:
