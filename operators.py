@@ -137,8 +137,10 @@ class RenameTimeline(Operator):
     def execute(self, context):
         filepath = bpy.path.abspath("//")
 
+        slugified_name = slugify(self.name)
+
         try:
-            helpers.rename_timeline(filepath)
+            helpers.rename_timeline(filepath, slugified_name)
         except FileExistsError:
             self.report(
                 {"ERROR"}, f"A timeline with name {self.name} already exists")
