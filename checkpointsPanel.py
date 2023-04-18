@@ -179,6 +179,19 @@ class CheckpointsList(UIList):
         col2.ui_units_x = 2.5
         col2.label(text=lastModified)
 
+    def filter_items(self, context, data, propname):
+        checkpoints = getattr(data, propname)
+        helper_funcs = bpy.types.UI_UL_list
+
+        flt_flags = []
+
+        # Filtering by name
+        if self.filter_name:
+            flt_flags = helper_funcs.filter_items_by_name(
+                self.filter_name, self.bitflag_filter_item, checkpoints, "description",)
+
+        return flt_flags, []
+
 
 class NewTimelinePanel(CheckpointsPanelMixin, Panel):
     """Add new timeline"""

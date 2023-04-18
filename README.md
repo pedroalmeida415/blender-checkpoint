@@ -40,7 +40,7 @@ There's also a known bug if you are running Blender in portable mode (zip). [Cli
 
 - [ ] MAKE HELPER FUNCTION TO CHECK IF FILE NAME CHANGED AND WARN USER - Check if filename é o mesmo que está no state, caso contrário, exibir warning do erro e não exibir as listagens - ACTUALLY, ask user if that is intended and display button to update it on persisted state if yes to correctly manage files - fácil
 - [ ] Button in preferences to delete unused checkpoints - fácil
-- [ ] Search for backups by description - médio
+- [x] Search for backups by description - médio - actualy really easy
 
 - [x] Action button to edit selected save description - fácil
 - [x] Action button to export selected checkpoint - fácil
