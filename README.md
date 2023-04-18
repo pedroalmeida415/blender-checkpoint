@@ -2,7 +2,7 @@
 
 No more making copies of your blender project with arbitrary namings, only to forget what is exactly inside them. Checkout features
 
-**INSERT PRESENTATION VIDEO IN FIRESHIP STYLE (BLENDER BACKUP IN 100 SECONDS**
+**INSERT PRESENTATION VIDEO IN FIRESHIP STYLE (BLENDER BACKUP IN 100 SECONDS)**
 
 ## Features
 
@@ -30,21 +30,20 @@ There's also a known bug if you are running Blender in portable mode (zip). [Cli
 
 ## How it works
 
-Blender backup uses [Git](https://git-scm.com/about) behind the curtains to keep track of changes and save versions
-
 ### Future changes roadmap
 
-- [ ] Automatic incremental version counter with control for major versions (v1.0, v1.1, v1.2... v2.0, v2.1... etc)
-- [ ] Search for backups by description or version
-- [ ] Action button to undo last save
-- [ ] Action button to edit selected save description
-- [ ] Make checkpoints accessable from file explorer (Also improving "remove checkpoint" action, enabling it to delete the checkpoint from disk)
-- [ ] Display preview image of the checkpoint
-- [ ] Checkpoints of individual objects inside the Scene
-- [ ] Editable file/folder(s) pattern that gets versioned along with project (instead of just "/textures" folder)
-- [ ] Action button to delete unused backups that got removed but are still in disk (garbage collector)
-- [ ] Show size of each backup in the list
-- [ ] Cloud services integration
-- [ ] Custom Icons
-- [ ] Refactor addon for Blender 2.8 - only if desired by community
-- [ ] Auto updater - maybe, probably not necessary
+- [ ] GAMEFICAR O PROCESSO TODO, ADICIONANDO "ACHIEVEMENTS" PARA CERTAS METAS ALCANÇADAS - DIFÍCIL
+- [ ] MAKE HELPER FUNCTION TO CHECK IF FILE NAME CHANGED AND WARN USER - MÉDIO
+- [ ] Automatic incremental version counter with control for major versions (v1.0, v1.1, v1.2... v2.0, v2.1... etc) - médio
+- [ ] Search for backups by description or version - médio
+- [ ] Action button to delete checkpoint - fácil
+- [ ] Action button to edit selected save description - fácil
+- [ ] Make checkpoints accessable from file explorer (Also improving "remove checkpoint" action, enabling it to delete the checkpoint from disk) - fácil (junto com o debaixo)
+- [ ] Button to retrieve/"export" selected checkpoint, generating a folder outside ".checkpoints" with all the files inside the selected checkpoint, for easy retrieval of the desired checkpoint, without needing the user to manually enter the folder and figure out where it is the checkpoint he wants - fácil
+- [ ] Display preview image of the checkpoint - drop?
+- [ ] Checkpoints of individual objects inside the Scene - DIFÍCIL!!
+- [ ] Editable file/folder(s) pattern that gets versioned along with project (instead of just "/textures" folder) - MÉDIO
+- [ ] Cloud services integration - DIFÍCIL
+- [ ] Custom Icons - DIFÍCIL
+- [ ] Refactor addon for Blender 2.8 - only if desired by community - FEITO COM REFATORAÇÃO
+- [ ] Auto updater - maybe, probably not necessary - MÉDIO

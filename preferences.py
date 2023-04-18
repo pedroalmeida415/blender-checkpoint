@@ -2,12 +2,11 @@ import os
 import sys
 import shutil
 import importlib
-from stat import S_IWRITE
 
 import bpy
 
 # Local imports implemented to support Blender refreshes
-modulesNames = ("gitHelpers",)
+modulesNames = ("helpers",)
 for module in modulesNames:
     if module in sys.modules:
         importlib.reload(sys.modules[module])
@@ -32,15 +31,11 @@ def get_user_preferences(context=None):
     return None
 
 
-class RemoveVersionControlOperator(bpy.types.Operator):
-    """Remove version control from the current directory"""
+class ResetProject(bpy.types.Operator):
+    """Deletes the addon's data from the current project"""
 
-    bl_idname = "git.remove_version_control"
-    bl_label = "Remove Version Control from current project"
-
-    def remove_readonly(self, func, path, excinfo):
-        os.chmod(path, S_IWRITE)
-        func(path)
+    bl_idname = "cps.reset_project"
+    bl_label = "Reset checkpoints"
 
     def invoke(self, context, event):
         wm = context.window_manager
@@ -60,42 +55,37 @@ class RemoveVersionControlOperator(bpy.types.Operator):
 
         row = layout.row()
         row.label(
-            text='This will delete all backups and remove versioning from the current directory.', icon="TRASH")
+            text="This will delete all the addon's data from the current project", icon="TRASH")
 
     def execute(self, context):
-        current_dir = bpy.path.abspath("//")
+        filepath = bpy.path.abspath("//")
 
-        repo_path = gitHelpers.discover_repo(current_dir)
+        root_path = os.path.join(filepath, helpers.ROOT)
+        if os.path.exists(root_path):
+            shutil.rmtree(root_path)
 
-        if not repo_path:
-            repo_path = current_dir
+            context.window_manager.cps.isInitialized = False
 
-        git_folder_path = os.path.join(repo_path, ".git")
-        if os.path.exists(git_folder_path):
-            shutil.rmtree(git_folder_path, onerror=self.remove_readonly)
-
-            context.window_manager.git.isRepoInitialized = False
-
-            self.report({"INFO"}, "Version Control removed successfully!")
+            self.report({"INFO"}, "Checkpoints removed successfully!")
         else:
             self.report(
-                {"WARNING"}, "Version Control not found in the current directory!")
+                {"WARNING"}, "Checkpoints not found in the current directory!")
 
         return {"FINISHED"}
 
 
-class MyAddonPreferences(bpy.types.AddonPreferences):
+class AddonPreferences(bpy.types.AddonPreferences):
     bl_idname = __package__
 
     shouldDisplayPostSaveDialog: bpy.props.BoolProperty(
-        name="Show Post Save Dialog",
+        name="Post Save Dialog",
         description="Should display dialog after saving project?",
         default=True,
     )
 
-    shouldAutoStartVersionControl: bpy.props.BoolProperty(
-        name="Automatically start version control on new projects",
-        description="Should start version control right after saving new project?",
+    shouldAutoStart: bpy.props.BoolProperty(
+        name="Auto start",
+        description="Should start right after saving new project?",
         default=True,
     )
 
@@ -106,15 +96,15 @@ class MyAddonPreferences(bpy.types.AddonPreferences):
         row.prop(self, "shouldDisplayPostSaveDialog")
 
         row = layout.row()
-        row.prop(self, "shouldAutoStartVersionControl")
+        row.prop(self, "shouldAutoStart")
 
         layout.separator()
 
         row = layout.row()
-        row.operator(RemoveVersionControlOperator.bl_idname)
+        row.operator(ResetProject.bl_idname)
 
 
-classes = (RemoveVersionControlOperator, MyAddonPreferences)
+classes = (ResetProject, AddonPreferences)
 
 
 def register():
