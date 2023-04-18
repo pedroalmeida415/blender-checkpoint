@@ -89,8 +89,8 @@ class NewTimeline(Operator):
 
         self.name = ""
         self.new_tl_keep_history = False
-        if context.window_manager.cps.newTimelineName:
-            context.window_manager.cps.newTimelineName = ""
+        if cps_context.newTimelineName:
+            cps_context.newTimelineName = ""
 
         bpy.ops.wm.revert_mainfile()
 
@@ -134,6 +134,7 @@ class RenameTimeline(Operator):
 
     def execute(self, context):
         filepath = bpy.path.abspath("//")
+        cps_context = context.window_manager.cps
 
         slugified_name = slugify(self.name)
 
@@ -145,8 +146,8 @@ class RenameTimeline(Operator):
             return {'CANCELLED'}
 
         self.name = ""
-        if context.window_manager.cps.newTimelineName:
-            context.window_manager.cps.newTimelineName = ""
+        if cps_context.newTimelineName:
+            cps_context.newTimelineName = ""
 
         self.report({"INFO"}, "Renamed timeline")
 
@@ -192,14 +193,16 @@ class AddCheckpoint(Operator):
     )
 
     def execute(self, context):
+        cps_context = context.window_manager.cps
+
         filepath = bpy.path.abspath("//")
 
         helpers.add_checkpoint(filepath, self.description)
 
         self.description = ""
-        context.window_manager.cps.selectedListIndex = 0
-        if context.window_manager.cps.checkpointDescription:
-            context.window_manager.cps.checkpointDescription = ""
+        cps_context.selectedListIndex = 0
+        if cps_context.checkpointDescription:
+            cps_context.checkpointDescription = ""
 
         return {'FINISHED'}
 
@@ -209,11 +212,6 @@ class RemoveCheckpoint(Operator):
 
     bl_label = __doc__
     bl_idname = "cps.remove_checkpoint"
-
-    id: StringProperty(
-        name="",
-        description="ID of checkpoint to remove"
-    )
 
     def invoke(self, context, event):
         wm = context.window_manager
@@ -237,10 +235,6 @@ class RemoveCheckpoint(Operator):
 
     def execute(self, context):
         cps_context = context.window_manager.cps
-        activeCheckpointId = cps_context.activeCheckpointId
-
-        if activeCheckpointId == self.id:
-            return {'CANCELLED'}
 
         filepath = bpy.path.abspath("//")
 
@@ -251,6 +245,50 @@ class RemoveCheckpoint(Operator):
         cps_context.selectedListIndex = 0
 
         self.report({"INFO"}, "Checkpoint removed successfully!")
+
+
+class EditCheckpoint(Operator):
+    """Edit checkpoint description"""
+
+    bl_label = __doc__
+    bl_idname = "cps.edit_checkpoint"
+
+    def invoke(self, context, event):
+        wm = context.window_manager
+
+        return wm.invoke_props_dialog(self, width=300)
+
+    def draw(self, context):
+        cps_context = context.window_manager.cps
+
+        layout = self.layout
+
+        row = layout.row(align=True)
+
+        col1 = row.column()
+        col1.alignment = 'LEFT'
+        col1.label(text="New description: ")
+
+        col2 = row.column()
+        col2.alignment = 'EXPAND'
+        col2.prop(cps_context, "checkpointDescription")
+
+    def execute(self, context):
+        cps_context = context.window_manager.cps
+
+        if not cps_context.checkpointDescription:
+            return {'CANCELLED'}
+
+        filepath = bpy.path.abspath("//")
+
+        helpers.edit_checkpoint(
+            filepath, cps_context.selectedListIndex, cps_context.checkpointDescription)
+
+        # Clean up
+        if cps_context.checkpointDescription:
+            cps_context.checkpointDescription = ""
+
+        self.report({"INFO"}, "Description edited successfully!")
         return {'FINISHED'}
 
 
@@ -277,7 +315,7 @@ class ExportCheckpoint(Operator):
 
 
 classes = (NewTimeline, DeleteTimeline, RenameTimeline, StartGame,
-           LoadCheckpoint, AddCheckpoint, RemoveCheckpoint, ExportCheckpoint)
+           LoadCheckpoint, AddCheckpoint, RemoveCheckpoint, ExportCheckpoint, EditCheckpoint)
 
 
 def register():

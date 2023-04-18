@@ -393,13 +393,9 @@ class SubPanelList(CheckpointsPanelMixin, Panel):
 
             removeCol = row.column()
             removeCol.enabled = isActionButtonsEnabled and not isSelectedCheckpointInitial
-            removeOps = removeCol.operator(operators.RemoveCheckpoint.bl_idname,
-                                           text="Remove", icon=DELETE_ICON)
-            removeOps.id = selectedCheckpointId
+            removeCol.operator(operators.RemoveCheckpoint.bl_idname,
+                               text="Remove", icon=DELETE_ICON)
 
-            '''
-            EDIT AND EXPORT WIP
-            '''
             row = layout.row()
 
             exportCol = row.column()
@@ -407,11 +403,10 @@ class SubPanelList(CheckpointsPanelMixin, Panel):
                                            text="Export", icon="EXPORT")
             exportOps.id = selectedCheckpointId
 
-            # removeCol = row.column()
-            # removeCol.enabled = isActionButtonsEnabled and not isSelectedCheckpointInitial
-            # delOps = removeCol.operator(operators.RemoveCheckpoint.bl_idname,
-            #                             text="Edit", icon="CURRENT_FILE")
-            # delOps.id = selectedCheckpoint.hex
+            editCol = row.column()
+            editCol.enabled = not isSelectedCheckpointInitial
+            editCol.operator(operators.EditCheckpoint.bl_idname,
+                             text="Edit", icon=EDIT_ICON)
 
         bpy.app.timers.register(addCheckpointsToList)
 

@@ -118,8 +118,8 @@ def initialize_version_control(filepath, filename):
         # generate first checkpoint
         _initial_checkpoint_id = f"{uuid.uuid4().hex}.blend"
 
-        source_file = f"{filepath}{filename}"
-        destination_file = f"{_saves}/{_initial_checkpoint_id}"
+        source_file = os.path.join(filepath, filename)
+        destination_file = os.path.join(_saves, _initial_checkpoint_id)
         shutil.copy(source_file, destination_file)
 
         datetimeString = datetime.now(timezone.utc).strftime(CP_TIME_FORMAT)
@@ -196,8 +196,8 @@ def add_checkpoint(filepath, description):
     checkpoint_id = f"{uuid.uuid4().hex}.blend"
 
     # Copy current file and pastes into saves
-    source_file = f"{filepath}{filename}"
-    destination_file = f"{_saves}/{checkpoint_id}"
+    source_file = os.path.join(filepath, filename)
+    destination_file = os.path.join(_saves, checkpoint_id)
     shutil.copy(source_file, destination_file)
 
     # updates timeline info
@@ -232,7 +232,7 @@ def load_checkpoint(filepath, checkpoint_id):
 
     checkpoint_path = os.path.join(_paths[CHECKPOINTS], checkpoint_id)
     filename = state["filename"]
-    destination_file = f"{filepath}/{filename}"
+    destination_file = os.path.join(filepath, filename)
 
     shutil.copy(checkpoint_path, destination_file)
 
@@ -247,6 +247,22 @@ def remove_checkpoint(filepath, checkpoint_index):
         timeline_history = json.load(f)
 
         del timeline_history[checkpoint_index]
+
+        f.seek(0)
+        json.dump(timeline_history, f, indent=4)
+        f.truncate()
+
+
+def edit_checkpoint(filepath, checkpoint_index, description):
+    _paths = _get_paths(filepath)
+    state = get_state(filepath)
+
+    current_timeline = os.path.join(
+        _paths[TIMELINES], state["current_timeline"])
+    with open(current_timeline, "r+") as f:
+        timeline_history = json.load(f)
+
+        timeline_history[checkpoint_index]["description"] = description
 
         f.seek(0)
         json.dump(timeline_history, f, indent=4)
@@ -268,7 +284,7 @@ def switch_timeline(filepath, timeline=ORIGINAL_TL):
         set_state(filepath, "active_checkpoint", first_checkpoint["id"])
 
         filename = state["filename"]
-        destination_file = f"{filepath}/{filename}"
+        destination_file = os.path.join(filepath, filename)
         shutil.copy(checkpoint, destination_file)
 
 
@@ -280,7 +296,7 @@ def check_is_modified(filepath):
     filename = state["filename"]
     active_checkpoint = state["active_checkpoint"]
 
-    source_file = f"{filepath}{filename}"
+    source_file = os.path.join(filepath, filename)
     active_checkpoint_file = os.path.join(_saves, active_checkpoint)
 
     stat1 = os.stat(source_file)
@@ -329,7 +345,8 @@ def rename_timeline(filepath, name):
     _paths = _get_paths(filepath)
     _timelines = _paths[TIMELINES]
 
-    new_tl_path = os.path.join(_timelines, f"{name}.json")
+    new_name = f"{name}.json"
+    new_tl_path = os.path.join(_timelines, new_name)
     if os.path.exists(new_tl_path):
         raise FileExistsError(f"File '{name}' already exists")
 
@@ -337,7 +354,7 @@ def rename_timeline(filepath, name):
     previous_tl_path = os.path.join(_timelines, previous_tl_name)
 
     os.rename(previous_tl_path, new_tl_path)
-    set_state(filepath, "current_timeline", f"{name}.json")
+    set_state(filepath, "current_timeline", new_name)
 
 
 def export_checkpoint(filepath, checkpoint_id):
