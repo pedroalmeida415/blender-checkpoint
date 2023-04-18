@@ -316,6 +316,7 @@ def create_new_timeline(filepath, name, start_checkpoint_index, keep_history):
         raise FileExistsError(f"File '{name}' already exists")
 
     # Get current timeline history
+    # TODO test if "get_checkpoints" can be switched with cps_context.checkpoints
     current_timeline = state["current_timeline"]
     timeline_history = get_checkpoints(filepath, current_timeline)
 
