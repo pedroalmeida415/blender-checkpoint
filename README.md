@@ -42,7 +42,7 @@ There's also a known bug if you are running Blender in portable mode (zip). [Cli
 - [ ] Button to retrieve/"export" selected checkpoint, generating a folder outside ".checkpoints" with all the files inside the selected checkpoint, for easy retrieval of the desired checkpoint, without needing the user to manually enter the folder and figure out where it is the checkpoint he wants - fácil
 - [ ] Display preview image of the checkpoint - drop?
 - [ ] Checkpoints of individual objects inside the Scene - DIFÍCIL!!
-- [ ] Editable file/folder(s) pattern that gets versioned along with project (instead of just "/textures" folder) - MÉDIO
+- [ ] Editable file/folder(s) pattern that gets versioned along with project (instead of just "/textures" folder) - MÉDIO - Actually we could make it so that blender packs the external files that are in the mentioned folders (!!) - This would make it so I don't need to turn the saves into folder that contain the files, it would all be inside the .blend file (!!) - Actually, I don't even need this, user can just pack files as needed, and then unpack then when exporting the .blend file to get access to them easily (!!!!!!!!!!!!!!!!)
 - [ ] Cloud services integration - DIFÍCIL
 - [ ] Custom Icons - DIFÍCIL
 - [ ] Refactor addon for Blender 2.8 - only if desired by community - FEITO COM REFATORAÇÃO
