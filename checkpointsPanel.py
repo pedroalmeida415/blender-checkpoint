@@ -157,9 +157,12 @@ class CheckpointsPanel(CheckpointsPanelMixin, Panel):
 class CheckpointsList(UIList):
     """List of checkpoints of the current project."""
 
+    use_filter_show: BoolProperty(
+        default=True
+    )
+
     def draw_item(self, context, layout, data, item, icon, active_data,
                   active_propname, index):
-
         row = layout.row(align=True)
 
         activeCheckpointId = context.window_manager.cps.activeCheckpointId
@@ -178,6 +181,13 @@ class CheckpointsList(UIList):
         col2.alignment = "RIGHT"
         col2.ui_units_x = 2.5
         col2.label(text=lastModified)
+
+    def draw_filter(self, context, layout):
+        row = layout.row()
+
+        subrow = row.row(align=True)
+        subrow.prop(self, "filter_name", text="Search")
+        subrow.prop(self, "use_filter_invert", text="", icon="ARROW_LEFTRIGHT")
 
     def filter_items(self, context, data, propname):
         checkpoints = getattr(data, propname)
@@ -395,7 +405,7 @@ class SubPanelList(CheckpointsPanelMixin, Panel):
             if shouldShowError:
                 row = layout.row()
                 row.label(
-                    text="Changes without backup will be lost.", icon=ERROR_ICON)
+                    text="Changes without checkpoint will be lost.", icon=ERROR_ICON)
 
             row = layout.row()
 
