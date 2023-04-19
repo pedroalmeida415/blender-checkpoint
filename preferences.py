@@ -66,7 +66,7 @@ class ResetProject(bpy.types.Operator):
 
             context.window_manager.cps.isInitialized = False
 
-            self.report({"INFO"}, "Checkpoints removed successfully!")
+            self.report({"INFO"}, "Checkpoints data deleted successfully!")
         else:
             self.report(
                 {"WARNING"}, "Checkpoints not found in the current directory!")

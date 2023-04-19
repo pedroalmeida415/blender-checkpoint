@@ -237,20 +237,45 @@ def load_checkpoint(filepath, checkpoint_id):
     shutil.copy(checkpoint_path, destination_file)
 
 
-def remove_checkpoint(filepath, checkpoint_index):
+def delete_checkpoint(filepath, checkpoint_index):
     _paths = _get_paths(filepath)
     state = get_state(filepath)
+    _timelines = _paths[TIMELINES]
+    _checkpoints = _paths[CHECKPOINTS]
 
     current_timeline = os.path.join(
-        _paths[TIMELINES], state["current_timeline"])
+        _timelines, state["current_timeline"])
     with open(current_timeline, "r+") as f:
         timeline_history = json.load(f)
+
+        checkpoint_id = timeline_history[checkpoint_index]["id"]
 
         del timeline_history[checkpoint_index]
 
         f.seek(0)
         json.dump(timeline_history, f, indent=4)
         f.truncate()
+
+    timelines = list(
+        filter(lambda f: f != state["current_timeline"], os.listdir(_timelines)))
+
+    shouldDelete = True
+
+    if timelines:
+        for tl in timelines:
+            if not shouldDelete:
+                break
+            with open(os.path.join(_timelines, tl)) as f:
+                checkpoints_data = json.load(f)
+                for obj in checkpoints_data:
+                    if obj["id"] == checkpoint_id:
+                        shouldDelete = False
+                        break
+
+    if shouldDelete:
+        os.remove(os.path.join(_checkpoints, checkpoint_id))
+        set_state(filepath, "disk_usage", _get_disk_usage(
+            os.path.join(filepath, ROOT)))
 
 
 def edit_checkpoint(filepath, checkpoint_index, description):

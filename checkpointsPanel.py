@@ -405,10 +405,10 @@ class SubPanelList(CheckpointsPanelMixin, Panel):
                                        text="Load", icon=LOAD_ICON)
             loadOps.id = selectedCheckpointId
 
-            removeCol = row.column()
-            removeCol.enabled = isActionButtonsEnabled and not isSelectedCheckpointInitial
-            removeCol.operator(operators.RemoveCheckpoint.bl_idname,
-                               text="Remove", icon=DELETE_ICON)
+            deleteCol = row.column()
+            deleteCol.enabled = isActionButtonsEnabled and not isSelectedCheckpointInitial
+            deleteCol.operator(operators.DeleteCheckpoint.bl_idname,
+                               text="Delete", icon=DELETE_ICON)
 
             row = layout.row()
 

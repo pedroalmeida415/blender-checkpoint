@@ -207,16 +207,16 @@ class AddCheckpoint(Operator):
         return {'FINISHED'}
 
 
-class RemoveCheckpoint(Operator):
-    """Remove checkpoint"""
+class DeleteCheckpoint(Operator):
+    """Delete checkpoint"""
 
     bl_label = __doc__
-    bl_idname = "cps.remove_checkpoint"
+    bl_idname = "cps.delete_checkpoint"
 
     def invoke(self, context, event):
         wm = context.window_manager
 
-        return wm.invoke_props_dialog(self, width=240)
+        return wm.invoke_props_dialog(self, width=385)
 
     def draw(self, context):
         layout = self.layout
@@ -231,20 +231,21 @@ class RemoveCheckpoint(Operator):
 
         row = layout.row()
         row.label(
-            text="This will remove the selected checkpoint", icon="UNLINKED")
+            text="This will delete the selected checkpoint - (won't affect other timelines)", icon="UNLINKED")
 
     def execute(self, context):
         cps_context = context.window_manager.cps
 
         filepath = bpy.path.abspath("//")
 
-        helpers.remove_checkpoint(filepath, cps_context.selectedListIndex)
+        helpers.delete_checkpoint(filepath, cps_context.selectedListIndex)
 
         # Clean up
         self.id = ""
         cps_context.selectedListIndex = 0
 
-        self.report({"INFO"}, "Checkpoint removed successfully!")
+        self.report({"INFO"}, "Checkpoint deleted successfully!")
+        return {'FINISHED'}
 
 
 class EditCheckpoint(Operator):
@@ -318,7 +319,7 @@ class ExportCheckpoint(Operator):
 
 
 classes = (NewTimeline, DeleteTimeline, RenameTimeline, StartGame,
-           LoadCheckpoint, AddCheckpoint, RemoveCheckpoint, ExportCheckpoint, EditCheckpoint)
+           LoadCheckpoint, AddCheckpoint, DeleteCheckpoint, ExportCheckpoint, EditCheckpoint)
 
 
 def register():
