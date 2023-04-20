@@ -1,6 +1,7 @@
 import sys
 import importlib
 from datetime import datetime
+import textwrap
 
 import bpy
 from bpy.types import Panel, PropertyGroup, UIList
@@ -125,25 +126,72 @@ class CheckpointsPanelMixin:
     bl_category = 'Scene'
 
 
+def _label_multiline(context, text, parent, icon="NONE"):
+    chars = int(context.region.width / 8)   # 7 pix on 1 character
+    wrapper = textwrap.TextWrapper(width=chars)
+    text_lines = wrapper.wrap(text=text)
+    for i, text_line in enumerate(text_lines):
+        if i == 0:
+            parent.label(text=text_line, icon=icon)
+            continue
+        parent.label(text=text_line)
+
+
 class CheckpointsPanel(CheckpointsPanelMixin, Panel):
     bl_idname = "CPS_PT_checkpoints"
     bl_label = "Checkpoints"
 
     def draw(self, context):
         filepath = bpy.path.abspath("//")
+        filename = bpy.path.basename(bpy.data.filepath)
+
         cps_context = context.window_manager.cps
 
         if cps_context.isInitialized:
             pass
 
+        layout = self.layout
+
         try:
-            helpers.get_state(filepath)
+            state = helpers.get_state(filepath)
+            if state["filename"] != filename:
+                row = layout.row()
+                row.alignment = "CENTER"
+                row.label(
+                    text="WARNING: Project name has changed", icon="ERROR")
+                row = layout.row()
+                row.alignment = "CENTER"
+                row.label(
+                    text="If this is intentional, click the button below")
+                row = layout.row()
+                renameOps = row.operator(operators.RenameProject.bl_idname)
+                renameOps.name = filename
+
+                layout.separator()
+
+                text = 'This happens when you rename the project file, or when you have other projects in the same folder and one of them already initialized the addon before.'
+                _label_multiline(
+                    context=context,
+                    text=text,
+                    parent=layout,
+                    icon="QUESTION"
+                )
+
+                layout.separator()
+
+                text = 'Keep in mind that separate projects need to have dedicated folders for each of them for the addon to work properly.'
+                _label_multiline(
+                    context=context,
+                    text=text,
+                    parent=layout,
+                    icon="INFO"
+                )
+                return
+
             cps_context.isInitialized = True
             addCheckpointsToList()
             pass
         except FileNotFoundError:
-            layout = self.layout
-
             row = layout.row()
             row.operator(operators.StartGame.bl_idname,
                          text="Start", icon=TIMELINE_ICON)

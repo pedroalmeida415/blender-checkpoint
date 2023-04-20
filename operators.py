@@ -52,6 +52,26 @@ class StartGame(Operator):
         return {'FINISHED'}
 
 
+class RenameProject(Operator):
+    '''Saves project new name to correctly manage checkpoints'''
+
+    bl_idname = "cps.rename_project"
+    bl_label = "Confirm rename and continue"
+
+    name: StringProperty(
+        name="",
+        description="new name of project"
+    )
+
+    def execute(self, context):
+        filepath = bpy.path.abspath("//")
+
+        helpers.set_state(filepath, "filename", self.name)
+
+        self.report({"INFO"}, "Renamed successfully, all set!")
+        return {'FINISHED'}
+
+
 class NewTimeline(Operator):
     """Creates a new timeline from the selected checkpoint"""
 
@@ -318,7 +338,7 @@ class ExportCheckpoint(Operator):
         return {'FINISHED'}
 
 
-classes = (NewTimeline, DeleteTimeline, RenameTimeline, StartGame,
+classes = (NewTimeline, DeleteTimeline, RenameTimeline, StartGame, RenameProject,
            LoadCheckpoint, AddCheckpoint, DeleteCheckpoint, ExportCheckpoint, EditCheckpoint)
 
 
