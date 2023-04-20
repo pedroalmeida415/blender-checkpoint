@@ -371,7 +371,7 @@ class SwitchTimelineErrorTooltip(CheckpointsPanelMixin, Panel):
 
     def draw(self, context):
         layout = self.layout
-        layout.ui_units_x = 17.5
+        layout.ui_units_x = 18.5
 
         row = layout.row()
         row.label(text=self.bl_description)
@@ -429,7 +429,7 @@ class SubPanelList(CheckpointsPanelMixin, Panel):
             propname="checkpoints",
             active_dataptr=cps_context,
             active_propname="selectedListIndex",
-            item_dyntip_propname="message",
+            item_dyntip_propname="description",
             sort_lock=True,
             rows=5,
             maxrows=10
