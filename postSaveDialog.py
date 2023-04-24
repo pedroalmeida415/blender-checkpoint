@@ -19,7 +19,7 @@ NEW_PROJECT_ICON = 'NEWFOLDER'
 class PostSaveDialog(bpy.types.Operator):
     """Dialog to quickly add checkpoints"""
 
-    bl_label = "Save"
+    bl_label = "Add checkpoint"
     bl_idname = "cps.post_save_dialog"
 
     def invoke(self, context, event):

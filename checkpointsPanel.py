@@ -359,7 +359,7 @@ class EditTimelinePanel(CheckpointsPanelMixin, Panel):
 
 
 class SwitchTimelineErrorTooltip(CheckpointsPanelMixin, Panel):
-    """You must save a checkpoint of your changes before switching timelines."""
+    """You must add a checkpoint with your changes before switching timelines."""
 
     bl_idname = "CPS_PT_switch_timeline_error_panel"
     bl_label = ""

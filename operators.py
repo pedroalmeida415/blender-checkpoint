@@ -201,7 +201,7 @@ class LoadCheckpoint(Operator):
 
 
 class AddCheckpoint(Operator):
-    """Save"""
+    """Add checkpoint"""
 
     bl_label = __doc__
     bl_idname = "cps.add_checkpoint"
