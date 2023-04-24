@@ -127,7 +127,7 @@ def initialize_version_control(filepath, filename):
         with open(_original_tl_path, "w") as file:
             first_checkpoint = [{
                 "id": _initial_checkpoint_id,
-                "description": f"{filename} - Initial checkpoint",
+                "description": "Initial checkpoint",
                 "date": datetimeString
             }]
             json.dump(first_checkpoint, file)
