@@ -79,13 +79,13 @@ class AddonPreferences(bpy.types.AddonPreferences):
 
     shouldDisplayPostSaveDialog: bpy.props.BoolProperty(
         name="Post Save Dialog",
-        description="Should display dialog after saving project?",
+        description="After saving, display dialog box to add checkpoint",
         default=True,
     )
 
     shouldAutoStart: bpy.props.BoolProperty(
         name="Auto start",
-        description="Should start right after saving new project?",
+        description="After saving new project, start Checkpoint automatically",
         default=True,
     )
 

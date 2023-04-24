@@ -86,7 +86,7 @@ class NewTimeline(Operator):
 
     new_tl_keep_history: BoolProperty(
         name="",
-        description="Should keep previous checkpoints"
+        description="Keep previous checkpoints"
     )
 
     def execute(self, context):
