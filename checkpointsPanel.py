@@ -121,9 +121,9 @@ class CheckpointsPanelData(PropertyGroup):
 
 
 class CheckpointsPanelMixin:
-    bl_space_type = 'PROPERTIES'
-    bl_region_type = 'WINDOW'
-    bl_category = 'Scene'
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_category = 'Tool'
 
 
 def _label_multiline(context, text, parent, icon="NONE"):
@@ -204,10 +204,6 @@ class CheckpointsPanel(CheckpointsPanelMixin, Panel):
 
 class CheckpointsList(UIList):
     """List of checkpoints of the current project."""
-
-    use_filter_show: BoolProperty(
-        default=True
-    )
 
     def draw_item(self, context, layout, data, item, icon, active_data,
                   active_propname, index):

@@ -7,7 +7,7 @@ bl_info = {
     "blender": (3, 4, 1),
     "category": "Development",
     "version": (1, 0, 0),
-    "location": "Properties > Scene > Checkpoints Panel",
+    "location": "Properties > Active Tool and Workspace settings > Checkpoints Panel",
 }
 
 # Local imports implemented to support Blender refreshes
