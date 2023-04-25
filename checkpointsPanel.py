@@ -367,7 +367,7 @@ class SwitchTimelineErrorTooltip(CheckpointsPanelMixin, Panel):
 
     def draw(self, context):
         layout = self.layout
-        layout.ui_units_x = 18.5
+        layout.ui_units_x = 19
 
         row = layout.row()
         row.label(text=self.bl_description)
@@ -449,7 +449,7 @@ class SubPanelList(CheckpointsPanelMixin, Panel):
             if shouldShowError:
                 row = layout.row()
                 row.label(
-                    text="Changes without checkpoint will be lost.", icon=ERROR_ICON)
+                    text="Changes without a checkpoint will be lost.", icon=ERROR_ICON)
 
             row = layout.row()
 
@@ -553,7 +553,7 @@ class SubPanelAdd(CheckpointsPanelMixin, Panel):
         col2 = row.column()
         col2.alignment = 'RIGHT'
         col2.label(
-            text=f"Checkpoints disk usage: {format_size(diskUsage)}")
+            text=f"STORAGE USAGE: {format_size(diskUsage)}")
 
 
 def format_size(size):
