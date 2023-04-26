@@ -553,7 +553,7 @@ class SubPanelAdd(CheckpointsPanelMixin, Panel):
         col2 = row.column()
         col2.alignment = 'RIGHT'
         col2.label(
-            text=f"STORAGE USAGE: {format_size(diskUsage)}")
+            text=f"Disk space used: {format_size(diskUsage)}")
 
 
 def format_size(size):
