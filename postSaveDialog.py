@@ -55,6 +55,16 @@ class PostSaveDialog(bpy.types.Operator):
                         "Description cannot be empty.")
             return {'CANCELLED'}
 
+        # After saving, there is a slight change in file size, thus the comparison doesn't work
+        # filepath = bpy.path.abspath("//")
+
+        # isFileModified = helpers.check_is_modified(filepath)
+
+        # if not isFileModified:
+        #     self.report({'ERROR_INVALID_INPUT'},
+        #                 "Identical file already saved.")
+        #     return {'CANCELLED'}
+
         operatorName = operators.AddCheckpoint.bl_idname.split(".")
 
         add_checkpoint_operator = getattr(
