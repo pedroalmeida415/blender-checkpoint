@@ -44,11 +44,14 @@ class StartGame(Operator):
         if cps_context.isInitialized:
             return {'CANCELLED'}
 
-        helpers.initialize_version_control(filepath, filename)
+        try:
+            helpers.get_state(filepath)
+            return {'CANCELLED'}
+        except FileNotFoundError:
+            helpers.initialize_version_control(filepath, filename)
+            cps_context.isInitialized = True
+            self.report({"INFO"}, "Game started!")
 
-        cps_context.isInitialized = True
-
-        self.report({"INFO"}, "Game started!")
         return {'FINISHED'}
 
 

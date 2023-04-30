@@ -186,10 +186,10 @@ class CheckpointsPanel(CheckpointsPanelMixin, Panel):
                     parent=layout,
                     icon="INFO"
                 )
-                return
+            else:
+                cps_context.isInitialized = True
+                addCheckpointsToList()
 
-            cps_context.isInitialized = True
-            addCheckpointsToList()
             pass
         except FileNotFoundError:
             row = layout.row()

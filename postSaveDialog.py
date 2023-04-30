@@ -22,6 +22,10 @@ class PostSaveDialog(bpy.types.Operator):
     bl_label = "Add checkpoint"
     bl_idname = "cps.post_save_dialog"
 
+    @classmethod
+    def poll(cls, context):
+        return context.window_manager.cps.isInitialized
+
     def invoke(self, context, event):
         wm = context.window_manager
         filepath = bpy.path.abspath("//")
