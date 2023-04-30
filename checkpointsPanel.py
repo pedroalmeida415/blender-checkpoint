@@ -359,7 +359,7 @@ class EditTimelinePanel(CheckpointsPanelMixin, Panel):
 
 
 class SwitchTimelineErrorTooltip(CheckpointsPanelMixin, Panel):
-    """You must add a checkpoint with your changes before switching timelines."""
+    """Tooltip for trying to create new timeline with uncomitted changes."""
 
     bl_idname = "CPS_PT_switch_timeline_error_panel"
     bl_label = ""
@@ -370,7 +370,8 @@ class SwitchTimelineErrorTooltip(CheckpointsPanelMixin, Panel):
         layout.ui_units_x = 19
 
         row = layout.row()
-        row.label(text=self.bl_description)
+        row.label(
+            text="You must add a checkpoint with your changes before switching timelines.")
 
 
 class SubPanelList(CheckpointsPanelMixin, Panel):
@@ -569,8 +570,8 @@ def format_size(size):
 
 """ORDER MATTERS"""
 classes = (CheckpointsListItem, CheckpointsPanelData, CheckpointsPanel,
-           CheckpointsList, NewTimelinePanel, DeleteTimelinePanel, EditTimelinePanel, SwitchTimelineErrorTooltip, SubPanelList,
-           SubPanelAdd)
+           CheckpointsList, NewTimelinePanel, DeleteTimelinePanel, EditTimelinePanel,
+           SwitchTimelineErrorTooltip, SubPanelList, SubPanelAdd)
 
 
 def register():

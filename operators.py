@@ -212,10 +212,36 @@ class AddCheckpoint(Operator):
         description="A short description of the changes made"
     )
 
-    def execute(self, context):
-        cps_context = context.window_manager.cps
-
+    def invoke(self, context, event):
         filepath = bpy.path.abspath("//")
+
+        isFileModified = helpers.check_is_modified(filepath)
+
+        if isFileModified:
+            return self.execute(context)
+
+        wm = context.window_manager
+        return wm.invoke_props_dialog(self, width=385)
+
+    def draw(self, context):
+        layout = self.layout
+
+        row = layout.row()
+        row.alignment = 'CENTER'
+        row.label(
+            text="The current project file is identical to the active checkpoint.")
+        row = layout.row()
+        row.alignment = 'CENTER'
+        row.label(text="Try saving your project first.")
+
+    def execute(self, context):
+        filepath = bpy.path.abspath("//")
+
+        isFileModified = helpers.check_is_modified(filepath)
+        if not isFileModified:
+            return {'FINISHED'}
+
+        cps_context = context.window_manager.cps
 
         helpers.add_checkpoint(filepath, self.description)
 
