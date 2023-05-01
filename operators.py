@@ -129,14 +129,18 @@ class DeleteTimeline(Operator):
     def execute(self, context):
         filepath = bpy.path.abspath("//")
         state = helpers.get_state(filepath)
+        cps_context = context.window_manager.cps
+
+        # get current timeline's checkpoints that will be deleted
+        tl_checkpoints_count = len(cps_context.checkpoints)
 
         to_delete_tl = state["current_timeline"]
 
+        # delete previous timeline
+        helpers.delete_timeline(filepath, to_delete_tl, tl_checkpoints_count)
+
         # switch to original timeline
         helpers.switch_timeline(filepath)
-
-        # delete previous timeline
-        helpers.delete_timeline(filepath, to_delete_tl)
 
         bpy.ops.wm.revert_mainfile()
 

@@ -357,12 +357,19 @@ def create_new_timeline(filepath, name, start_checkpoint_index, keep_history):
     return new_name
 
 
-def delete_timeline(filepath, name):
+def delete_timeline(filepath, name, checkpoints_count):
     _paths = _get_paths(filepath)
     _timelines = _paths[TIMELINES]
 
-    delete_tl_path = os.path.join(_timelines, name)
+    # Set the iteration number to 1
+    i = 0
+    # Loop through the collection while the iteration number is less than or equal to the length of the collection
+    while i < checkpoints_count:
+        delete_checkpoint(filepath, 0)
+        # Increment the iteration number
+        i += 1
 
+    delete_tl_path = os.path.join(_timelines, name)
     os.remove(delete_tl_path)
 
 
