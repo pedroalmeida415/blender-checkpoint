@@ -38,7 +38,8 @@ There's also a known bug if you are running Blender in portable mode (zip). [Cli
 - [ ] GAMEFICAR O PROCESSO TODO, ADICIONANDO "ACHIEVEMENTS" PARA CERTAS METAS ALCANÇADAS - 2.0
 - [ ] Achievements using "Menu List" from "Add Curve: extra objects" Addon - or rather, a grid-like, showin the achievements and icons, with the description of the achievement when unlocked and hovered - 2.0
 - [ ] Checkbox to delete checkpoint from all timelines altogether
-- [ ] handle multiple projects under the same folder
+- [ ] Handle multiple projects under the same folder
+- [ ] Changelog panel displaying what were the changes made since last active checkpoint
 
 - [x] MAKE HELPER FUNCTION TO CHECK IF FILE NAME CHANGED AND WARN USER - Check if filename é o mesmo que está no state, caso contrário, exibir warning do erro e não exibir as listagens - ACTUALLY, ask user if that is intended and display button to update it on persisted state if yes to correctly manage files - fácil
 - [x] Button in preferences to delete unused checkpoints - fácil - actually implemented it in such a way that when deleting checkpoint it searches other timelines to see if it is being used, if not then we remove the saved file

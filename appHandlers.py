@@ -18,7 +18,7 @@ for module in modulesNames:
 @persistent
 def savePostHandler(_):
     prefs = preferences.get_user_preferences()
-    if prefs.shouldDisplayPostSaveDialog:
+    if prefs.shouldDisplayPostSaveDialog and bpy.ops.cps.post_save_dialog.poll():
         bpy.ops.cps.post_save_dialog('INVOKE_DEFAULT')
 
     if prefs.shouldAutoStart:

@@ -85,8 +85,8 @@ class AddonPreferences(bpy.types.AddonPreferences):
 
     shouldAutoStart: bpy.props.BoolProperty(
         name="Auto start",
-        description="After saving new project, start Checkpoint automatically",
-        default=True,
+        description="Uppon saving a new project, start Checkpoint automatically",
+        default=False,
     )
 
     def draw(self, context):
