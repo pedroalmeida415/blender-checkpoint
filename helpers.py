@@ -160,6 +160,14 @@ def get_checkpoints(filepath, timeline=ORIGINAL_TL):
         return timeline_history
 
 
+def has_root_folder(filepath):
+    _paths = _get_paths(
+        filepath)
+    _root = _paths[ROOT]
+
+    return os.path.exists(_root)
+
+
 def get_state(filepath):
     _paths = _get_paths(
         filepath)

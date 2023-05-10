@@ -147,51 +147,12 @@ class CheckpointsPanel(CheckpointsPanelMixin, Panel):
 
         cps_context = context.window_manager.cps
 
-        if cps_context.isInitialized:
-            pass
-
         layout = self.layout
 
-        try:
-            state = helpers.get_state(filepath)
-            if state["filename"] != filename:
-                row = layout.row()
-                row.alignment = "CENTER"
-                row.label(
-                    text="WARNING: Project name has changed", icon="ERROR")
-                row = layout.row()
-                row.alignment = "CENTER"
-                row.label(
-                    text="If this is intentional, click the button below")
-                row = layout.row()
-                renameOps = row.operator(operators.RenameProject.bl_idname)
-                renameOps.name = filename
+        has_root_folder = helpers.has_root_folder(filepath)
 
-                layout.separator()
-
-                text = 'This happens when you rename the project file, or when you have other projects in the same folder and one of them already initialized the addon before.'
-                _label_multiline(
-                    context=context,
-                    text=text,
-                    parent=layout,
-                    icon="QUESTION"
-                )
-
-                layout.separator()
-
-                text = 'Keep in mind that separate projects need to have dedicated folders for each of them for the addon to work properly.'
-                _label_multiline(
-                    context=context,
-                    text=text,
-                    parent=layout,
-                    icon="INFO"
-                )
-            else:
-                cps_context.isInitialized = True
-                addCheckpointsToList()
-
-            pass
-        except FileNotFoundError:
+        if (cps_context.isInitialized and not has_root_folder) or not cps_context.isInitialized:
+            cps_context.isInitialized = False
             row = layout.row()
             row.operator(operators.StartGame.bl_idname,
                          text="Start", icon=TIMELINE_ICON)
@@ -200,6 +161,44 @@ class CheckpointsPanel(CheckpointsPanelMixin, Panel):
                 row = layout.row()
                 row.alignment = "CENTER"
                 row.label(text="You must save your project first")
+            return
+
+        state = helpers.get_state(filepath)
+        if state["filename"] != filename:
+            row = layout.row()
+            row.alignment = "CENTER"
+            row.label(
+                text="WARNING: Project name has changed", icon="ERROR")
+            row = layout.row()
+            row.alignment = "CENTER"
+            row.label(
+                text="If this is intentional, click the button below")
+            row = layout.row()
+            renameOps = row.operator(operators.RenameProject.bl_idname)
+            renameOps.name = filename
+
+            layout.separator()
+
+            text = 'This happens when you rename the project file, or when you have other projects in the same folder and one of them already initialized the addon before.'
+            _label_multiline(
+                context=context,
+                text=text,
+                parent=layout,
+                icon="QUESTION"
+            )
+
+            layout.separator()
+
+            text = 'Keep in mind that separate projects need to have dedicated folders for each of them for the addon to work properly.'
+            _label_multiline(
+                context=context,
+                text=text,
+                parent=layout,
+                icon="INFO"
+            )
+        else:
+            cps_context.isInitialized = True
+            addCheckpointsToList()
 
 
 class CheckpointsList(UIList):
