@@ -4,7 +4,7 @@ import importlib
 import bpy
 
 # Local imports implemented to support Blender refreshes
-modulesNames = ("helpers", "operators")
+modulesNames = ("helpers",)
 for module in modulesNames:
     if module in sys.modules:
         importlib.reload(sys.modules[module])
@@ -24,7 +24,9 @@ class PostSaveDialog(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return context.window_manager.cps.isInitialized
+        cps_context = context.window_manager.cps
+
+        return cps_context.isInitialized and cps_context.__should_display_dialog__
 
     def invoke(self, context, event):
         wm = context.window_manager
@@ -49,32 +51,22 @@ class PostSaveDialog(bpy.types.Operator):
         col2.alignment = "EXPAND"
         col2.prop(context.window_manager.cps, "checkpointDescription")
 
-        layout.separator()
-
     def execute(self, context):
-        description = context.window_manager.cps.checkpointDescription
+        cps_context = context.window_manager.cps
+        description = cps_context.checkpointDescription
 
         if not description:
             self.report({'ERROR_INVALID_INPUT'},
                         "Description cannot be empty.")
             return {'CANCELLED'}
 
-        # After saving, there is a slight change in file size, thus the comparison doesn't work
-        # filepath = bpy.path.abspath("//")
+        filepath = bpy.path.abspath("//")
 
-        # isFileModified = helpers.check_is_modified(filepath)
+        helpers.add_checkpoint(filepath, description)
 
-        # if not isFileModified:
-        #     self.report({'ERROR_INVALID_INPUT'},
-        #                 "Identical file already saved.")
-        #     return {'CANCELLED'}
-
-        operatorName = operators.AddCheckpoint.bl_idname.split(".")
-
-        add_checkpoint_operator = getattr(
-            getattr(bpy.ops, operatorName[0]), operatorName[1])
-
-        add_checkpoint_operator('INVOKE_DEFAULT', description=description)
+        cps_context.selectedListIndex = 0
+        if cps_context.checkpointDescription:
+            cps_context.checkpointDescription = ""
 
         self.report({"INFO"}, "Successfully saved!")
 
