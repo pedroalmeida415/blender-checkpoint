@@ -119,7 +119,7 @@ class CheckpointsPanelData(PropertyGroup):
         description="Carry previous checkpoints over to the new timeline"
     )
 
-    __should_display_dialog__: BoolProperty(
+    should_display_dialog__: BoolProperty(
         name="Internal dialog control",
         default=True,
     )

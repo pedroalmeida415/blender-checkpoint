@@ -229,7 +229,7 @@ class AddCheckpoint(Operator):
 
         cps_context = context.window_manager.cps
 
-        cps_context.__should_display_dialog__ = False
+        cps_context.should_display_dialog__ = False
 
         bpy.ops.wm.save_mainfile()
 
@@ -237,7 +237,7 @@ class AddCheckpoint(Operator):
 
         self.description = ""
         cps_context.selectedListIndex = 0
-        cps_context.__should_display_dialog__ = True
+        cps_context.should_display_dialog__ = True
         if cps_context.checkpointDescription:
             cps_context.checkpointDescription = ""
 

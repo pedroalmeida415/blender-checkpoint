@@ -26,7 +26,7 @@ class PostSaveDialog(bpy.types.Operator):
     def poll(cls, context):
         cps_context = context.window_manager.cps
 
-        return cps_context.isInitialized and cps_context.__should_display_dialog__
+        return cps_context.isInitialized and cps_context.should_display_dialog__
 
     def invoke(self, context, event):
         wm = context.window_manager

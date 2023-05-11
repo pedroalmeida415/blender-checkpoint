@@ -32,7 +32,7 @@ There's also a known bug if you are running Blender in portable mode (zip). [Cli
 
 ### Future changes roadmap
 
-- [ ] Checkpoints of individual objects inside the Scene - 2.0
+- [ ] Checkpoints of individual objects/materials/nodes/modifiers/etc... inside the project - 2.0
 - [ ] Cloud services integration - 2.0
 - [ ] Custom Icons - 2.0 junto com achievements
 - [ ] GAMEFICAR O PROCESSO TODO, ADICIONANDO "ACHIEVEMENTS" PARA CERTAS METAS ALCANÇADAS - 2.0
