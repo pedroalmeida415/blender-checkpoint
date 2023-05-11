@@ -44,14 +44,11 @@ class StartGame(Operator):
         if cps_context.isInitialized:
             return {'CANCELLED'}
 
-        try:
-            helpers.get_state(filepath)
-            return {'CANCELLED'}
-        except FileNotFoundError:
-            bpy.ops.wm.save_mainfile()
-            helpers.initialize_version_control(filepath, filename)
-            cps_context.isInitialized = True
-            self.report({"INFO"}, "Game started!")
+        bpy.ops.wm.save_mainfile()
+        helpers.initialize_version_control(filepath, filename)
+        cps_context.isInitialized = True
+
+        self.report({"INFO"}, "Game started!")
 
         return {'FINISHED'}
 
