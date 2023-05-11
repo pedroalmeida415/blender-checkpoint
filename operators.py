@@ -46,7 +46,9 @@ class StartGame(Operator):
 
         bpy.ops.wm.save_mainfile()
         helpers.initialize_version_control(filepath, filename)
+
         cps_context.isInitialized = True
+        cps_context.selectedListIndex = 0
 
         self.report({"INFO"}, "Game started!")
 
@@ -219,10 +221,6 @@ class AddCheckpoint(Operator):
 
     def execute(self, context):
         filepath = bpy.path.abspath("//")
-
-        isFileModified = helpers.check_is_modified(filepath)
-        if not isFileModified:
-            return {'FINISHED'}
 
         cps_context = context.window_manager.cps
 

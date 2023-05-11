@@ -156,7 +156,7 @@ class CheckpointsPanel(CheckpointsPanelMixin, Panel):
 
         has_root_folder = helpers.has_root_folder(filepath)
 
-        if (cps_context.isInitialized and not has_root_folder) or not cps_context.isInitialized:
+        if not has_root_folder:
             cps_context.isInitialized = False
             row = layout.row()
             row.operator(operators.StartGame.bl_idname,
@@ -170,6 +170,8 @@ class CheckpointsPanel(CheckpointsPanelMixin, Panel):
 
         state = helpers.get_state(filepath)
         if state["filename"] != filename:
+            cps_context.isInitialized = False
+
             row = layout.row()
             row.alignment = "CENTER"
             row.label(
@@ -480,8 +482,6 @@ class SubPanelList(CheckpointsPanelMixin, Panel):
             editCol.enabled = not isSelectedCheckpointInitial
             editCol.operator(operators.EditCheckpoint.bl_idname,
                              text="Edit", icon=EDIT_ICON)
-
-        bpy.app.timers.register(addCheckpointsToList)
 
 
 def addCheckpointsToList():

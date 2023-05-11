@@ -24,9 +24,17 @@ class PostSaveDialog(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
+        filepath = bpy.path.abspath("//")
+        filename = bpy.path.basename(bpy.data.filepath)
+
         cps_context = context.window_manager.cps
 
-        return cps_context.isInitialized and cps_context.should_display_dialog__
+        try:
+            state = helpers.get_state(filepath)
+        except FileNotFoundError:
+            return False
+
+        return cps_context.isInitialized and cps_context.should_display_dialog__ and state["filename"] == filename
 
     def invoke(self, context, event):
         wm = context.window_manager
