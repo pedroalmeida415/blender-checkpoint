@@ -159,8 +159,8 @@ class CheckpointsPanel(CheckpointsPanelMixin, Panel):
         if not has_root_folder:
             cps_context.isInitialized = False
             row = layout.row()
-            row.operator(operators.StartGame.bl_idname,
-                         text="Start", icon=TIMELINE_ICON)
+            row.operator(operators.StartVersionControl.bl_idname,
+                         text="Start Version Control", icon=TIMELINE_ICON)
             if not bpy.data.is_saved:
                 row.enabled = False
                 row = layout.row()

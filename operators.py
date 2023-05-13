@@ -29,11 +29,11 @@ def slugify(text):
     return text
 
 
-class StartGame(Operator):
+class StartVersionControl(Operator):
     '''Initialize addon on the current project'''
 
-    bl_idname = "cps.start_game"
-    bl_label = "Start"
+    bl_idname = "cps.start_version_control"
+    bl_label = "Start Version Control"
 
     def execute(self, context):
         filepath = bpy.path.abspath("//")
@@ -50,7 +50,7 @@ class StartGame(Operator):
         cps_context.isInitialized = True
         cps_context.selectedListIndex = 0
 
-        self.report({"INFO"}, "Game started!")
+        self.report({"INFO"}, "Version control started!")
 
         return {'FINISHED'}
 
@@ -350,7 +350,7 @@ class ExportCheckpoint(Operator):
         return {'FINISHED'}
 
 
-classes = (NewTimeline, DeleteTimeline, RenameTimeline, StartGame, RenameProject,
+classes = (NewTimeline, DeleteTimeline, RenameTimeline, StartVersionControl, RenameProject,
            LoadCheckpoint, AddCheckpoint, DeleteCheckpoint, ExportCheckpoint, EditCheckpoint)
 
 

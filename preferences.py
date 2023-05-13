@@ -84,8 +84,8 @@ class AddonPreferences(bpy.types.AddonPreferences):
     )
 
     shouldAutoStart: bpy.props.BoolProperty(
-        name="Auto start",
-        description="Uppon saving a new project, start Checkpoint automatically",
+        name="Auto start version control",
+        description="Uppon saving a new project, start version control automatically",
         default=False,
     )
 

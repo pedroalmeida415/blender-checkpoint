@@ -22,7 +22,7 @@ def savePostHandler(_):
         bpy.ops.cps.post_save_dialog('INVOKE_DEFAULT')
 
     if prefs.shouldAutoStart:
-        bpy.ops.cps.start_game('INVOKE_DEFAULT')
+        bpy.ops.cps.start_version_control('INVOKE_DEFAULT')
 
 
 def register():
