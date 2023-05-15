@@ -26,10 +26,8 @@ def savePostHandler(_):
 
 
 def register():
-    print("Registering to Change Defaults")
     handlers.save_post.append(savePostHandler)
 
 
 def unregister():
-    print("Unregistering to Change Defaults")
     handlers.save_post.remove(savePostHandler)

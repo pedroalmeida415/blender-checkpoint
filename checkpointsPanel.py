@@ -147,12 +147,19 @@ class CheckpointsPanel(CheckpointsPanelMixin, Panel):
     bl_label = "Checkpoints"
 
     def draw(self, context):
+        layout = self.layout
+
+        if not helpers._CHECKPOINT_KEY:
+            row = layout.row()
+            row.alignment = 'CENTER'
+            row.label(
+                text="Head over to the preferences to activate your license.")
+            return
+
         filepath = bpy.path.abspath("//")
         filename = bpy.path.basename(bpy.data.filepath)
 
         cps_context = context.window_manager.cps
-
-        layout = self.layout
 
         has_root_folder = helpers.has_root_folder(filepath)
 
@@ -388,6 +395,9 @@ class SubPanelList(CheckpointsPanelMixin, Panel):
 
     @classmethod
     def poll(cls, context):
+        if not helpers._CHECKPOINT_KEY:
+            return False
+
         return context.window_manager.cps.isInitialized
 
     def draw_header(self, context):
@@ -518,6 +528,9 @@ class SubPanelAdd(CheckpointsPanelMixin, Panel):
 
     @classmethod
     def poll(cls, context):
+        if not helpers._CHECKPOINT_KEY:
+            return False
+
         return context.window_manager.cps.isInitialized
 
     def draw(self, context):

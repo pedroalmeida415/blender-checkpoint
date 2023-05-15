@@ -4,6 +4,7 @@ import shutil
 import importlib
 
 import bpy
+from bpy.props import StringProperty
 
 # Local imports implemented to support Blender refreshes
 modulesNames = ("helpers",)
@@ -74,6 +75,44 @@ class ResetProject(bpy.types.Operator):
         return {"FINISHED"}
 
 
+class ActivateLicense(bpy.types.Operator):
+    bl_idname = "cps.activate_license"
+    bl_label = "Activate License"
+
+    license_key: StringProperty(
+        name="license_key",
+    )
+
+    def invoke(self, context, event):
+        wm = context.window_manager
+
+        return wm.invoke_props_dialog(self, width=430)
+
+    def draw(self, context):
+        layout = self.layout
+
+        row = layout.row(align=True)
+        row.prop(self, "license_key", text="Enter key")
+
+    def execute(self, context):
+        if not self.license_key:
+            return {'CANCELLED'}
+
+        error = helpers.check_license_key(self.license_key)
+
+        if error:
+            self.report(
+                {"ERROR"}, error)
+            return {"CANCELLED"}
+        else:
+            helpers._CHECKPOINT_KEY = True
+            self.license_key = ""
+            self.report(
+                {"INFO"}, "License activated successfully!")
+
+        return {"FINISHED"}
+
+
 class AddonPreferences(bpy.types.AddonPreferences):
     bl_idname = __package__
 
@@ -103,8 +142,12 @@ class AddonPreferences(bpy.types.AddonPreferences):
         row = layout.row()
         row.operator(ResetProject.bl_idname)
 
+        if not helpers._CHECKPOINT_KEY:
+            row = layout.row()
+            row.operator(ActivateLicense.bl_idname)
 
-classes = (ResetProject, AddonPreferences)
+
+classes = (ResetProject, ActivateLicense, AddonPreferences)
 
 
 def register():

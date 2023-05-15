@@ -5,6 +5,13 @@ import shutil
 
 from datetime import datetime, timezone, timedelta
 
+from urllib.request import urlopen, Request
+from urllib.error import HTTPError
+import urllib.parse
+
+import json
+
+
 # Format: Fri Sep  2 19:36:07 2022 +0530
 CP_TIME_FORMAT = "%c %z"
 
@@ -13,6 +20,14 @@ TIMELINES = "timelines"
 CHECKPOINTS = "saves"
 PERSISTED_STATE = "_persisted_state.json"
 ORIGINAL_TL = "Original.json"
+
+_CHECKPOINT_KEY_FILE_PATH = os.path.join(
+    os.path.expanduser("~"), ".checkpoint")
+_CHECKPOINT_KEY = os.path.exists(_CHECKPOINT_KEY_FILE_PATH)
+TEN_SEATS_VERSION = "10_seats"
+TWENTY_SEATS_VERSION = "20_seats"
+SUPERCHARGED_VERSION = "supercharged"
+STANDALONE_VERSION = "standalone"
 
 
 def _get_disk_usage(filepath):
@@ -411,3 +426,53 @@ def export_checkpoint(filepath, checkpoint_id, description):
 
     export_name = os.path.join(export_path, f"{description}.blend")
     shutil.copy(checkpoint, export_name)
+
+
+def check_license_key(license_key: str):
+    params = {'product_id': '5VU7EnKLdJjqB_PHlWeJQw==',  # constant
+              'license_key': license_key,
+              'increment_uses_count': str(not _CHECKPOINT_KEY).lower()}
+
+    query_string = urllib.parse.urlencode(params)
+
+    req = Request(
+        f"https://api.gumroad.com/v2/licenses/verify?{query_string}", method='POST')
+
+    try:
+        # make request
+        response_data = urlopen(req, None).read().decode()
+        response = json.loads(response_data)
+
+        parsed_variant = _parse_variant(response["purchase"]["variants"])
+
+        if parsed_variant == SUPERCHARGED_VERSION:
+            return "Supercharged version is still in development and doesn't give you access to the addon yet!"
+
+        uses = response["uses"]
+
+        if parsed_variant == STANDALONE_VERSION and uses > 1:
+            return "This key has already been claimed. If you think this is a mistake, contact us by email or discord."
+
+        if (parsed_variant == TEN_SEATS_VERSION and uses > 10) or (parsed_variant == TWENTY_SEATS_VERSION and uses > 20):
+            return "You have reached the maximum ammount of users for this key. If you think this is a mistake, contact us by email or discord."
+
+        with open(_CHECKPOINT_KEY_FILE_PATH, "w") as f:
+            # Write your environment variables in key=value format
+            f.write(f"LICENSE_KEY={license_key}\n")
+
+    except HTTPError as e:
+        error_data = e.read().decode()
+        error = json.loads(error_data)
+
+        return error["message"]
+
+
+def _parse_variant(variant: str):
+    if "10 seats" in variant.lower():
+        return TEN_SEATS_VERSION
+    if "20 seats" in variant.lower():
+        return TWENTY_SEATS_VERSION
+    if "supercharged" in variant.lower():
+        return SUPERCHARGED_VERSION
+
+    return STANDALONE_VERSION

@@ -24,6 +24,9 @@ class PostSaveDialog(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
+        if not helpers._CHECKPOINT_KEY:
+            return False
+
         filepath = bpy.path.abspath("//")
         filename = bpy.path.basename(bpy.data.filepath)
 
