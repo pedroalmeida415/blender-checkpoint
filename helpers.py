@@ -3,13 +3,11 @@ import json
 import uuid
 import shutil
 
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 
 from urllib.request import urlopen, Request
 from urllib.error import HTTPError
 import urllib.parse
-
-import json
 
 
 # Format: Fri Sep  2 19:36:07 2022 +0530
