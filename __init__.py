@@ -3,7 +3,7 @@ import sys
 import os
 
 bl_info = {
-    "name": "Checkpoint",
+    "name": "Checkpoint - Full",
     "author": "Flowerboy Studio",
     "description": "Backup and version control for Blender",
     "blender": (3, 4, 1),
