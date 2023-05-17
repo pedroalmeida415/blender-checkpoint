@@ -24,6 +24,7 @@ _CHECKPOINT_KEY_FILE_PATH = os.path.join(
 _CHECKPOINT_KEY = os.path.exists(_CHECKPOINT_KEY_FILE_PATH)
 TEN_SEATS_VERSION = "10_seats"
 STANDALONE_VERSION = "standalone"
+WRONG_KEY_VERSION = "wrong_key_version"
 
 
 def _get_disk_usage(filepath):
@@ -441,6 +442,9 @@ def check_license_key(license_key: str):
 
         parsed_variant = _parse_variant(response["purchase"]["variants"])
 
+        if parsed_variant == WRONG_KEY_VERSION:
+            return "This key does not belong to this product version. If you think this is a mistake, contact us by email or discord."
+
         uses = response["uses"]
 
         if parsed_variant == STANDALONE_VERSION and uses > 1:
@@ -461,6 +465,9 @@ def check_license_key(license_key: str):
 
 
 def _parse_variant(variant: str):
+    if "lite" in variant.lower():
+        return WRONG_KEY_VERSION
+
     if "10 seats" in variant.lower():
         return TEN_SEATS_VERSION
 
