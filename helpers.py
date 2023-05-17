@@ -23,8 +23,6 @@ _CHECKPOINT_KEY_FILE_PATH = os.path.join(
     os.path.expanduser("~"), ".checkpoint")
 _CHECKPOINT_KEY = os.path.exists(_CHECKPOINT_KEY_FILE_PATH)
 TEN_SEATS_VERSION = "10_seats"
-TWENTY_SEATS_VERSION = "20_seats"
-SUPERCHARGED_VERSION = "supercharged"
 STANDALONE_VERSION = "standalone"
 
 
@@ -443,15 +441,12 @@ def check_license_key(license_key: str):
 
         parsed_variant = _parse_variant(response["purchase"]["variants"])
 
-        if parsed_variant == SUPERCHARGED_VERSION:
-            return "Supercharged version is still in development and doesn't give you access to the addon yet!"
-
         uses = response["uses"]
 
         if parsed_variant == STANDALONE_VERSION and uses > 1:
             return "This key has already been claimed. If you think this is a mistake, contact us by email or discord."
 
-        if (parsed_variant == TEN_SEATS_VERSION and uses > 10) or (parsed_variant == TWENTY_SEATS_VERSION and uses > 20):
+        if parsed_variant == TEN_SEATS_VERSION and uses > 10:
             return "You have reached the maximum ammount of users for this key. If you think this is a mistake, contact us by email or discord."
 
         with open(_CHECKPOINT_KEY_FILE_PATH, "w") as f:
@@ -468,9 +463,5 @@ def check_license_key(license_key: str):
 def _parse_variant(variant: str):
     if "10 seats" in variant.lower():
         return TEN_SEATS_VERSION
-    if "20 seats" in variant.lower():
-        return TWENTY_SEATS_VERSION
-    if "supercharged" in variant.lower():
-        return SUPERCHARGED_VERSION
 
     return STANDALONE_VERSION
