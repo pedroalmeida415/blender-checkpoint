@@ -264,12 +264,16 @@ class CheckpointsList(UIList):
         return flt_flags, []
 
 
+TIMELINE_ACTION_OPTIONS_2_83_POLYFILL = "DEFAULT_CLOSED" if (
+    2, 84, 0) > bpy.app.version else "INSTANCED"
+
+
 class NewTimelinePanel(CheckpointsPanelMixin, Panel):
     """Add new timeline"""
 
     bl_idname = "CPS_PT_new_timeline_panel"
     bl_label = ""
-    bl_options = {'INSTANCED'}
+    bl_options = {TIMELINE_ACTION_OPTIONS_2_83_POLYFILL}
 
     def draw(self, context):
         cps_context = context.window_manager.cps
@@ -302,7 +306,7 @@ class DeleteTimelinePanel(CheckpointsPanelMixin, Panel):
 
     bl_idname = "CPS_PT_delete_timeline_panel"
     bl_label = ""
-    bl_options = {'INSTANCED'}
+    bl_options = {TIMELINE_ACTION_OPTIONS_2_83_POLYFILL}
 
     def draw(self, context):
         filepath = bpy.path.abspath("//")
@@ -342,7 +346,7 @@ class EditTimelinePanel(CheckpointsPanelMixin, Panel):
 
     bl_idname = "CPS_PT_edit_timeline_panel"
     bl_label = ""
-    bl_options = {'INSTANCED'}
+    bl_options = {TIMELINE_ACTION_OPTIONS_2_83_POLYFILL}
 
     def draw(self, context):
         filepath = bpy.path.abspath("//")
@@ -380,7 +384,7 @@ class SwitchTimelineErrorTooltip(CheckpointsPanelMixin, Panel):
 
     bl_idname = "CPS_PT_switch_timeline_error_panel"
     bl_label = ""
-    bl_options = {'INSTANCED'}
+    bl_options = {TIMELINE_ACTION_OPTIONS_2_83_POLYFILL}
 
     def draw(self, context):
         layout = self.layout
@@ -605,6 +609,8 @@ def register():
 def unregister():
     for cls in classes:
         bpy.utils.unregister_class(cls)
+
+    del bpy.types.WindowManager.cps
 
 
 if __name__ == "__main__":
