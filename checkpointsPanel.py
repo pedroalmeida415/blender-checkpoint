@@ -42,6 +42,10 @@ class CheckpointsListItem(PropertyGroup):
 # bpy.context.window_manager.popup_menu(errorPopupDraw, title="Error", icon='ERROR')
 
 
+TIMELINES_DEFAULT_POLYFILL_2_83 = None if (
+    2, 84, 0) > bpy.app.version else -1
+
+
 class CheckpointsPanelData(PropertyGroup):
     def getTimelines(self, context):
         filepath = bpy.path.abspath("//")
@@ -80,7 +84,7 @@ class CheckpointsPanelData(PropertyGroup):
         name="Timeline",
         description="Current timeline",
         items=getTimelines,
-        default=-1,
+        default=TIMELINES_DEFAULT_POLYFILL_2_83,
         options={'ANIMATABLE'},
         update=setActiveTimeline
     )
