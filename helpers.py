@@ -465,7 +465,7 @@ def check_license_key(license_key: str):
 
 
 def _parse_variant(variant: str):
-    if "lite" in variant.lower():
+    if not "full" in variant.lower():
         return WRONG_KEY_VERSION
 
     if "10 seats" in variant.lower():
