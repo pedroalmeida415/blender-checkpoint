@@ -3,12 +3,12 @@ import sys
 import os
 
 bl_info = {
-    "name": "Checkpoint - Full",
+    "name": "Checkpoint - Supercharged",
     "author": "Flowerboy Studio",
     "description": "Backup and version control for Blender",
     "blender": (3, 4, 1),
     "category": "Development",
-    "version": (1, 0, 2),
+    "version": (0, 0, 2),
     "location": "Properties > Active Tool and Workspace settings > Checkpoints Panel",
 }
 
@@ -16,7 +16,7 @@ bl_info = {
 # Local imports implemented to support Blender refreshes
 """ORDER MATTERS"""
 modulesNames = ("operators", "postSaveDialog",
-                "checkpointsPanel", "appHandlers", "preferences", "helpers")
+                "checkpointsPanel", "appHandlers", "supercharged", "preferences", "helpers")
 for module in modulesNames:
     if module in sys.modules:
         importlib.reload(sys.modules[module])

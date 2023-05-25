@@ -2,6 +2,7 @@ import os
 import json
 import uuid
 import shutil
+import textwrap
 
 from datetime import datetime, timezone
 
@@ -56,6 +57,17 @@ def _get_paths(filepath):
             TIMELINES: _timelines_folder_path,
             CHECKPOINTS: _saves_folder_path,
             PERSISTED_STATE: _persisted_state_path}
+
+
+def multiline_label(context, text, parent, icon="NONE"):
+    chars = int(context.region.width / 8)   # 7 pix on 1 character
+    wrapper = textwrap.TextWrapper(width=chars)
+    text_lines = wrapper.wrap(text=text)
+    for i, text_line in enumerate(text_lines):
+        if i == 0:
+            parent.label(text=text_line, icon=icon)
+            continue
+        parent.label(text=text_line)
 
 
 def getLastModifiedStr(date):

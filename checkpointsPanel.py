@@ -135,17 +135,6 @@ class CheckpointsPanelMixin:
     bl_category = 'Tool'
 
 
-def _label_multiline(context, text, parent, icon="NONE"):
-    chars = int(context.region.width / 8)   # 7 pix on 1 character
-    wrapper = textwrap.TextWrapper(width=chars)
-    text_lines = wrapper.wrap(text=text)
-    for i, text_line in enumerate(text_lines):
-        if i == 0:
-            parent.label(text=text_line, icon=icon)
-            continue
-        parent.label(text=text_line)
-
-
 class CheckpointsPanel(CheckpointsPanelMixin, Panel):
     bl_idname = "CPS_PT_checkpoints"
     bl_label = "Checkpoints"
@@ -198,7 +187,7 @@ class CheckpointsPanel(CheckpointsPanelMixin, Panel):
             layout.separator()
 
             text = 'This happens when you rename the project file, or when you have other projects in the same folder and one of them already initialized the addon before.'
-            _label_multiline(
+            helpers.multiline_label(
                 context=context,
                 text=text,
                 parent=layout,
@@ -208,7 +197,7 @@ class CheckpointsPanel(CheckpointsPanelMixin, Panel):
             layout.separator()
 
             text = 'Keep in mind that separate projects need to have dedicated folders for each of them for the addon to work properly.'
-            _label_multiline(
+            helpers.multiline_label(
                 context=context,
                 text=text,
                 parent=layout,
