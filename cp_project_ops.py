@@ -1,35 +1,8 @@
-import os
-import sys
-import importlib
-import re
-from unicodedata import normalize
-
 import bpy
 from bpy.types import Operator
 from bpy.props import (StringProperty, BoolProperty)
 
-# Local imports implemented to support Blender refreshes
-modulesNames = ("helpers",)
-for module in modulesNames:
-    if module in sys.modules:
-        importlib.reload(sys.modules[module])
-    else:
-        parent = ".".join(__name__.split(".")[:-1])
-        globals()[module] = importlib.import_module(f"{parent}.{module}")
-
-
-NEW_PROJECT_ICON = 'NEWFOLDER'
-
-
-def slugify(text):
-    """
-    Simplifies a string, converts it to lowercase, removes non-word characters
-    and spaces, converts spaces and apostrophes to hyphens.
-    """
-    text = normalize('NFKD', text).encode('ASCII', 'ignore').decode('ASCII')
-    text = re.sub(r'[^\w\s\'-]', '', text).strip().lower()
-    text = re.sub(r'[-\s\'"]+', '-', text)
-    return text
+from .cp_project_helpers import *
 
 
 class StartVersionControl(Operator):
@@ -48,7 +21,7 @@ class StartVersionControl(Operator):
             return {'CANCELLED'}
 
         bpy.ops.wm.save_mainfile()
-        helpers.initialize_version_control(filepath, filename)
+        initialize_version_control(filepath, filename)
 
         cps_context.isInitialized = True
         cps_context.selectedListIndex = 0
@@ -72,7 +45,7 @@ class RenameProject(Operator):
     def execute(self, context):
         filepath = bpy.path.abspath("//")
 
-        helpers.set_state(filepath, "filename", self.name)
+        set_state(filepath, "filename", self.name)
 
         self.report({"INFO"}, "Renamed successfully, all set!")
         return {'FINISHED'}
@@ -101,7 +74,7 @@ class NewTimeline(Operator):
 
         slugfied_name = slugify(self.name)
         try:
-            new_name = helpers.create_new_timeline(
+            new_name = create_new_timeline(
                 filepath, slugfied_name, cps_context.selectedListIndex, self.new_tl_keep_history)
         except FileExistsError:
             self.report(
@@ -111,7 +84,7 @@ class NewTimeline(Operator):
         # Clean up
         cps_context.selectedListIndex = 0
 
-        helpers.switch_timeline(filepath, new_name)
+        switch_timeline(filepath, new_name)
 
         self.name = ""
         self.new_tl_keep_history = False
@@ -131,7 +104,7 @@ class DeleteTimeline(Operator):
 
     def execute(self, context):
         filepath = bpy.path.abspath("//")
-        state = helpers.get_state(filepath)
+        state = get_state(filepath)
         cps_context = context.window_manager.cps
 
         # get current timeline's checkpoints that will be deleted
@@ -140,10 +113,11 @@ class DeleteTimeline(Operator):
         to_delete_tl = state["current_timeline"]
 
         # delete previous timeline
-        helpers.delete_timeline(filepath, to_delete_tl, tl_checkpoints_count)
+        delete_timeline(
+            filepath, to_delete_tl, tl_checkpoints_count)
 
         # switch to original timeline
-        helpers.switch_timeline(filepath)
+        switch_timeline(filepath)
 
         bpy.ops.wm.revert_mainfile()
 
@@ -169,7 +143,7 @@ class RenameTimeline(Operator):
         slugified_name = slugify(self.name)
 
         try:
-            helpers.rename_timeline(filepath, slugified_name)
+            rename_timeline(filepath, slugified_name)
         except FileExistsError:
             self.report(
                 {"ERROR"}, f"A timeline with name {self.name} already exists")
@@ -203,7 +177,7 @@ class LoadCheckpoint(Operator):
         if activeCheckpointId == self.id:
             return {'CANCELLED'}
 
-        helpers.load_checkpoint(filepath, self.id)
+        load_checkpoint(filepath, self.id)
 
         bpy.ops.wm.revert_mainfile()
 
@@ -231,7 +205,7 @@ class AddCheckpoint(Operator):
 
         bpy.ops.wm.save_mainfile()
 
-        helpers.add_checkpoint(filepath, self.description)
+        add_checkpoint(filepath, self.description)
 
         self.description = ""
         cps_context.selectedListIndex = 0
@@ -273,7 +247,8 @@ class DeleteCheckpoint(Operator):
 
         filepath = bpy.path.abspath("//")
 
-        helpers.delete_checkpoint(filepath, cps_context.selectedListIndex)
+        delete_checkpoint(
+            filepath, cps_context.selectedListIndex)
 
         # Clean up
         self.id = ""
@@ -317,7 +292,7 @@ class EditCheckpoint(Operator):
 
         filepath = bpy.path.abspath("//")
 
-        helpers.edit_checkpoint(
+        edit_checkpoint(
             filepath, cps_context.selectedListIndex, cps_context.checkpointDescription)
 
         # Clean up
@@ -345,7 +320,8 @@ class ExportCheckpoint(Operator):
         cps_context = context.window_manager.cps
         checkpointDescription = cps_context.checkpoints[cps_context.selectedListIndex]["description"]
 
-        helpers.export_checkpoint(filepath, self.id, checkpointDescription)
+        export_checkpoint(
+            filepath, self.id, checkpointDescription)
 
         # Clean up
         self.id = ""
@@ -361,7 +337,7 @@ class PostSaveDialog(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        if not helpers._CHECKPOINT_KEY:
+        if not CHECKPOINT_KEY:
             return False
 
         filepath = bpy.path.abspath("//")
@@ -370,7 +346,7 @@ class PostSaveDialog(bpy.types.Operator):
         cps_context = context.window_manager.cps
 
         try:
-            state = helpers.get_state(filepath)
+            state = get_state(filepath)
         except FileNotFoundError:
             return False
 
@@ -381,7 +357,7 @@ class PostSaveDialog(bpy.types.Operator):
         filepath = bpy.path.abspath("//")
 
         try:
-            helpers.get_state(filepath)
+            get_state(filepath)
             return wm.invoke_props_dialog(self, width=400)
         except FileNotFoundError:
             return {'CANCELLED'}
@@ -410,7 +386,7 @@ class PostSaveDialog(bpy.types.Operator):
 
         filepath = bpy.path.abspath("//")
 
-        helpers.add_checkpoint(filepath, description)
+        add_checkpoint(filepath, description)
 
         cps_context.selectedListIndex = 0
         if cps_context.checkpointDescription:
@@ -434,7 +410,3 @@ def register():
 def unregister():
     for cls in classes:
         bpy.utils.unregister_class(cls)
-
-
-if __name__ == "__main__":
-    register()

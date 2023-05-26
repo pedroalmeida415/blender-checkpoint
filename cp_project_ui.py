@@ -1,21 +1,12 @@
-import sys
-import importlib
 from datetime import datetime
-import textwrap
 
 import bpy
 from bpy.types import Panel, PropertyGroup, UIList
 from bpy.props import (CollectionProperty, EnumProperty, IntProperty,
                        PointerProperty, StringProperty, BoolProperty)
 
-# Local imports implemented to support Blender refreshes
-modulesNames = ("helpers", "operators")
-for module in modulesNames:
-    if module in sys.modules:
-        importlib.reload(sys.modules[module])
-    else:
-        parent = ".".join(__name__.split(".")[:-1])
-        globals()[module] = importlib.import_module(f"{parent}.{module}")
+from .cp_project_helpers import *
+from .cp_project_ops import *
 
 
 TIMELINE_ICON = 'WINDOW'
@@ -49,8 +40,8 @@ TIMELINES_DEFAULT_POLYFILL_2_83 = None if (
 class CheckpointsPanelData(PropertyGroup):
     def getTimelines(self, context):
         filepath = bpy.path.abspath("//")
-        state = helpers.get_state(filepath)
-        timelines = helpers.listall_timelines(filepath)
+        state = get_state(filepath)
+        timelines = listall_timelines(filepath)
 
         currentTimeline = state["current_timeline"]
 
@@ -66,8 +57,8 @@ class CheckpointsPanelData(PropertyGroup):
 
     def setActiveTimeline(self, context):
         filepath = bpy.path.abspath("//")
-        state = helpers.get_state(filepath)
-        timelines = helpers.listall_timelines(filepath)
+        state = get_state(filepath)
+        timelines = listall_timelines(filepath)
 
         selectedTimeline = context.window_manager.cps.timelines
         currentTimeline = state["current_timeline"]
@@ -75,7 +66,7 @@ class CheckpointsPanelData(PropertyGroup):
         if not selectedTimeline in timelines or selectedTimeline == currentTimeline:
             return
 
-        helpers.switch_timeline(filepath, selectedTimeline)
+        switch_timeline(filepath, selectedTimeline)
 
         # Load the reverted file
         bpy.ops.wm.revert_mainfile()
@@ -142,7 +133,7 @@ class CheckpointsPanel(CheckpointsPanelMixin, Panel):
     def draw(self, context):
         layout = self.layout
 
-        if not helpers._CHECKPOINT_KEY:
+        if not CHECKPOINT_KEY:
             row = layout.row()
             row.alignment = 'CENTER'
             row.label(
@@ -154,12 +145,12 @@ class CheckpointsPanel(CheckpointsPanelMixin, Panel):
 
         cps_context = context.window_manager.cps
 
-        has_root_folder = helpers.has_root_folder(filepath)
+        root_folder = has_root_folder(filepath)
 
-        if not has_root_folder:
+        if not root_folder:
             cps_context.isInitialized = False
             row = layout.row()
-            row.operator(operators.StartVersionControl.bl_idname,
+            row.operator(StartVersionControl.bl_idname,
                          text="Start Version Control", icon=TIMELINE_ICON)
             if not bpy.data.is_saved:
                 row.enabled = False
@@ -168,7 +159,7 @@ class CheckpointsPanel(CheckpointsPanelMixin, Panel):
                 row.label(text="You must save your project first")
             return
 
-        state = helpers.get_state(filepath)
+        state = get_state(filepath)
         if state["filename"] != filename:
             cps_context.isInitialized = False
 
@@ -181,13 +172,13 @@ class CheckpointsPanel(CheckpointsPanelMixin, Panel):
             row.label(
                 text="If this is intentional, click the button below")
             row = layout.row()
-            renameOps = row.operator(operators.RenameProject.bl_idname)
+            renameOps = row.operator(RenameProject.bl_idname)
             renameOps.name = filename
 
             layout.separator()
 
             text = 'This happens when you rename the project file, or when you have other projects in the same folder and one of them already initialized the addon before.'
-            helpers.multiline_label(
+            multiline_label(
                 context=context,
                 text=text,
                 parent=layout,
@@ -197,7 +188,7 @@ class CheckpointsPanel(CheckpointsPanelMixin, Panel):
             layout.separator()
 
             text = 'Keep in mind that separate projects need to have dedicated folders for each of them for the addon to work properly.'
-            helpers.multiline_label(
+            multiline_label(
                 context=context,
                 text=text,
                 parent=layout,
@@ -224,8 +215,9 @@ class CheckpointsList(UIList):
                    icon=ACTIVE_CHECKPOINT_ICON if isActiveCheckpoint else CHECKPOINT_ICON)
 
         # Get last mofied string
-        checkpoint_time = datetime.strptime(item.date, helpers.CP_TIME_FORMAT)
-        lastModified = helpers.getLastModifiedStr(checkpoint_time)
+        checkpoint_time = datetime.strptime(
+            item.date, CP_TIME_FORMAT)
+        lastModified = getLastModifiedStr(checkpoint_time)
 
         col2 = row.column()
         col2.alignment = "RIGHT"
@@ -284,7 +276,7 @@ class NewTimelinePanel(CheckpointsPanelMixin, Panel):
         if not name:
             row.enabled = False
 
-        tl_ops = row.operator(operators.NewTimeline.bl_idname,
+        tl_ops = row.operator(NewTimeline.bl_idname,
                               text="Create Timeline")
         tl_ops.name = name
         tl_ops.new_tl_keep_history = new_tl_keep_history
@@ -299,10 +291,10 @@ class DeleteTimelinePanel(CheckpointsPanelMixin, Panel):
 
     def draw(self, context):
         filepath = bpy.path.abspath("//")
-        state = helpers.get_state(filepath)
+        state = get_state(filepath)
         currentTimeline = state.get("current_timeline")
 
-        is_original_timeline = currentTimeline == helpers.ORIGINAL_TL
+        is_original_timeline = currentTimeline == ORIGINAL_TL
 
         layout = self.layout
 
@@ -326,7 +318,7 @@ class DeleteTimelinePanel(CheckpointsPanelMixin, Panel):
                 text='This will delete the current timeline. There is no going back.', icon=DELETE_ICON)
 
             row = layout.row()
-            row.operator(operators.DeleteTimeline.bl_idname,
+            row.operator(DeleteTimeline.bl_idname,
                          text="Delete Timeline")
 
 
@@ -339,10 +331,10 @@ class EditTimelinePanel(CheckpointsPanelMixin, Panel):
 
     def draw(self, context):
         filepath = bpy.path.abspath("//")
-        state = helpers.get_state(filepath)
+        state = get_state(filepath)
         currentTimeline = state.get("current_timeline")
 
-        is_original_timeline = currentTimeline == helpers.ORIGINAL_TL
+        is_original_timeline = currentTimeline == ORIGINAL_TL
 
         layout = self.layout
 
@@ -363,7 +355,7 @@ class EditTimelinePanel(CheckpointsPanelMixin, Panel):
             if not name:
                 row.enabled = False
 
-            operator = row.operator(operators.RenameTimeline.bl_idname,
+            operator = row.operator(RenameTimeline.bl_idname,
                                     text="Rename")
             operator.name = name
 
@@ -392,7 +384,7 @@ class SubPanelList(CheckpointsPanelMixin, Panel):
 
     @classmethod
     def poll(cls, context):
-        if not helpers._CHECKPOINT_KEY:
+        if not CHECKPOINT_KEY:
             return False
 
         return context.window_manager.cps.isInitialized
@@ -409,7 +401,7 @@ class SubPanelList(CheckpointsPanelMixin, Panel):
         row_button.scale_x = 0.8
 
         # TODO melhorar para não travar mais as ações, e sim exibir aviso de que alterações serão perdidas
-        isFileModified = helpers.check_is_modified(filepath)
+        isFileModified = check_is_modified(filepath)
 
         if isFileModified:
             row.enabled = False
@@ -456,7 +448,7 @@ class SubPanelList(CheckpointsPanelMixin, Panel):
 
             isBlenderDirty = bpy.data.is_dirty
 
-            isFileModified = helpers.check_is_modified(filepath)
+            isFileModified = check_is_modified(filepath)
 
             shouldShowError = (
                 isActionButtonsEnabled and isFileModified) or isBlenderDirty
@@ -469,32 +461,32 @@ class SubPanelList(CheckpointsPanelMixin, Panel):
 
             loadCol = row.column()
             loadCol.enabled = isActionButtonsEnabled
-            loadOps = loadCol.operator(operators.LoadCheckpoint.bl_idname,
+            loadOps = loadCol.operator(LoadCheckpoint.bl_idname,
                                        text="Load", icon=LOAD_ICON)
             loadOps.id = selectedCheckpointId
 
             deleteCol = row.column()
             deleteCol.enabled = isActionButtonsEnabled and not isSelectedCheckpointInitial
-            deleteCol.operator(operators.DeleteCheckpoint.bl_idname,
+            deleteCol.operator(DeleteCheckpoint.bl_idname,
                                text="Delete", icon=DELETE_ICON)
 
             row = layout.row()
 
             exportCol = row.column()
-            exportOps = exportCol.operator(operators.ExportCheckpoint.bl_idname,
+            exportOps = exportCol.operator(ExportCheckpoint.bl_idname,
                                            text="Export", icon="EXPORT")
             exportOps.id = selectedCheckpointId
 
             editCol = row.column()
             editCol.enabled = not isSelectedCheckpointInitial
-            editCol.operator(operators.EditCheckpoint.bl_idname,
+            editCol.operator(EditCheckpoint.bl_idname,
                              text="Edit", icon=EDIT_ICON)
 
 
 def addCheckpointsToList():
     """Add checkpoints to list"""
     filepath = bpy.path.abspath("//")
-    state = helpers.get_state(filepath)
+    state = get_state(filepath)
 
     cps_context = bpy.context.window_manager.cps
 
@@ -509,7 +501,7 @@ def addCheckpointsToList():
     cps_context.diskUsage = state["disk_usage"]
 
     current_timeline = state["current_timeline"]
-    cps = helpers.get_checkpoints(filepath, current_timeline)
+    cps = get_checkpoints(filepath, current_timeline)
     for cp in cps:
         item = checkpoints.add()
         item.id = cp["id"]
@@ -525,7 +517,7 @@ class SubPanelAdd(CheckpointsPanelMixin, Panel):
 
     @classmethod
     def poll(cls, context):
-        if not helpers._CHECKPOINT_KEY:
+        if not CHECKPOINT_KEY:
             return False
 
         return context.window_manager.cps.isInitialized
@@ -552,7 +544,7 @@ class SubPanelAdd(CheckpointsPanelMixin, Panel):
         if not description:
             addCol.enabled = False
 
-        checkpoint = addCol.operator(operators.AddCheckpoint.bl_idname)
+        checkpoint = addCol.operator(AddCheckpoint.bl_idname)
         checkpoint.description = description
 
         layout.separator()
@@ -600,7 +592,3 @@ def unregister():
         bpy.utils.unregister_class(cls)
 
     del bpy.types.WindowManager.cps
-
-
-if __name__ == "__main__":
-    register()

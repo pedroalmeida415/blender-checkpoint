@@ -1,49 +1,7 @@
-import sys
-import importlib
-
 import bpy
-from bpy.types import Panel, Operator
+from bpy.types import Panel
 
-modulesNames = ("helpers",)
-for module in modulesNames:
-    if module in sys.modules:
-        importlib.reload(sys.modules[module])
-    else:
-        parent = ".".join(__name__.split(".")[:-1])
-        globals()[module] = importlib.import_module(f"{parent}.{module}")
-
-
-class AddObjectCheckpoint(Operator):
-    """Add"""
-
-    bl_label = __doc__
-    bl_idname = "cps.add_object_checkpoint"
-
-    def execute(self, context):
-
-        return {'FINISHED'}
-
-
-class LoadObjectCheckpoint(Operator):
-    """Load"""
-
-    bl_label = __doc__
-    bl_idname = "cps.load_object_checkpoint"
-
-    def execute(self, context):
-
-        return {'FINISHED'}
-
-
-class DeleteObjectCheckpoint(Operator):
-    """Delete"""
-
-    bl_label = __doc__
-    bl_idname = "cps.delete_object_checkpoint"
-
-    def execute(self, context):
-
-        return {'FINISHED'}
+from .cp_object_ops import *
 
 
 class ObjectCheckpointsPanelMixin:
@@ -75,8 +33,7 @@ class ObjectCheckpointsPanel(ObjectCheckpointsPanelMixin, Panel):
 
 
 """ORDER MATTERS"""
-classes = (AddObjectCheckpoint, LoadObjectCheckpoint,
-           DeleteObjectCheckpoint, ObjectCheckpointsPanel)
+classes = (ObjectCheckpointsPanel,)
 
 
 def register():
@@ -87,7 +44,3 @@ def register():
 def unregister():
     for cls in classes:
         bpy.utils.unregister_class(cls)
-
-
-if __name__ == "__main__":
-    register()

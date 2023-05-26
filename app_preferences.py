@@ -1,19 +1,10 @@
 import os
-import sys
 import shutil
-import importlib
 
 import bpy
 from bpy.props import StringProperty
 
-# Local imports implemented to support Blender refreshes
-modulesNames = ("helpers",)
-for module in modulesNames:
-    if module in sys.modules:
-        importlib.reload(sys.modules[module])
-    else:
-        parent = ".".join(__name__.split(".")[:-1])
-        globals()[module] = importlib.import_module(f"{parent}.{module}")
+from .app_helpers import *
 
 
 def get_user_preferences(context=None):
@@ -61,7 +52,7 @@ class ResetProject(bpy.types.Operator):
     def execute(self, context):
         filepath = bpy.path.abspath("//")
 
-        root_path = os.path.join(filepath, helpers.ROOT)
+        root_path = os.path.join(filepath, ROOT)
         if os.path.exists(root_path):
             shutil.rmtree(root_path)
 
@@ -98,14 +89,14 @@ class ActivateLicense(bpy.types.Operator):
         if not self.license_key:
             return {'CANCELLED'}
 
-        error = helpers.check_license_key(self.license_key)
+        error = check_license_key(self.license_key)
 
         if error:
             self.report(
                 {"ERROR"}, error)
             return {"CANCELLED"}
         else:
-            helpers._CHECKPOINT_KEY = True
+            CHECKPOINT_KEY = True
             self.license_key = ""
             self.report(
                 {"INFO"}, "License activated successfully!")
@@ -142,11 +133,12 @@ class AddonPreferences(bpy.types.AddonPreferences):
         row = layout.row()
         row.operator(ResetProject.bl_idname)
 
-        if not helpers._CHECKPOINT_KEY:
+        if not CHECKPOINT_KEY:
             row = layout.row()
             row.operator(ActivateLicense.bl_idname)
 
 
+"""ORDER MATTERS"""
 classes = (ResetProject, ActivateLicense, AddonPreferences)
 
 
@@ -158,7 +150,3 @@ def register():
 def unregister():
     for cls in classes:
         bpy.utils.unregister_class(cls)
-
-
-if __name__ == "__main__":
-    register()
