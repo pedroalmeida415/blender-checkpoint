@@ -59,7 +59,7 @@ class ObjectCheckpointsPanel(ObjectCheckpointsPanelMixin, Panel):
 
     @classmethod
     def poll(cls, context):
-        return (context.object is not None)
+        return bool(context.selected_objects)
 
     def draw(self, context):
         layout = self.layout
