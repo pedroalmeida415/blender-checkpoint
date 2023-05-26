@@ -2,7 +2,6 @@ import os
 import json
 import uuid
 import shutil
-import textwrap
 
 from datetime import datetime, timezone
 
@@ -10,22 +9,11 @@ from urllib.request import urlopen, Request
 from urllib.error import HTTPError
 import urllib.parse
 
+from .app_helpers import *
+
 
 # Format: Fri Sep  2 19:36:07 2022 +0530
 CP_TIME_FORMAT = "%c %z"
-
-ROOT = ".checkpoints"
-TIMELINES = "timelines"
-CHECKPOINTS = "saves"
-PERSISTED_STATE = "_persisted_state.json"
-ORIGINAL_TL = "Original.json"
-
-_CHECKPOINT_KEY_FILE_PATH = os.path.join(
-    os.path.expanduser("~"), ".checkpoint")
-_CHECKPOINT_KEY = os.path.exists(_CHECKPOINT_KEY_FILE_PATH)
-TEN_SEATS_VERSION = "10_seats"
-STANDALONE_VERSION = "standalone"
-WRONG_KEY_VERSION = "wrong_key_version"
 
 
 def _get_disk_usage(filepath):
@@ -38,36 +26,6 @@ def _get_disk_usage(filepath):
                 total_size += os.path.getsize(fp)
 
     return total_size
-
-
-def _get_paths(filepath):
-    _root_folder_path = os.path.join(
-        filepath, ROOT)
-
-    _timelines_folder_path = os.path.join(
-        _root_folder_path, TIMELINES)
-
-    _saves_folder_path = os.path.join(
-        _root_folder_path, CHECKPOINTS)
-
-    _persisted_state_path = os.path.join(
-        _root_folder_path, PERSISTED_STATE)
-
-    return {ROOT: _root_folder_path,
-            TIMELINES: _timelines_folder_path,
-            CHECKPOINTS: _saves_folder_path,
-            PERSISTED_STATE: _persisted_state_path}
-
-
-def multiline_label(context, text, parent, icon="NONE"):
-    chars = int(context.region.width / 8)   # 7 pix on 1 character
-    wrapper = textwrap.TextWrapper(width=chars)
-    text_lines = wrapper.wrap(text=text)
-    for i, text_line in enumerate(text_lines):
-        if i == 0:
-            parent.label(text=text_line, icon=icon)
-            continue
-        parent.label(text=text_line)
 
 
 def getLastModifiedStr(date):
@@ -120,7 +78,7 @@ def getLastModifiedStr(date):
 
 
 def initialize_version_control(filepath, filename):
-    _paths = _get_paths(filepath)
+    _paths = get_paths(filepath)
 
     _root = _paths[ROOT]
     _timelines = _paths[TIMELINES]
@@ -168,14 +126,8 @@ def initialize_version_control(filepath, filename):
             json.dump(initial_state, file)
 
 
-def listall_timelines(filepath):
-    _paths = _get_paths(
-        filepath)
-    return os.listdir(_paths[TIMELINES])
-
-
 def get_checkpoints(filepath, timeline=ORIGINAL_TL):
-    _paths = _get_paths(filepath)
+    _paths = get_paths(filepath)
 
     timeline_path = os.path.join(_paths[TIMELINES], timeline)
     with open(timeline_path) as f:
@@ -184,40 +136,8 @@ def get_checkpoints(filepath, timeline=ORIGINAL_TL):
         return timeline_history
 
 
-def has_root_folder(filepath):
-    _paths = _get_paths(
-        filepath)
-    _root = _paths[ROOT]
-
-    return os.path.exists(_root)
-
-
-def get_state(filepath):
-    _paths = _get_paths(
-        filepath)
-
-    with open(_paths[PERSISTED_STATE]) as f:
-        state = json.load(f)
-        return state
-
-
-def set_state(filepath, prop, value):
-    _paths = _get_paths(filepath)
-    with open(_paths[PERSISTED_STATE], 'r+') as f:
-        state = json.load(f)
-
-        if prop in state:
-            state[prop] = value
-        else:
-            raise ValueError(f"Property '{prop}' not found in state")
-
-        f.seek(0)
-        json.dump(state, f, indent=4)
-        f.truncate()
-
-
 def add_checkpoint(filepath, description):
-    _paths = _get_paths(filepath)
+    _paths = get_paths(filepath)
     _saves = _paths[CHECKPOINTS]
     _timelines = _paths[TIMELINES]
     state = get_state(filepath)
@@ -257,7 +177,7 @@ def add_checkpoint(filepath, description):
 
 
 def load_checkpoint(filepath, checkpoint_id):
-    _paths = _get_paths(filepath)
+    _paths = get_paths(filepath)
     state = get_state(filepath)
 
     set_state(filepath, "active_checkpoint", checkpoint_id)
@@ -270,7 +190,7 @@ def load_checkpoint(filepath, checkpoint_id):
 
 
 def delete_checkpoint(filepath, checkpoint_index):
-    _paths = _get_paths(filepath)
+    _paths = get_paths(filepath)
     state = get_state(filepath)
     _timelines = _paths[TIMELINES]
     _checkpoints = _paths[CHECKPOINTS]
@@ -311,7 +231,7 @@ def delete_checkpoint(filepath, checkpoint_index):
 
 
 def edit_checkpoint(filepath, checkpoint_index, description):
-    _paths = _get_paths(filepath)
+    _paths = get_paths(filepath)
     state = get_state(filepath)
 
     current_timeline = os.path.join(
@@ -326,44 +246,30 @@ def edit_checkpoint(filepath, checkpoint_index, description):
         f.truncate()
 
 
-def switch_timeline(filepath, timeline=ORIGINAL_TL):
-    _paths = _get_paths(filepath)
-    state = get_state(filepath)
+def export_checkpoint(filepath, checkpoint_id, description):
+    _paths = get_paths(filepath)
 
-    set_state(filepath, "current_timeline", timeline)
+    # get checkpoint wth the provided id
+    checkpoint = os.path.join(_paths[CHECKPOINTS], checkpoint_id)
 
-    timeline_path = os.path.join(_paths[TIMELINES], timeline)
-    with open(timeline_path) as f:
-        timeline_history = json.load(f)
-        first_checkpoint = timeline_history[0]
-        checkpoint = os.path.join(_paths[CHECKPOINTS], first_checkpoint["id"])
+    # create folder "exported"
+    export_path = os.path.join(filepath, "exported")
+    if not os.path.exists(export_path):
+        os.mkdir(export_path)
 
-        set_state(filepath, "active_checkpoint", first_checkpoint["id"])
-
-        filename = state["filename"]
-        destination_file = os.path.join(filepath, filename)
-        shutil.copy(checkpoint, destination_file)
+    export_name = os.path.join(export_path, f"{description}.blend")
+    shutil.copy(checkpoint, export_name)
 
 
-def check_is_modified(filepath):
-    state = get_state(filepath)
-    _paths = _get_paths(filepath)
-    _saves = _paths[CHECKPOINTS]
-
-    filename = state["filename"]
-    active_checkpoint = state["active_checkpoint"]
-
-    source_file = os.path.join(filepath, filename)
-    active_checkpoint_file = os.path.join(_saves, active_checkpoint)
-
-    stat1 = os.stat(source_file)
-    stat2 = os.stat(active_checkpoint_file)
-    return stat1.st_size != stat2.st_size
+def listall_timelines(filepath):
+    _paths = get_paths(
+        filepath)
+    return os.listdir(_paths[TIMELINES])
 
 
 def create_new_timeline(filepath, name, start_checkpoint_index, keep_history):
     state = get_state(filepath)
-    _paths = _get_paths(filepath)
+    _paths = get_paths(filepath)
     _timelines = _paths[TIMELINES]
 
     new_name = f"{name}.json"
@@ -390,7 +296,7 @@ def create_new_timeline(filepath, name, start_checkpoint_index, keep_history):
 
 
 def delete_timeline(filepath, name, checkpoints_count):
-    _paths = _get_paths(filepath)
+    _paths = get_paths(filepath)
     _timelines = _paths[TIMELINES]
 
     # Set the iteration number to 1
@@ -407,7 +313,7 @@ def delete_timeline(filepath, name, checkpoints_count):
 
 def rename_timeline(filepath, name):
     state = get_state(filepath)
-    _paths = _get_paths(filepath)
+    _paths = get_paths(filepath)
     _timelines = _paths[TIMELINES]
 
     new_name = f"{name}.json"
@@ -422,19 +328,39 @@ def rename_timeline(filepath, name):
     set_state(filepath, "current_timeline", new_name)
 
 
-def export_checkpoint(filepath, checkpoint_id, description):
-    _paths = _get_paths(filepath)
+def switch_timeline(filepath, timeline=ORIGINAL_TL):
+    _paths = get_paths(filepath)
+    state = get_state(filepath)
 
-    # get checkpoint wth the provided id
-    checkpoint = os.path.join(_paths[CHECKPOINTS], checkpoint_id)
+    set_state(filepath, "current_timeline", timeline)
 
-    # create folder "exported"
-    export_path = os.path.join(filepath, "exported")
-    if not os.path.exists(export_path):
-        os.mkdir(export_path)
+    timeline_path = os.path.join(_paths[TIMELINES], timeline)
+    with open(timeline_path) as f:
+        timeline_history = json.load(f)
+        first_checkpoint = timeline_history[0]
+        checkpoint = os.path.join(_paths[CHECKPOINTS], first_checkpoint["id"])
 
-    export_name = os.path.join(export_path, f"{description}.blend")
-    shutil.copy(checkpoint, export_name)
+        set_state(filepath, "active_checkpoint", first_checkpoint["id"])
+
+        filename = state["filename"]
+        destination_file = os.path.join(filepath, filename)
+        shutil.copy(checkpoint, destination_file)
+
+
+def check_is_modified(filepath):
+    state = get_state(filepath)
+    _paths = get_paths(filepath)
+    _saves = _paths[CHECKPOINTS]
+
+    filename = state["filename"]
+    active_checkpoint = state["active_checkpoint"]
+
+    source_file = os.path.join(filepath, filename)
+    active_checkpoint_file = os.path.join(_saves, active_checkpoint)
+
+    stat1 = os.stat(source_file)
+    stat2 = os.stat(active_checkpoint_file)
+    return stat1.st_size != stat2.st_size
 
 
 def check_license_key(license_key: str):

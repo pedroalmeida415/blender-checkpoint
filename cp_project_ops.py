@@ -18,6 +18,9 @@ for module in modulesNames:
         globals()[module] = importlib.import_module(f"{parent}.{module}")
 
 
+NEW_PROJECT_ICON = 'NEWFOLDER'
+
+
 def slugify(text):
     """
     Simplifies a string, converts it to lowercase, removes non-word characters
@@ -350,8 +353,77 @@ class ExportCheckpoint(Operator):
         return {'FINISHED'}
 
 
+class PostSaveDialog(bpy.types.Operator):
+    """Dialog to quickly add checkpoints"""
+
+    bl_label = "Add checkpoint"
+    bl_idname = "cps.post_save_dialog"
+
+    @classmethod
+    def poll(cls, context):
+        if not helpers._CHECKPOINT_KEY:
+            return False
+
+        filepath = bpy.path.abspath("//")
+        filename = bpy.path.basename(bpy.data.filepath)
+
+        cps_context = context.window_manager.cps
+
+        try:
+            state = helpers.get_state(filepath)
+        except FileNotFoundError:
+            return False
+
+        return cps_context.isInitialized and cps_context.should_display_dialog__ and state["filename"] == filename
+
+    def invoke(self, context, event):
+        wm = context.window_manager
+        filepath = bpy.path.abspath("//")
+
+        try:
+            helpers.get_state(filepath)
+            return wm.invoke_props_dialog(self, width=400)
+        except FileNotFoundError:
+            return {'CANCELLED'}
+
+    def draw(self, context):
+        layout = self.layout
+
+        row = layout.row(align=True)
+
+        col1 = row.column()
+        col1.alignment = "LEFT"
+        col1.label(text="Description: ")
+
+        col2 = row.column()
+        col2.alignment = "EXPAND"
+        col2.prop(context.window_manager.cps, "checkpointDescription")
+
+    def execute(self, context):
+        cps_context = context.window_manager.cps
+        description = cps_context.checkpointDescription
+
+        if not description:
+            self.report({'ERROR_INVALID_INPUT'},
+                        "Description cannot be empty.")
+            return {'CANCELLED'}
+
+        filepath = bpy.path.abspath("//")
+
+        helpers.add_checkpoint(filepath, description)
+
+        cps_context.selectedListIndex = 0
+        if cps_context.checkpointDescription:
+            cps_context.checkpointDescription = ""
+
+        self.report({"INFO"}, "Successfully saved!")
+
+        return {'FINISHED'}
+
+
 classes = (NewTimeline, DeleteTimeline, RenameTimeline, StartVersionControl, RenameProject,
-           LoadCheckpoint, AddCheckpoint, DeleteCheckpoint, ExportCheckpoint, EditCheckpoint)
+           LoadCheckpoint, AddCheckpoint, DeleteCheckpoint, ExportCheckpoint, EditCheckpoint,
+           PostSaveDialog)
 
 
 def register():
