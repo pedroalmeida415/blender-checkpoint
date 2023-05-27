@@ -96,6 +96,7 @@ def initialize_version_control(filepath, filename):
     _root = _paths[ROOT]
     _timelines = _paths[TIMELINES]
     _saves = _paths[CHECKPOINTS]
+    _objects = _paths[OBJECT_CHECKPOINTS]
     _persisted_state = _paths[PERSISTED_STATE]
 
     # generate folder structure
@@ -107,6 +108,9 @@ def initialize_version_control(filepath, filename):
 
     if not os.path.exists(_saves):
         os.mkdir(_saves)
+
+    if not os.path.exists(_objects):
+        os.mkdir(_objects)
 
     _original_tl_path = os.path.join(_timelines, ORIGINAL_TL)
     if not os.path.exists(_original_tl_path):

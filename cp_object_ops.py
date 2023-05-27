@@ -1,5 +1,6 @@
 import bpy
 from bpy.types import Operator
+from .cp_object_helpers import SaveSelectedObject
 
 
 class AddObjectCheckpoint(Operator):
@@ -9,6 +10,15 @@ class AddObjectCheckpoint(Operator):
     bl_idname = "cps.add_object_checkpoint"
 
     def execute(self, context):
+        filepath = bpy.path.abspath("//")
+
+        SaveSelectedObject.save_selected(
+            context=context,
+            file_path=filepath,
+            blender_path=bpy.app.binary_path,
+            to_world_origin=True,
+            cleanup_startup_file=True
+        )
 
         return {'FINISHED'}
 

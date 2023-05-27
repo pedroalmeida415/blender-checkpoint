@@ -11,6 +11,7 @@ import urllib.parse
 ROOT = ".checkpoints"
 TIMELINES = "timelines"
 CHECKPOINTS = "saves"
+OBJECT_CHECKPOINTS = "objects"
 PERSISTED_STATE = "_persisted_state.json"
 ORIGINAL_TL = "Original.json"
 
@@ -44,12 +45,16 @@ def get_paths(filepath):
     _saves_folder_path = os.path.join(
         _root_folder_path, CHECKPOINTS)
 
+    _objects_folder_path = os.path.join(
+        _root_folder_path, OBJECT_CHECKPOINTS)
+
     _persisted_state_path = os.path.join(
         _root_folder_path, PERSISTED_STATE)
 
     return {ROOT: _root_folder_path,
             TIMELINES: _timelines_folder_path,
             CHECKPOINTS: _saves_folder_path,
+            OBJECT_CHECKPOINTS: _objects_folder_path,
             PERSISTED_STATE: _persisted_state_path}
 
 
