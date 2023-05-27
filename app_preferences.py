@@ -96,7 +96,7 @@ class ActivateLicense(bpy.types.Operator):
                 {"ERROR"}, error)
             return {"CANCELLED"}
         else:
-            CHECKPOINT_KEY = True
+            HAS_CHECKPOINT_KEY = True
             self.license_key = ""
             self.report(
                 {"INFO"}, "License activated successfully!")
@@ -133,7 +133,7 @@ class AddonPreferences(bpy.types.AddonPreferences):
         row = layout.row()
         row.operator(ResetProject.bl_idname)
 
-        if not CHECKPOINT_KEY:
+        if not HAS_CHECKPOINT_KEY:
             row = layout.row()
             row.operator(ActivateLicense.bl_idname)
 

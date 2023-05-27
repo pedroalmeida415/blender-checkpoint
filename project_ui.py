@@ -133,7 +133,7 @@ class CheckpointsPanel(CheckpointsPanelMixin, Panel):
     def draw(self, context):
         layout = self.layout
 
-        if not CHECKPOINT_KEY:
+        if not HAS_CHECKPOINT_KEY:
             row = layout.row()
             row.alignment = 'CENTER'
             row.label(
@@ -384,7 +384,7 @@ class SubPanelList(CheckpointsPanelMixin, Panel):
 
     @classmethod
     def poll(cls, context):
-        if not CHECKPOINT_KEY:
+        if not HAS_CHECKPOINT_KEY:
             return False
 
         return context.window_manager.cps.isInitialized
@@ -517,7 +517,7 @@ class SubPanelAdd(CheckpointsPanelMixin, Panel):
 
     @classmethod
     def poll(cls, context):
-        if not CHECKPOINT_KEY:
+        if not HAS_CHECKPOINT_KEY:
             return False
 
         return context.window_manager.cps.isInitialized

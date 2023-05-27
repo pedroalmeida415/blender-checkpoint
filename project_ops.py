@@ -337,7 +337,7 @@ class PostSaveDialog(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        if not CHECKPOINT_KEY:
+        if not HAS_CHECKPOINT_KEY:
             return False
 
         filepath = bpy.path.abspath("//")

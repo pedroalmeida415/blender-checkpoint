@@ -25,7 +25,7 @@ for module in modulesNames:
     else:
         globals()[module] = importlib.import_module(f"{__name__}.{module}")
 
-if app_helpers.CHECKPOINT_KEY:
+if app_helpers.HAS_CHECKPOINT_KEY:
     with open(app_helpers.CHECKPOINT_KEY_FILE_PATH, "r") as f:
         # Create a dictionary from the lines in the file
         env_vars = dict(line.strip().split("=") for line in f)
@@ -35,7 +35,7 @@ if app_helpers.CHECKPOINT_KEY:
 
     if error:
         os.remove(app_helpers.CHECKPOINT_KEY_FILE_PATH)
-        app_helpers.CHECKPOINT_KEY = False
+        app_helpers.HAS_CHECKPOINT_KEY = False
 
 
 def register():

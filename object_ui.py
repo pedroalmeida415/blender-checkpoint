@@ -18,7 +18,7 @@ class ObjectCheckpointsPanel(ObjectCheckpointsPanelMixin, Panel):
 
     @classmethod
     def poll(cls, context):
-        if not app_helpers.CHECKPOINT_KEY:
+        if not app_helpers.HAS_CHECKPOINT_KEY:
             return False
 
         return context.window_manager.cps.isInitialized and bool(context.selected_objects)

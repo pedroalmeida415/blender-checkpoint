@@ -18,7 +18,7 @@ ORIGINAL_TL = "Original.json"
 # License constants
 CHECKPOINT_KEY_FILE_PATH = os.path.join(
     os.path.expanduser("~"), ".checkpoint")
-CHECKPOINT_KEY = os.path.exists(CHECKPOINT_KEY_FILE_PATH)
+HAS_CHECKPOINT_KEY = os.path.exists(CHECKPOINT_KEY_FILE_PATH)
 TEN_SEATS_VERSION = "10_seats"
 STANDALONE_VERSION = "standalone"
 WRONG_KEY_VERSION = "wrong_key_version"
@@ -99,7 +99,7 @@ def check_license_key(license_key: str):
 
     params = {'product_id': '5VU7EnKLdJjqB_PHlWeJQw==',  # constant
               'license_key': license_key,
-              'increment_uses_count': str(not CHECKPOINT_KEY).lower()}
+              'increment_uses_count': str(not HAS_CHECKPOINT_KEY).lower()}
 
     query_string = urllib.parse.urlencode(params)
 
