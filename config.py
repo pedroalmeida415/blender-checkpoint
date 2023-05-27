@@ -28,6 +28,19 @@ class LICENSE_TYPES:
 LICENSE_FILE_PATH = os.path.join(
     os.path.expanduser("~"), PATHS_KEYS.LICENSE_FILE)
 
+# Singleton for storing global state
+class _CheckpointState:
+    __slots__ = (
+        "has_license_key",
+        )
+
+    def __init__(self):
+        self.has_license_key = os.path.exists(LICENSE_FILE_PATH)
+
+# One state to rule them all (otherwise known as a singleton)
+cp_state = _CheckpointState()
+del _CheckpointState
+
 
 def multiline_label(context, text, parent, icon="NONE"):
     chars = int(context.region.width / 8)   # 7 pix on 1 character
@@ -104,11 +117,9 @@ def check_license_key(license_key: str):
 
         return LICENSE_TYPES.STANDALONE_VERSION
 
-    _HAS_LICENSE_KEY = os.path.exists(LICENSE_FILE_PATH)
-
     params = {'product_id': '5VU7EnKLdJjqB_PHlWeJQw==',  # constant
               'license_key': license_key,
-              'increment_uses_count': str(not _HAS_LICENSE_KEY).lower()}
+              'increment_uses_count': str(not cp_state.has_license_key).lower()}
 
     query_string = urllib.parse.urlencode(params)
 
@@ -136,6 +147,8 @@ def check_license_key(license_key: str):
         with open(LICENSE_FILE_PATH, "w") as f:
             # Write your environment variables in key=value format
             f.write(f"LICENSE_KEY={license_key}\n")
+        
+        cp_state.has_license_key = True
 
     except HTTPError as e:
         error_data = e.read().decode()

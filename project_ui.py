@@ -1,4 +1,3 @@
-import os
 from datetime import datetime
 
 import bpy
@@ -135,8 +134,7 @@ class CheckpointsPanel(CheckpointsPanelMixin, Panel):
     def draw(self, context):
         layout = self.layout
 
-        _HAS_LICENSE_KEY = os.path.exists(config.LICENSE_FILE_PATH)
-        if not _HAS_LICENSE_KEY:
+        if not config.cp_state.has_license_key:
             row = layout.row()
             row.alignment = 'CENTER'
             row.label(
@@ -387,8 +385,7 @@ class SubPanelList(CheckpointsPanelMixin, Panel):
 
     @classmethod
     def poll(cls, context):
-        _HAS_LICENSE_KEY = os.path.exists(config.LICENSE_FILE_PATH)
-        if not _HAS_LICENSE_KEY:
+        if not config.cp_state.has_license_key:
             return False
 
         return context.window_manager.cps.isInitialized
@@ -521,8 +518,7 @@ class SubPanelAdd(CheckpointsPanelMixin, Panel):
 
     @classmethod
     def poll(cls, context):
-        _HAS_LICENSE_KEY = os.path.exists(config.LICENSE_FILE_PATH)
-        if not _HAS_LICENSE_KEY:
+        if not config.cp_state.has_license_key:
             return False
 
         return context.window_manager.cps.isInitialized

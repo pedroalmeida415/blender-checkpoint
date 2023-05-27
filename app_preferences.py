@@ -101,6 +101,11 @@ class ActivateLicense(bpy.types.Operator):
             self.report(
                 {"INFO"}, "License activated successfully!")
 
+            # Force a redraw of the UI
+            for window in bpy.context.window_manager.windows:
+                for area in window.screen.areas:
+                    area.tag_redraw()
+
         return {"FINISHED"}
 
 
@@ -120,8 +125,6 @@ class AddonPreferences(bpy.types.AddonPreferences):
     )
 
     def draw(self, context):
-        _HAS_LICENSE_KEY = os.path.exists(config.LICENSE_FILE_PATH)
-
         layout = self.layout
 
         row = layout.row()
@@ -135,7 +138,7 @@ class AddonPreferences(bpy.types.AddonPreferences):
         row = layout.row()
         row.operator(ResetProject.bl_idname)
 
-        if not _HAS_LICENSE_KEY:
+        if not config.cp_state.has_license_key:
             row = layout.row()
             row.operator(ActivateLicense.bl_idname)
 

@@ -25,9 +25,7 @@ for module in modulesNames:
     else:
         globals()[module] = importlib.import_module(f"{__name__}.{module}")
 
-_HAS_LICENSE_KEY = os.path.exists(config.LICENSE_FILE_PATH)
-
-if _HAS_LICENSE_KEY:
+if config.cp_state.has_license_key:
     with open(config.LICENSE_FILE_PATH, "r") as f:
         # Create a dictionary from the lines in the file
         env_vars = dict(line.strip().split("=") for line in f)
@@ -37,6 +35,7 @@ if _HAS_LICENSE_KEY:
 
     if error:
         os.remove(config.LICENSE_FILE_PATH)
+        config.cp_state.has_license_key = False
 
 
 def register():
