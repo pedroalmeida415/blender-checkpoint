@@ -1,6 +1,6 @@
 import bpy
 from bpy.types import Operator
-from .cp_object_helpers import SaveSelectedObject
+from .object_helpers import SaveSelectedObject
 
 
 class AddObjectCheckpoint(Operator):

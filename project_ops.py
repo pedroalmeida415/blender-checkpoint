@@ -2,7 +2,7 @@ import bpy
 from bpy.types import Operator
 from bpy.props import (StringProperty, BoolProperty)
 
-from .cp_project_helpers import *
+from .project_helpers import *
 
 
 class StartVersionControl(Operator):

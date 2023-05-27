@@ -15,9 +15,9 @@ bl_info = {
 
 # Local imports implemented to support Blender refreshes
 """ORDER MATTERS"""
-modulesNames = ("app_helpers", "cp_project_helpers", "cp_object_helpers",
-                "cp_project_ops", "cp_object_ops",
-                "cp_project_ui", "cp_object_ui",
+modulesNames = ("app_helpers", "project_helpers", "object_helpers",
+                "project_ops", "object_ops",
+                "project_ui", "object_ui",
                 "app_preferences", "app_handlers")
 for module in modulesNames:
     if module in sys.modules:

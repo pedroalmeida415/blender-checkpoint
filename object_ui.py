@@ -1,7 +1,8 @@
 import bpy
 from bpy.types import Panel
 
-from .cp_object_ops import *
+from . import object_ops
+from . import app_helpers
 
 
 class ObjectCheckpointsPanelMixin:
@@ -17,19 +18,22 @@ class ObjectCheckpointsPanel(ObjectCheckpointsPanelMixin, Panel):
 
     @classmethod
     def poll(cls, context):
-        return bool(context.selected_objects)
+        if not app_helpers.CHECKPOINT_KEY:
+            return False
+
+        return context.window_manager.cps.isInitialized and bool(context.selected_objects)
 
     def draw(self, context):
         layout = self.layout
 
         row = layout.row()
-        row.operator(AddObjectCheckpoint.bl_idname)
+        row.operator(object_ops.AddObjectCheckpoint.bl_idname)
 
         row = layout.row()
-        row.operator(LoadObjectCheckpoint.bl_idname)
+        row.operator(object_ops.LoadObjectCheckpoint.bl_idname)
 
         row = layout.row()
-        row.operator(DeleteObjectCheckpoint.bl_idname)
+        row.operator(object_ops.DeleteObjectCheckpoint.bl_idname)
 
 
 """ORDER MATTERS"""

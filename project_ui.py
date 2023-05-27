@@ -5,8 +5,8 @@ from bpy.types import Panel, PropertyGroup, UIList
 from bpy.props import (CollectionProperty, EnumProperty, IntProperty,
                        PointerProperty, StringProperty, BoolProperty)
 
-from .cp_project_helpers import *
-from .cp_project_ops import *
+from .project_helpers import *
+from .project_ops import *
 
 
 TIMELINE_ICON = 'WINDOW'
