@@ -1,8 +1,9 @@
+import os
 import bpy
 from bpy.types import Panel
 
 from . import object_ops
-from . import app_helpers
+from . import config
 
 
 class ObjectCheckpointsPanelMixin:
@@ -18,7 +19,8 @@ class ObjectCheckpointsPanel(ObjectCheckpointsPanelMixin, Panel):
 
     @classmethod
     def poll(cls, context):
-        if not app_helpers.HAS_CHECKPOINT_KEY:
+        _HAS_LICENSE_KEY = os.path.exists(config.LICENSE_FILE_PATH)
+        if not _HAS_LICENSE_KEY:
             return False
 
         return context.window_manager.cps.isInitialized and bool(context.selected_objects)

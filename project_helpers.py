@@ -8,14 +8,11 @@ from unicodedata import normalize
 
 from datetime import datetime, timezone
 
-from .app_helpers import *
+from . import config
 
 
 # Format: Fri Sep  2 19:36:07 2022 +0530
 CP_TIME_FORMAT = "%c %z"
-
-# Icons constants
-NEW_PROJECT_ICON = 'NEWFOLDER'
 
 
 def slugify(text):
@@ -91,13 +88,13 @@ def getLastModifiedStr(date):
 
 
 def initialize_version_control(filepath, filename):
-    _paths = get_paths(filepath)
+    _paths = config.get_paths(filepath)
 
-    _root = _paths[ROOT]
-    _timelines = _paths[TIMELINES]
-    _saves = _paths[CHECKPOINTS]
-    _objects = _paths[OBJECT_CHECKPOINTS]
-    _persisted_state = _paths[PERSISTED_STATE]
+    _root = _paths[config.PATHS_KEYS.ROOT_FOLDER]
+    _timelines = _paths[config.PATHS_KEYS.TIMELINES_FOLDER]
+    _saves = _paths[config.PATHS_KEYS.CHECKPOINTS_FOLDER]
+    _objects = _paths[config.PATHS_KEYS.OBJECTS_FOLDER]
+    _persisted_state = _paths[config.PATHS_KEYS.PERSISTED_STATE_FILE]
 
     # generate folder structure
     if not os.path.exists(_root):
@@ -112,7 +109,8 @@ def initialize_version_control(filepath, filename):
     if not os.path.exists(_objects):
         os.mkdir(_objects)
 
-    _original_tl_path = os.path.join(_timelines, ORIGINAL_TL)
+    _original_tl_path = os.path.join(
+        _timelines, config.PATHS_KEYS.ORIGINAL_TL_FILE)
     if not os.path.exists(_original_tl_path):
         # generate first checkpoint
         _initial_checkpoint_id = f"{uuid.uuid4().hex}.blend"
@@ -135,7 +133,7 @@ def initialize_version_control(filepath, filename):
         # generate initial state
         with open(_persisted_state, "w") as file:
             initial_state = {
-                "current_timeline": ORIGINAL_TL,
+                "current_timeline": config.PATHS_KEYS.ORIGINAL_TL_FILE,
                 "active_checkpoint": _initial_checkpoint_id,
                 "disk_usage": 0,
                 "filename": filename
@@ -143,10 +141,11 @@ def initialize_version_control(filepath, filename):
             json.dump(initial_state, file)
 
 
-def get_checkpoints(filepath, timeline=ORIGINAL_TL):
-    _paths = get_paths(filepath)
+def get_checkpoints(filepath, timeline=config.PATHS_KEYS.ORIGINAL_TL_FILE):
+    _paths = config.get_paths(filepath)
 
-    timeline_path = os.path.join(_paths[TIMELINES], timeline)
+    timeline_path = os.path.join(
+        _paths[config.PATHS_KEYS.TIMELINES_FOLDER], timeline)
     with open(timeline_path) as f:
         timeline_history = json.load(f)
 
@@ -154,10 +153,10 @@ def get_checkpoints(filepath, timeline=ORIGINAL_TL):
 
 
 def add_checkpoint(filepath, description):
-    _paths = get_paths(filepath)
-    _saves = _paths[CHECKPOINTS]
-    _timelines = _paths[TIMELINES]
-    state = get_state(filepath)
+    _paths = config.get_paths(filepath)
+    _saves = _paths[config.PATHS_KEYS.CHECKPOINTS_FOLDER]
+    _timelines = _paths[config.PATHS_KEYS.TIMELINES_FOLDER]
+    state = config.get_state(filepath)
     filename = state["filename"]
     current_timeline = state["current_timeline"]
 
@@ -188,18 +187,19 @@ def add_checkpoint(filepath, description):
         json.dump(timeline_history, f, indent=4)
         f.truncate()
 
-    set_state(filepath, "active_checkpoint", checkpoint_id)
-    set_state(filepath, "disk_usage", _get_disk_usage(
-        os.path.join(filepath, ROOT)))
+    config.set_state(filepath, "active_checkpoint", checkpoint_id)
+    config.set_state(filepath, "disk_usage", _get_disk_usage(
+        os.path.join(filepath, config.PATHS_KEYS.ROOT_FOLDER)))
 
 
 def load_checkpoint(filepath, checkpoint_id):
-    _paths = get_paths(filepath)
-    state = get_state(filepath)
+    _paths = config.get_paths(filepath)
+    state = config.get_state(filepath)
 
-    set_state(filepath, "active_checkpoint", checkpoint_id)
+    config.set_state(filepath, "active_checkpoint", checkpoint_id)
 
-    checkpoint_path = os.path.join(_paths[CHECKPOINTS], checkpoint_id)
+    checkpoint_path = os.path.join(
+        _paths[config.PATHS_KEYS.CHECKPOINTS_FOLDER], checkpoint_id)
     filename = state["filename"]
     destination_file = os.path.join(filepath, filename)
 
@@ -207,10 +207,10 @@ def load_checkpoint(filepath, checkpoint_id):
 
 
 def delete_checkpoint(filepath, checkpoint_index):
-    _paths = get_paths(filepath)
-    state = get_state(filepath)
-    _timelines = _paths[TIMELINES]
-    _checkpoints = _paths[CHECKPOINTS]
+    _paths = config.get_paths(filepath)
+    state = config.get_state(filepath)
+    _timelines = _paths[config.PATHS_KEYS.TIMELINES_FOLDER]
+    _checkpoints = _paths[config.PATHS_KEYS.CHECKPOINTS_FOLDER]
 
     current_timeline = os.path.join(
         _timelines, state["current_timeline"])
@@ -243,16 +243,16 @@ def delete_checkpoint(filepath, checkpoint_index):
 
     if shouldDelete:
         os.remove(os.path.join(_checkpoints, checkpoint_id))
-        set_state(filepath, "disk_usage", _get_disk_usage(
-            os.path.join(filepath, ROOT)))
+        config.set_state(filepath, "disk_usage", _get_disk_usage(
+            os.path.join(filepath, config.PATHS_KEYS.ROOT_FOLDER)))
 
 
 def edit_checkpoint(filepath, checkpoint_index, description):
-    _paths = get_paths(filepath)
-    state = get_state(filepath)
+    _paths = config.get_paths(filepath)
+    state = config.get_state(filepath)
 
     current_timeline = os.path.join(
-        _paths[TIMELINES], state["current_timeline"])
+        _paths[config.PATHS_KEYS.TIMELINES_FOLDER], state["current_timeline"])
     with open(current_timeline, "r+") as f:
         timeline_history = json.load(f)
 
@@ -264,10 +264,11 @@ def edit_checkpoint(filepath, checkpoint_index, description):
 
 
 def export_checkpoint(filepath, checkpoint_id, description):
-    _paths = get_paths(filepath)
+    _paths = config.get_paths(filepath)
 
     # get checkpoint wth the provided id
-    checkpoint = os.path.join(_paths[CHECKPOINTS], checkpoint_id)
+    checkpoint = os.path.join(
+        _paths[config.PATHS_KEYS.CHECKPOINTS_FOLDER], checkpoint_id)
 
     # create folder "exported"
     export_path = os.path.join(filepath, "exported")
@@ -279,15 +280,15 @@ def export_checkpoint(filepath, checkpoint_id, description):
 
 
 def listall_timelines(filepath):
-    _paths = get_paths(
+    _paths = config.get_paths(
         filepath)
-    return os.listdir(_paths[TIMELINES])
+    return os.listdir(_paths[config.PATHS_KEYS.TIMELINES_FOLDER])
 
 
 def create_new_timeline(filepath, name, start_checkpoint_index, keep_history):
-    state = get_state(filepath)
-    _paths = get_paths(filepath)
-    _timelines = _paths[TIMELINES]
+    state = config.get_state(filepath)
+    _paths = config.get_paths(filepath)
+    _timelines = _paths[config.PATHS_KEYS.TIMELINES_FOLDER]
 
     new_name = f"{name}.json"
     new_tl_path = os.path.join(_timelines, new_name)
@@ -313,8 +314,8 @@ def create_new_timeline(filepath, name, start_checkpoint_index, keep_history):
 
 
 def delete_timeline(filepath, name, checkpoints_count):
-    _paths = get_paths(filepath)
-    _timelines = _paths[TIMELINES]
+    _paths = config.get_paths(filepath)
+    _timelines = _paths[config.PATHS_KEYS.TIMELINES_FOLDER]
 
     # Set the iteration number to 1
     i = 0
@@ -329,9 +330,9 @@ def delete_timeline(filepath, name, checkpoints_count):
 
 
 def rename_timeline(filepath, name):
-    state = get_state(filepath)
-    _paths = get_paths(filepath)
-    _timelines = _paths[TIMELINES]
+    state = config.get_state(filepath)
+    _paths = config.get_paths(filepath)
+    _timelines = _paths[config.PATHS_KEYS.TIMELINES_FOLDER]
 
     new_name = f"{name}.json"
     new_tl_path = os.path.join(_timelines, new_name)
@@ -342,22 +343,24 @@ def rename_timeline(filepath, name):
     previous_tl_path = os.path.join(_timelines, previous_tl_name)
 
     os.rename(previous_tl_path, new_tl_path)
-    set_state(filepath, "current_timeline", new_name)
+    config.set_state(filepath, "current_timeline", new_name)
 
 
-def switch_timeline(filepath, timeline=ORIGINAL_TL):
-    _paths = get_paths(filepath)
-    state = get_state(filepath)
+def switch_timeline(filepath, timeline=config.PATHS_KEYS.ORIGINAL_TL_FILE):
+    _paths = config.get_paths(filepath)
+    state = config.get_state(filepath)
 
-    set_state(filepath, "current_timeline", timeline)
+    config.set_state(filepath, "current_timeline", timeline)
 
-    timeline_path = os.path.join(_paths[TIMELINES], timeline)
+    timeline_path = os.path.join(
+        _paths[config.PATHS_KEYS.TIMELINES_FOLDER], timeline)
     with open(timeline_path) as f:
         timeline_history = json.load(f)
         first_checkpoint = timeline_history[0]
-        checkpoint = os.path.join(_paths[CHECKPOINTS], first_checkpoint["id"])
+        checkpoint = os.path.join(
+            _paths[config.PATHS_KEYS.CHECKPOINTS_FOLDER], first_checkpoint["id"])
 
-        set_state(filepath, "active_checkpoint", first_checkpoint["id"])
+        config.set_state(filepath, "active_checkpoint", first_checkpoint["id"])
 
         filename = state["filename"]
         destination_file = os.path.join(filepath, filename)
@@ -365,9 +368,9 @@ def switch_timeline(filepath, timeline=ORIGINAL_TL):
 
 
 def check_is_modified(filepath):
-    state = get_state(filepath)
-    _paths = get_paths(filepath)
-    _saves = _paths[CHECKPOINTS]
+    state = config.get_state(filepath)
+    _paths = config.get_paths(filepath)
+    _saves = _paths[config.PATHS_KEYS.CHECKPOINTS_FOLDER]
 
     filename = state["filename"]
     active_checkpoint = state["active_checkpoint"]

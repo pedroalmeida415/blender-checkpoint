@@ -1,8 +1,11 @@
+import os
+
 import bpy
 from bpy.types import Operator
 from bpy.props import (StringProperty, BoolProperty)
 
-from .project_helpers import *
+from . import config
+from . import project_helpers
 
 
 class StartVersionControl(Operator):
@@ -21,7 +24,7 @@ class StartVersionControl(Operator):
             return {'CANCELLED'}
 
         bpy.ops.wm.save_mainfile()
-        initialize_version_control(filepath, filename)
+        project_helpers.initialize_version_control(filepath, filename)
 
         cps_context.isInitialized = True
         cps_context.selectedListIndex = 0
@@ -45,7 +48,7 @@ class RenameProject(Operator):
     def execute(self, context):
         filepath = bpy.path.abspath("//")
 
-        set_state(filepath, "filename", self.name)
+        config.set_state(filepath, "filename", self.name)
 
         self.report({"INFO"}, "Renamed successfully, all set!")
         return {'FINISHED'}
@@ -72,9 +75,9 @@ class NewTimeline(Operator):
         filepath = bpy.path.abspath("//")
         cps_context = context.window_manager.cps
 
-        slugfied_name = slugify(self.name)
+        slugfied_name = project_helpers.slugify(self.name)
         try:
-            new_name = create_new_timeline(
+            new_name = project_helpers.create_new_timeline(
                 filepath, slugfied_name, cps_context.selectedListIndex, self.new_tl_keep_history)
         except FileExistsError:
             self.report(
@@ -84,7 +87,7 @@ class NewTimeline(Operator):
         # Clean up
         cps_context.selectedListIndex = 0
 
-        switch_timeline(filepath, new_name)
+        project_helpers.switch_timeline(filepath, new_name)
 
         self.name = ""
         self.new_tl_keep_history = False
@@ -104,7 +107,7 @@ class DeleteTimeline(Operator):
 
     def execute(self, context):
         filepath = bpy.path.abspath("//")
-        state = get_state(filepath)
+        state = config.get_state(filepath)
         cps_context = context.window_manager.cps
 
         # get current timeline's checkpoints that will be deleted
@@ -113,11 +116,11 @@ class DeleteTimeline(Operator):
         to_delete_tl = state["current_timeline"]
 
         # delete previous timeline
-        delete_timeline(
+        project_helpers.delete_timeline(
             filepath, to_delete_tl, tl_checkpoints_count)
 
         # switch to original timeline
-        switch_timeline(filepath)
+        project_helpers.switch_timeline(filepath)
 
         bpy.ops.wm.revert_mainfile()
 
@@ -140,10 +143,10 @@ class RenameTimeline(Operator):
         filepath = bpy.path.abspath("//")
         cps_context = context.window_manager.cps
 
-        slugified_name = slugify(self.name)
+        slugified_name = project_helpers.slugify(self.name)
 
         try:
-            rename_timeline(filepath, slugified_name)
+            project_helpers.rename_timeline(filepath, slugified_name)
         except FileExistsError:
             self.report(
                 {"ERROR"}, f"A timeline with name {self.name} already exists")
@@ -177,7 +180,7 @@ class LoadCheckpoint(Operator):
         if activeCheckpointId == self.id:
             return {'CANCELLED'}
 
-        load_checkpoint(filepath, self.id)
+        project_helpers.load_checkpoint(filepath, self.id)
 
         bpy.ops.wm.revert_mainfile()
 
@@ -205,7 +208,7 @@ class AddCheckpoint(Operator):
 
         bpy.ops.wm.save_mainfile()
 
-        add_checkpoint(filepath, self.description)
+        project_helpers.add_checkpoint(filepath, self.description)
 
         self.description = ""
         cps_context.selectedListIndex = 0
@@ -247,7 +250,7 @@ class DeleteCheckpoint(Operator):
 
         filepath = bpy.path.abspath("//")
 
-        delete_checkpoint(
+        project_helpers.delete_checkpoint(
             filepath, cps_context.selectedListIndex)
 
         # Clean up
@@ -292,7 +295,7 @@ class EditCheckpoint(Operator):
 
         filepath = bpy.path.abspath("//")
 
-        edit_checkpoint(
+        project_helpers.edit_checkpoint(
             filepath, cps_context.selectedListIndex, cps_context.checkpointDescription)
 
         # Clean up
@@ -320,7 +323,7 @@ class ExportCheckpoint(Operator):
         cps_context = context.window_manager.cps
         checkpointDescription = cps_context.checkpoints[cps_context.selectedListIndex]["description"]
 
-        export_checkpoint(
+        project_helpers.export_checkpoint(
             filepath, self.id, checkpointDescription)
 
         # Clean up
@@ -337,7 +340,8 @@ class PostSaveDialog(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        if not HAS_CHECKPOINT_KEY:
+        _HAS_LICENSE_KEY = os.path.exists(config.LICENSE_FILE_PATH)
+        if not _HAS_LICENSE_KEY:
             return False
 
         filepath = bpy.path.abspath("//")
@@ -346,7 +350,7 @@ class PostSaveDialog(bpy.types.Operator):
         cps_context = context.window_manager.cps
 
         try:
-            state = get_state(filepath)
+            state = config.get_state(filepath)
         except FileNotFoundError:
             return False
 
@@ -357,7 +361,7 @@ class PostSaveDialog(bpy.types.Operator):
         filepath = bpy.path.abspath("//")
 
         try:
-            get_state(filepath)
+            config.get_state(filepath)
             return wm.invoke_props_dialog(self, width=400)
         except FileNotFoundError:
             return {'CANCELLED'}
@@ -386,7 +390,7 @@ class PostSaveDialog(bpy.types.Operator):
 
         filepath = bpy.path.abspath("//")
 
-        add_checkpoint(filepath, description)
+        project_helpers.add_checkpoint(filepath, description)
 
         cps_context.selectedListIndex = 0
         if cps_context.checkpointDescription:

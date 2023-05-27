@@ -15,7 +15,7 @@ bl_info = {
 
 # Local imports implemented to support Blender refreshes
 """ORDER MATTERS"""
-modulesNames = ("app_helpers", "project_helpers", "object_helpers",
+modulesNames = ("config", "project_helpers", "object_helpers",
                 "project_ops", "object_ops",
                 "project_ui", "object_ui",
                 "app_preferences", "app_handlers")
@@ -25,17 +25,18 @@ for module in modulesNames:
     else:
         globals()[module] = importlib.import_module(f"{__name__}.{module}")
 
-if app_helpers.HAS_CHECKPOINT_KEY:
-    with open(app_helpers.CHECKPOINT_KEY_FILE_PATH, "r") as f:
+_HAS_LICENSE_KEY = os.path.exists(config.LICENSE_FILE_PATH)
+
+if _HAS_LICENSE_KEY:
+    with open(config.LICENSE_FILE_PATH, "r") as f:
         # Create a dictionary from the lines in the file
         env_vars = dict(line.strip().split("=") for line in f)
         license_key = env_vars["LICENSE_KEY"]
 
-    error = app_helpers.check_license_key(license_key)
+    error = config.check_license_key(license_key)
 
     if error:
-        os.remove(app_helpers.CHECKPOINT_KEY_FILE_PATH)
-        app_helpers.HAS_CHECKPOINT_KEY = False
+        os.remove(config.LICENSE_FILE_PATH)
 
 
 def register():

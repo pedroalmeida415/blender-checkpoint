@@ -3,7 +3,7 @@ import subprocess
 import tempfile
 import uuid
 
-from .app_helpers import *
+from . import config
 
 
 class SaveSelectedObject:
@@ -12,8 +12,8 @@ class SaveSelectedObject:
 
     @classmethod
     def save_selected(cls, context, file_path, blender_path, to_world_origin, cleanup_startup_file):
-        _paths = get_paths(file_path)
-        _objects = _paths[OBJECT_CHECKPOINTS]
+        _paths = config.get_paths(file_path)
+        _objects = _paths[config.PATHS_KEYS.OBJECTS_FOLDER]
 
         # save selected objects
         temp_dir = tempfile.gettempdir()
@@ -62,9 +62,8 @@ class SaveSelectedObject:
         with open(file=temp_py_path, mode='w', encoding='utf8') as py_file:
             py_file.write(text_block_content)
         # execute script in subprocess
-        subprocess.call([blender_path, '-b', '--python', temp_py_path])
+        # subprocess.call([blender_path, '-b', '--python', temp_py_path])
 
         # delete temporary files and directories
         os.remove(temp_py_path)
         os.remove(temp_blend_path)
-        os.rmdir(temp_dir)

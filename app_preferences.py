@@ -4,7 +4,7 @@ import shutil
 import bpy
 from bpy.props import StringProperty
 
-from .app_helpers import *
+from . import config
 
 
 def get_user_preferences(context=None):
@@ -52,9 +52,10 @@ class ResetProject(bpy.types.Operator):
     def execute(self, context):
         filepath = bpy.path.abspath("//")
 
-        root_path = os.path.join(filepath, ROOT)
-        if os.path.exists(root_path):
-            shutil.rmtree(root_path)
+        _root_path = config.get_paths(filepath)[config.PATHS_KEYS.ROOT_FOLDER]
+
+        if os.path.exists(_root_path):
+            shutil.rmtree(_root_path)
 
             context.window_manager.cps.isInitialized = False
 
@@ -89,14 +90,13 @@ class ActivateLicense(bpy.types.Operator):
         if not self.license_key:
             return {'CANCELLED'}
 
-        error = check_license_key(self.license_key)
+        error = config.check_license_key(self.license_key)
 
         if error:
             self.report(
                 {"ERROR"}, error)
             return {"CANCELLED"}
         else:
-            HAS_CHECKPOINT_KEY = True
             self.license_key = ""
             self.report(
                 {"INFO"}, "License activated successfully!")
@@ -120,6 +120,8 @@ class AddonPreferences(bpy.types.AddonPreferences):
     )
 
     def draw(self, context):
+        _HAS_LICENSE_KEY = os.path.exists(config.LICENSE_FILE_PATH)
+
         layout = self.layout
 
         row = layout.row()
@@ -133,7 +135,7 @@ class AddonPreferences(bpy.types.AddonPreferences):
         row = layout.row()
         row.operator(ResetProject.bl_idname)
 
-        if not HAS_CHECKPOINT_KEY:
+        if not _HAS_LICENSE_KEY:
             row = layout.row()
             row.operator(ActivateLicense.bl_idname)
 
