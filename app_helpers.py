@@ -1,4 +1,5 @@
 import os
+import enum
 import json
 import textwrap
 
@@ -7,21 +8,26 @@ from urllib.error import HTTPError
 import urllib.parse
 
 
-# File constants
-ROOT = ".checkpoints"
-TIMELINES = "timelines"
-CHECKPOINTS = "saves"
-OBJECT_CHECKPOINTS = "objects"
-PERSISTED_STATE = "_persisted_state.json"
-ORIGINAL_TL = "Original.json"
+class PATHS_KEYS(enum.Enum):
+    ROOT_FOLDER = ".checkpoints"
+    TIMELINES_FOLDER = "timelines"
+    CHECKPOINTS_FOLDER = "saves"
+    OBJECTS_FOLDER = "objects"
 
-# License constants
-CHECKPOINT_KEY_FILE_PATH = os.path.join(
-    os.path.expanduser("~"), ".checkpoint")
-HAS_CHECKPOINT_KEY = os.path.exists(CHECKPOINT_KEY_FILE_PATH)
-TEN_SEATS_VERSION = "10_seats"
-STANDALONE_VERSION = "standalone"
-WRONG_KEY_VERSION = "wrong_key_version"
+    ORIGINAL_TL_FILE = "Original.json"
+    PERSISTED_STATE_FILE = "_persisted_state.json"
+
+    LICENSE_FILE = ".checkpoint"
+
+
+class LICENSE_TYPE(enum.Enum):
+    TEN_SEATS_VERSION = "10_seats"
+    STANDALONE_VERSION = "standalone"
+    WRONG_VERSION_KEY = "wrong_version_key"
+
+
+LICENSE_FILE_PATH = os.path.join(
+    os.path.expanduser("~"), PATHS_KEYS.LICENSE_FILE)
 
 
 def multiline_label(context, text, parent, icon="NONE"):
@@ -37,39 +43,41 @@ def multiline_label(context, text, parent, icon="NONE"):
 
 def get_paths(filepath):
     _root_folder_path = os.path.join(
-        filepath, ROOT)
+        filepath, PATHS_KEYS.ROOT_FOLDER)
 
     _timelines_folder_path = os.path.join(
-        _root_folder_path, TIMELINES)
+        _root_folder_path, PATHS_KEYS.TIMELINES_FOLDER)
 
     _saves_folder_path = os.path.join(
-        _root_folder_path, CHECKPOINTS)
+        _root_folder_path, PATHS_KEYS.CHECKPOINTS_FOLDER)
 
     _objects_folder_path = os.path.join(
-        _root_folder_path, OBJECT_CHECKPOINTS)
+        _root_folder_path, PATHS_KEYS.OBJECTS_FOLDER)
 
     _persisted_state_path = os.path.join(
-        _root_folder_path, PERSISTED_STATE)
+        _root_folder_path, PATHS_KEYS.PERSISTED_STATE_FILE)
 
-    return {ROOT: _root_folder_path,
-            TIMELINES: _timelines_folder_path,
-            CHECKPOINTS: _saves_folder_path,
-            OBJECT_CHECKPOINTS: _objects_folder_path,
-            PERSISTED_STATE: _persisted_state_path}
+    return {
+        PATHS_KEYS.ROOT_FOLDER: _root_folder_path,
+        PATHS_KEYS.TIMELINES_FOLDER: _timelines_folder_path,
+        PATHS_KEYS.CHECKPOINTS_FOLDER: _saves_folder_path,
+        PATHS_KEYS.OBJECTS_FOLDER: _objects_folder_path,
+        PATHS_KEYS.PERSISTED_STATE_FILE: _persisted_state_path
+    }
 
 
 def get_state(filepath):
     _paths = get_paths(
         filepath)
 
-    with open(_paths[PERSISTED_STATE]) as f:
+    with open(_paths[PATHS_KEYS.PERSISTED_STATE_FILE]) as f:
         state = json.load(f)
         return state
 
 
 def set_state(filepath, prop, value):
     _paths = get_paths(filepath)
-    with open(_paths[PERSISTED_STATE], 'r+') as f:
+    with open(_paths[PATHS_KEYS.PERSISTED_STATE_FILE], 'r+') as f:
         state = json.load(f)
 
         if prop in state:
@@ -85,7 +93,7 @@ def set_state(filepath, prop, value):
 def has_root_folder(filepath):
     _paths = get_paths(
         filepath)
-    _root = _paths[ROOT]
+    _root = _paths[PATHS_KEYS.ROOT_FOLDER]
 
     return os.path.exists(_root)
 
@@ -93,13 +101,15 @@ def has_root_folder(filepath):
 def check_license_key(license_key: str):
     def _parse_variant(variant: str):
         if not "supercharged" in variant.lower():
-            return WRONG_KEY_VERSION
+            return LICENSE_TYPE.WRONG_VERSION_KEY
 
-        return STANDALONE_VERSION
+        return LICENSE_TYPE.STANDALONE_VERSION
+
+    _HAS_CHECKPOINT_KEY = os.path.exists(LICENSE_FILE_PATH)
 
     params = {'product_id': '5VU7EnKLdJjqB_PHlWeJQw==',  # constant
               'license_key': license_key,
-              'increment_uses_count': str(not HAS_CHECKPOINT_KEY).lower()}
+              'increment_uses_count': str(not _HAS_CHECKPOINT_KEY).lower()}
 
     query_string = urllib.parse.urlencode(params)
 
@@ -113,18 +123,18 @@ def check_license_key(license_key: str):
 
         parsed_variant = _parse_variant(response["purchase"]["variants"])
 
-        if parsed_variant == WRONG_KEY_VERSION:
+        if parsed_variant == LICENSE_TYPE.WRONG_VERSION_KEY:
             return "This key does not belong to this product version. If you think this is a mistake, contact us by email or discord."
 
         uses = response["uses"]
 
-        if parsed_variant == STANDALONE_VERSION and uses > 1:
+        if parsed_variant == LICENSE_TYPE.STANDALONE_VERSION and uses > 1:
             return "This key has already been claimed. If you think this is a mistake, contact us by email or discord."
 
-        if parsed_variant == TEN_SEATS_VERSION and uses > 10:
+        if parsed_variant == LICENSE_TYPE.TEN_SEATS_VERSION and uses > 10:
             return "You have reached the maximum ammount of users for this key. If you think this is a mistake, contact us by email or discord."
 
-        with open(CHECKPOINT_KEY_FILE_PATH, "w") as f:
+        with open(LICENSE_FILE_PATH, "w") as f:
             # Write your environment variables in key=value format
             f.write(f"LICENSE_KEY={license_key}\n")
 
