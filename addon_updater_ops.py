@@ -23,6 +23,7 @@ Implements draw calls, popups, and operators that use the addon_updater.
 
 import os
 import traceback
+from datetime import datetime
 
 import bpy
 from bpy.app.handlers import persistent
@@ -1104,7 +1105,11 @@ def update_settings_ui(self, context, element=None):
         row.label(text=updater.error_msg)
     elif last_check:
         last_check = last_check[0: last_check.index(".")]
-        row.label(text="Last update check: " + last_check)
+
+        date_obj = datetime.strptime(last_check, "%Y-%m-%d %H:%M:%S")
+        formatted_date = date_obj.strftime("%B %d, %Y at %I:%M %p")
+
+        row.label(text="Last update check: " + formatted_date)
     else:
         row.label(text="Last update check: Never")
 
