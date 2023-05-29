@@ -54,6 +54,8 @@ def register():
 
 
 def unregister():
-    for module in modulesNames:
+    addon_updater_ops.unregister()
+
+    for module in reversed(modulesNames):
         if hasattr(globals()[module], "unregister"):
             globals()[module].unregister()
