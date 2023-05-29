@@ -8,6 +8,7 @@ from bpy.props import (CollectionProperty, EnumProperty, IntProperty,
 from . import config
 from . import project_ops
 from . import project_helpers
+from . import addon_updater_ops
 
 
 TIMELINE_ICON = 'WINDOW'
@@ -132,6 +133,8 @@ class CheckpointsPanel(CheckpointsPanelMixin, Panel):
     bl_label = "Checkpoints"
 
     def draw(self, context):
+        addon_updater_ops.check_for_update_background()
+
         layout = self.layout
 
         if not config.cp_state.has_license_key:
@@ -198,6 +201,8 @@ class CheckpointsPanel(CheckpointsPanelMixin, Panel):
         else:
             cps_context.isInitialized = True
             addCheckpointsToList()
+
+        addon_updater_ops.update_notice_box_ui(self, context)
 
 
 class CheckpointsList(UIList):

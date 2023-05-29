@@ -2,6 +2,10 @@ import importlib
 import sys
 import os
 
+# Updater ops import, all setup in this file.
+from . import addon_updater_ops
+
+
 bl_info = {
     "name": "Checkpoint - Supercharged",
     "author": "Flowerboy Studio",
@@ -39,6 +43,11 @@ if config.cp_state.has_license_key:
 
 
 def register():
+    # Addon updater code and configurations.
+    # In case of a broken version, try to register the updater first so that
+    # users can revert back to a working version.
+    addon_updater_ops.register(bl_info)
+
     for moduleName in modulesNames:
         if hasattr(globals()[moduleName], "register"):
             globals()[moduleName].register()
