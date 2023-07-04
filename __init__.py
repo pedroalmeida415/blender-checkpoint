@@ -29,18 +29,6 @@ for module in modulesNames:
     else:
         globals()[module] = importlib.import_module(f"{__name__}.{module}")
 
-if config.cp_state.has_license_key:
-    with open(config.LICENSE_FILE_PATH, "r") as f:
-        # Create a dictionary from the lines in the file
-        env_vars = dict(line.strip().split("=") for line in f)
-        license_key = env_vars["LICENSE_KEY"]
-
-    error = config.check_license_key(license_key)
-
-    if error:
-        os.remove(config.LICENSE_FILE_PATH)
-        config.cp_state.has_license_key = False
-
 
 def register():
     # Addon updater code and configurations.

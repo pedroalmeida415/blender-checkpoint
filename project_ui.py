@@ -137,13 +137,6 @@ class CheckpointsPanel(CheckpointsPanelMixin, Panel):
 
         layout = self.layout
 
-        if not config.cp_state.has_license_key:
-            row = layout.row()
-            row.alignment = 'CENTER'
-            row.label(
-                text="Head over to the preferences to activate your license.")
-            return
-
         filepath = bpy.path.abspath("//")
         filename = bpy.path.basename(bpy.data.filepath)
 
@@ -390,9 +383,6 @@ class SubPanelList(CheckpointsPanelMixin, Panel):
 
     @classmethod
     def poll(cls, context):
-        if not config.cp_state.has_license_key:
-            return False
-
         return context.window_manager.cps.isInitialized
 
     def draw_header(self, context):
@@ -523,9 +513,6 @@ class SubPanelAdd(CheckpointsPanelMixin, Panel):
 
     @classmethod
     def poll(cls, context):
-        if not config.cp_state.has_license_key:
-            return False
-
         return context.window_manager.cps.isInitialized
 
     def draw(self, context):

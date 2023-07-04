@@ -340,9 +340,6 @@ class PostSaveDialog(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        if not config.cp_state.has_license_key:
-            return False
-
         filepath = bpy.path.abspath("//")
         filename = bpy.path.basename(bpy.data.filepath)
 

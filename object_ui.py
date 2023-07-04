@@ -19,9 +19,6 @@ class ObjectCheckpointsPanel(ObjectCheckpointsPanelMixin, Panel):
 
     @classmethod
     def poll(cls, context):
-        if not config.cp_state.has_license_key:
-            return False
-
         return context.window_manager.cps.isInitialized and bool(context.selected_objects)
 
     def draw(self, context):

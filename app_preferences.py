@@ -68,48 +68,6 @@ class ResetProject(bpy.types.Operator):
         return {"FINISHED"}
 
 
-class ActivateLicense(bpy.types.Operator):
-    bl_idname = "cps.activate_license"
-    bl_label = "Activate License"
-
-    license_key: StringProperty(
-        name="license_key",
-    )
-
-    def invoke(self, context, event):
-        wm = context.window_manager
-
-        return wm.invoke_props_dialog(self, width=430)
-
-    def draw(self, context):
-        layout = self.layout
-
-        row = layout.row(align=True)
-        row.prop(self, "license_key", text="Enter key")
-
-    def execute(self, context):
-        if not self.license_key:
-            return {'CANCELLED'}
-
-        error = config.check_license_key(self.license_key)
-
-        if error:
-            self.report(
-                {"ERROR"}, error)
-            return {"CANCELLED"}
-        else:
-            self.license_key = ""
-            self.report(
-                {"INFO"}, "License activated successfully!")
-
-            # Force a redraw of the UI
-            for window in bpy.context.window_manager.windows:
-                for area in window.screen.areas:
-                    area.tag_redraw()
-
-        return {"FINISHED"}
-
-
 @addon_updater_ops.make_annotations
 class AddonPreferences(bpy.types.AddonPreferences):
     bl_idname = __package__
@@ -173,15 +131,11 @@ class AddonPreferences(bpy.types.AddonPreferences):
         row = layout.row()
         row.operator(ResetProject.bl_idname)
 
-        if not config.cp_state.has_license_key:
-            row = layout.row()
-            row.operator(ActivateLicense.bl_idname)
-
         addon_updater_ops.update_settings_ui(self, context)
 
 
 """ORDER MATTERS"""
-classes = (ResetProject, ActivateLicense, AddonPreferences)
+classes = (ResetProject, AddonPreferences)
 
 
 def register():

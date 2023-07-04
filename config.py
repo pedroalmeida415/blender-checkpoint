@@ -2,10 +2,6 @@ import os
 import json
 import textwrap
 
-from urllib.request import urlopen, Request
-from urllib.error import HTTPError
-import urllib.parse
-
 
 class PATHS_KEYS:
     ROOT_FOLDER = ".checkpoints"
@@ -16,26 +12,17 @@ class PATHS_KEYS:
     ORIGINAL_TL_FILE = "Original.json"
     PERSISTED_STATE_FILE = "_persisted_state.json"
 
-    LICENSE_FILE = ".checkpoint"
-
-
-class LICENSE_TYPES:
-    TEN_SEATS_VERSION = "10_seats"
-    STANDALONE_VERSION = "standalone"
-    WRONG_VERSION_KEY = "wrong_version_key"
-
-
-LICENSE_FILE_PATH = os.path.join(
-    os.path.expanduser("~"), PATHS_KEYS.LICENSE_FILE)
 
 # Singleton for storing global state
 class _CheckpointState:
-    __slots__ = (
-        "has_license_key",
-        )
+    # __slots__ = (
+    #     "placeholder",
+    # )
 
-    def __init__(self):
-        self.has_license_key = os.path.exists(LICENSE_FILE_PATH)
+    # def __init__(self):
+    #     self.placeholder = placeholder_value
+    pass
+
 
 # One state to rule them all (otherwise known as a singleton)
 cp_state = _CheckpointState()
@@ -108,50 +95,3 @@ def has_root_folder(filepath):
     _root = _paths[PATHS_KEYS.ROOT_FOLDER]
 
     return os.path.exists(_root)
-
-
-def check_license_key(license_key: str):
-    def _parse_variant(variant: str):
-        if not "supercharged" in variant.lower():
-            return LICENSE_TYPES.WRONG_VERSION_KEY
-
-        return LICENSE_TYPES.STANDALONE_VERSION
-
-    params = {'product_id': '5VU7EnKLdJjqB_PHlWeJQw==',  # constant
-              'license_key': license_key,
-              'increment_uses_count': str(not cp_state.has_license_key).lower()}
-
-    query_string = urllib.parse.urlencode(params)
-
-    req = Request(
-        f"https://api.gumroad.com/v2/licenses/verify?{query_string}", method='POST')
-
-    try:
-        # make request
-        response_data = urlopen(req, None).read().decode()
-        response = json.loads(response_data)
-
-        parsed_variant = _parse_variant(response["purchase"]["variants"])
-
-        if parsed_variant == LICENSE_TYPES.WRONG_VERSION_KEY:
-            return "This key does not belong to this product version. If you think this is a mistake, contact us by email or discord."
-
-        uses = response["uses"]
-
-        if parsed_variant == LICENSE_TYPES.STANDALONE_VERSION and uses > 1:
-            return "This key has already been claimed. If you think this is a mistake, contact us by email or discord."
-
-        if parsed_variant == LICENSE_TYPES.TEN_SEATS_VERSION and uses > 10:
-            return "You have reached the maximum ammount of users for this key. If you think this is a mistake, contact us by email or discord."
-
-        with open(LICENSE_FILE_PATH, "w") as f:
-            # Write your environment variables in key=value format
-            f.write(f"LICENSE_KEY={license_key}\n")
-        
-        cp_state.has_license_key = True
-
-    except HTTPError as e:
-        error_data = e.read().decode()
-        error = json.loads(error_data)
-
-        return error["message"]
