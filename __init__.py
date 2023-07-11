@@ -1,28 +1,47 @@
-import importlib
-import sys
-import os
+"""
+Copyright (C) 2023 Flowerboy Studio
+businessflowerboystudio@gmail.com
 
-# Updater ops import, all setup in this file.
-from . import addon_updater_ops
+Created by Flowerboy Studio
 
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
 bl_info = {
     "name": "Checkpoint - Supercharged",
     "author": "Flowerboy Studio",
     "description": "Backup and version control for Blender",
     "blender": (2, 80, 0),
     "category": "Development",
-    "version": (0, 1, 0),
+    "version": (0, 2, 0),
     "location": "Properties > Active Tool and Workspace settings > Checkpoints Panel",
 }
 
+import importlib
+import sys
+
+from . import addon_updater_ops
 
 # Local imports implemented to support Blender refreshes
 """ORDER MATTERS"""
-modulesNames = ("config", "project_helpers", "object_helpers",
-                "project_ops", "object_ops",
-                "project_ui", "object_ui",
-                "app_preferences", "app_handlers")
+modulesNames = (
+    "config",
+    "project_helpers",
+    "project_ops",
+    "project_ui",
+    "app_preferences",
+    "app_handlers",
+)
 for module in modulesNames:
     if module in sys.modules:
         importlib.reload(sys.modules[module])
