@@ -18,12 +18,12 @@ Created by Flowerboy Studio
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 bl_info = {
-    "name": "Checkpoint - Supercharged",
+    "name": "Checkpoint - Full",
     "author": "Flowerboy Studio",
     "description": "Backup and version control for Blender",
     "blender": (2, 80, 0),
     "category": "Development",
-    "version": (0, 2, 0),
+    "version": (1, 1, 1),
     "location": "Properties > Active Tool and Workspace settings > Checkpoints Panel",
 }
 
