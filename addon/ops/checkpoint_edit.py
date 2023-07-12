@@ -9,7 +9,7 @@ class EditCheckpoint(bpy.types.Operator):
     """Edit checkpoint description"""
 
     bl_label = __doc__
-    bl_idname = "cps.edit_checkpoint"
+    bl_idname = "checkpoint.edit_checkpoint"
 
     def invoke(self, context, event):
         wm = context.window_manager
@@ -17,7 +17,7 @@ class EditCheckpoint(bpy.types.Operator):
         return wm.invoke_props_dialog(self, width=300)
 
     def draw(self, context):
-        cps_context = context.window_manager.cps
+        checkpoint_context = context.window_manager.checkpoint
 
         layout = self.layout
 
@@ -29,23 +29,25 @@ class EditCheckpoint(bpy.types.Operator):
 
         col2 = row.column()
         col2.alignment = "EXPAND"
-        col2.prop(cps_context, "checkpointDescription")
+        col2.prop(checkpoint_context, "checkpointDescription")
 
     def execute(self, context):
-        cps_context = context.window_manager.cps
+        checkpoint_context = context.window_manager.checkpoint
 
-        if not cps_context.checkpointDescription:
+        if not checkpoint_context.checkpointDescription:
             return {"CANCELLED"}
 
         filepath = bpy.path.abspath("//")
 
         edit_checkpoint(
-            filepath, cps_context.selectedListIndex, cps_context.checkpointDescription
+            filepath,
+            checkpoint_context.selectedListIndex,
+            checkpoint_context.checkpointDescription,
         )
 
         # Clean up
-        if cps_context.checkpointDescription:
-            cps_context.checkpointDescription = ""
+        if checkpoint_context.checkpointDescription:
+            checkpoint_context.checkpointDescription = ""
 
         self.report({"INFO"}, "Description edited successfully!")
         return {"FINISHED"}

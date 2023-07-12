@@ -9,17 +9,17 @@ class ExportCheckpoint(bpy.types.Operator):
     """Export checkpoint"""
 
     bl_label = __doc__
-    bl_idname = "cps.export_checkpoint"
+    bl_idname = "checkpoint.export_checkpoint"
 
     id: bpy.props.StringProperty(name="", description="ID of checkpoint to export")
 
     def execute(self, context):
         filepath = bpy.path.abspath("//")
 
-        cps_context = context.window_manager.cps
-        checkpointDescription = cps_context.checkpoints[cps_context.selectedListIndex][
-            "description"
-        ]
+        checkpoint_context = context.window_manager.checkpoint
+        checkpointDescription = checkpoint_context.checkpoints[
+            checkpoint_context.selectedListIndex
+        ]["description"]
 
         export_checkpoint(filepath, self.id, checkpointDescription)
 

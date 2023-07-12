@@ -6,7 +6,7 @@ from .. import ops, config, utils
 
 
 class MainPanel(utils.CheckpointsPanelMixin, bpy.types.Panel):
-    bl_idname = "CPS_PT_main"
+    bl_idname = "CHECKPOINT_PT_main"
     bl_label = "Checkpoints"
 
     def draw(self, context):
@@ -17,12 +17,12 @@ class MainPanel(utils.CheckpointsPanelMixin, bpy.types.Panel):
         filepath = bpy.path.abspath("//")
         filename = bpy.path.basename(bpy.data.filepath)
 
-        cps_context = context.window_manager.cps
+        checkpoint_context = context.window_manager.checkpoint
 
         root_folder = config.has_root_folder(filepath)
 
         if not root_folder:
-            cps_context.isInitialized = False
+            checkpoint_context.isInitialized = False
             row = layout.row()
             row.operator(
                 ops.StartVersionControl.bl_idname,
@@ -38,7 +38,7 @@ class MainPanel(utils.CheckpointsPanelMixin, bpy.types.Panel):
 
         state = config.get_state(filepath)
         if state["filename"] != filename:
-            cps_context.isInitialized = False
+            checkpoint_context.isInitialized = False
 
             row = layout.row()
             row.alignment = "CENTER"
@@ -64,7 +64,7 @@ class MainPanel(utils.CheckpointsPanelMixin, bpy.types.Panel):
                 context=context, text=text, parent=layout, icon="INFO"
             )
         else:
-            cps_context.isInitialized = True
+            checkpoint_context.isInitialized = True
             addCheckpointsToList()
 
         addon_updater_ops.update_notice_box_ui(self, context)
@@ -75,21 +75,21 @@ def addCheckpointsToList():
     filepath = bpy.path.abspath("//")
     state = config.get_state(filepath)
 
-    cps_context = bpy.context.window_manager.cps
+    checkpoint_context = bpy.context.window_manager.checkpoint
 
     # Get list
-    checkpoints = cps_context.checkpoints
+    checkpoints = checkpoint_context.checkpoints
 
     # Clear list
     checkpoints.clear()
 
     # TODO refatorar - não é mais necessário setar o active checkpoint aqui
-    cps_context.activeCheckpointId = state["active_checkpoint"]
-    cps_context.diskUsage = state["disk_usage"]
+    checkpoint_context.activeCheckpointId = state["active_checkpoint"]
+    checkpoint_context.diskUsage = state["disk_usage"]
 
     current_timeline = state["current_timeline"]
-    cps = utils.get_checkpoints(filepath, current_timeline)
-    for cp in cps:
+    checkpoint = utils.get_checkpoints(filepath, current_timeline)
+    for cp in checkpoint:
         item = checkpoints.add()
         item.id = cp["id"]
         item.date = cp["date"]

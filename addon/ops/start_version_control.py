@@ -12,23 +12,23 @@ from .. import utils
 class StartVersionControl(bpy.types.Operator):
     """Initialize addon on the current project"""
 
-    bl_idname = "cps.start_version_control"
+    bl_idname = "checkpoint.start_version_control"
     bl_label = "Start Version Control"
 
     def execute(self, context):
         filepath = bpy.path.abspath("//")
         filename = bpy.path.basename(bpy.data.filepath)
 
-        cps_context = context.window_manager.cps
+        checkpoint_context = context.window_manager.checkpoint
 
-        if cps_context.isInitialized:
+        if checkpoint_context.isInitialized:
             return {"CANCELLED"}
 
         bpy.ops.wm.save_mainfile()
         initialize_version_control(filepath, filename)
 
-        cps_context.isInitialized = True
-        cps_context.selectedListIndex = 0
+        checkpoint_context.isInitialized = True
+        checkpoint_context.selectedListIndex = 0
 
         self.report({"INFO"}, "Version control started!")
 

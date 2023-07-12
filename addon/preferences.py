@@ -10,7 +10,7 @@ from .. import addon_updater_ops
 class ResetProject(bpy.types.Operator):
     """Deletes the addon's data from the current project"""
 
-    bl_idname = "cps.reset_project"
+    bl_idname = "checkpoint.reset_project"
     bl_label = "Reset checkpoints"
 
     def invoke(self, context, event):
@@ -43,7 +43,7 @@ class ResetProject(bpy.types.Operator):
         if os.path.exists(_root_path):
             shutil.rmtree(_root_path)
 
-            context.window_manager.cps.isInitialized = False
+            context.window_manager.checkpoint.isInitialized = False
 
             self.report({"INFO"}, "Checkpoints data deleted successfully!")
         else:

@@ -6,7 +6,7 @@ from .. import config
 class RenameProject(bpy.types.Operator):
     """Saves project new name to correctly manage checkpoints"""
 
-    bl_idname = "cps.rename_project"
+    bl_idname = "checkpoint.rename_project"
     bl_label = "Confirm rename and continue"
 
     name: bpy.props.StringProperty(name="", description="new name of project")

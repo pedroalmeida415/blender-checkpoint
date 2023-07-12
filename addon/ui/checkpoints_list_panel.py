@@ -12,14 +12,14 @@ _EDIT_ICON = "OUTLINER_DATA_GP_LAYER" if (3, 0, 0) > bpy.app.version else "CURRE
 
 
 class SubPanelCheckpointsList(utils.CheckpointsPanelMixin, bpy.types.Panel):
-    bl_idname = "CPS_PT_checkpoints_list"
+    bl_idname = "CHECKPOINT_PT_checkpoints_list"
     bl_parent_id = ui.MainPanel.bl_idname
     bl_label = ""
     bl_options = {"DEFAULT_CLOSED"}
 
     @classmethod
     def poll(cls, context):
-        return context.window_manager.cps.isInitialized
+        return context.window_manager.checkpoint.isInitialized
 
     def draw_header(self, context):
         filepath = bpy.path.abspath("//")
@@ -27,7 +27,7 @@ class SubPanelCheckpointsList(utils.CheckpointsPanelMixin, bpy.types.Panel):
         layout = self.layout
 
         row = layout.row()
-        row.prop(context.window_manager.cps, "timelines")
+        row.prop(context.window_manager.checkpoint, "timelines")
 
         row_button = layout.row(align=True)
         row_button.scale_x = 0.8
@@ -47,7 +47,7 @@ class SubPanelCheckpointsList(utils.CheckpointsPanelMixin, bpy.types.Panel):
 
     def draw(self, context):
         filepath = bpy.path.abspath("//")
-        cps_context = context.window_manager.cps
+        checkpoint_context = context.window_manager.checkpoint
 
         layout = self.layout
 
@@ -57,9 +57,9 @@ class SubPanelCheckpointsList(utils.CheckpointsPanelMixin, bpy.types.Panel):
             listtype_name="CheckpointsList",
             # "" takes the name of the class used to define the UIList
             list_id="",
-            dataptr=cps_context,
+            dataptr=checkpoint_context,
             propname="checkpoints",
-            active_dataptr=cps_context,
+            active_dataptr=checkpoint_context,
             active_propname="selectedListIndex",
             item_dyntip_propname="description",
             sort_lock=True,
@@ -67,23 +67,23 @@ class SubPanelCheckpointsList(utils.CheckpointsPanelMixin, bpy.types.Panel):
             maxrows=10,
         )
 
-        if cps_context.checkpoints:
-            selectedCheckpointId = cps_context.checkpoints[
-                cps_context.selectedListIndex
+        if checkpoint_context.checkpoints:
+            selectedCheckpointId = checkpoint_context.checkpoints[
+                checkpoint_context.selectedListIndex
             ]["id"]
 
             isSelectedCheckpointInitial = (
-                selectedCheckpointId == cps_context.checkpoints[-1]["id"]
+                selectedCheckpointId == checkpoint_context.checkpoints[-1]["id"]
             )
 
             isSelectedCheckpointActive = (
-                selectedCheckpointId == cps_context.activeCheckpointId
+                selectedCheckpointId == checkpoint_context.activeCheckpointId
             )
 
             isActionButtonsEnabled = (
                 not isSelectedCheckpointActive
-                if cps_context.activeCheckpointId
-                else cps_context.selectedListIndex != 0
+                if checkpoint_context.activeCheckpointId
+                else checkpoint_context.selectedListIndex != 0
             )
 
             isBlenderDirty = bpy.data.is_dirty
@@ -139,7 +139,7 @@ class CheckpointsList(bpy.types.UIList):
     ):
         row = layout.row(align=True)
 
-        activeCheckpointId = context.window_manager.cps.activeCheckpointId
+        activeCheckpointId = context.window_manager.checkpoint.activeCheckpointId
 
         isActiveCheckpoint = (
             item.id == activeCheckpointId if activeCheckpointId else index == 0

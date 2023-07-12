@@ -6,7 +6,7 @@ from .. import config, ops, utils
 class EditTimelinePanel(utils.CheckpointsPanelMixin, bpy.types.Panel):
     """Edit timeline name"""
 
-    bl_idname = "CPS_PT_edit_timeline_panel"
+    bl_idname = "CHECKPOINT_PT_edit_timeline_panel"
     bl_label = ""
     bl_options = {utils.TIMELINE_ACTION_OPTIONS_2_83_POLYFILL}
 
@@ -27,12 +27,12 @@ class EditTimelinePanel(utils.CheckpointsPanelMixin, bpy.types.Panel):
                 icon=utils.PROTECTED_ICON,
             )
         else:
-            cps_context = context.window_manager.cps
+            checkpoint_context = context.window_manager.checkpoint
 
             layout.label(text="Edit Timeline name", icon=utils.TIMELINE_ICON)
 
-            layout.prop(cps_context, "newTimelineName")
-            name = cps_context.newTimelineName
+            layout.prop(checkpoint_context, "newTimelineName")
+            name = checkpoint_context.newTimelineName
 
             row = layout.row()
             if not name:

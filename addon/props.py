@@ -40,7 +40,7 @@ class CheckpointsPanelData(bpy.types.PropertyGroup):
         state = config.get_state(filepath)
         timelines = utils.listall_timelines(filepath)
 
-        selectedTimeline = context.window_manager.cps.timelines
+        selectedTimeline = context.window_manager.checkpoint.timelines
         currentTimeline = state["current_timeline"]
 
         if not selectedTimeline in timelines or selectedTimeline == currentTimeline:
@@ -110,11 +110,13 @@ def register():
     for cls in classes:
         bpy.utils.register_class(cls)
 
-    bpy.types.WindowManager.cps = bpy.props.PointerProperty(type=CheckpointsPanelData)
+    bpy.types.WindowManager.checkpoint = bpy.props.PointerProperty(
+        type=CheckpointsPanelData
+    )
 
 
 def unregister():
     for cls in classes:
         bpy.utils.unregister_class(cls)
 
-    del bpy.types.WindowManager.cps
+    del bpy.types.WindowManager.checkpoint

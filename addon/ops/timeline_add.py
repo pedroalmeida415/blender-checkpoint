@@ -10,7 +10,7 @@ class NewTimeline(bpy.types.Operator):
     """Creates a new timeline from the selected checkpoint"""
 
     bl_label = __doc__
-    bl_idname = "cps.new_timeline"
+    bl_idname = "checkpoint.new_timeline"
 
     name: bpy.props.StringProperty(
         name="",
@@ -24,14 +24,14 @@ class NewTimeline(bpy.types.Operator):
 
     def execute(self, context):
         filepath = bpy.path.abspath("//")
-        cps_context = context.window_manager.cps
+        checkpoint_context = context.window_manager.checkpoint
 
         slugfied_name = utils.slugify(self.name)
         try:
             new_name = create_new_timeline(
                 filepath,
                 slugfied_name,
-                cps_context.selectedListIndex,
+                checkpoint_context.selectedListIndex,
                 self.new_tl_keep_history,
             )
         except FileExistsError:
@@ -39,14 +39,14 @@ class NewTimeline(bpy.types.Operator):
             return {"CANCELLED"}
 
         # Clean up
-        cps_context.selectedListIndex = 0
+        checkpoint_context.selectedListIndex = 0
 
         utils.switch_timeline(filepath, new_name)
 
         self.name = ""
         self.new_tl_keep_history = False
-        if cps_context.newTimelineName:
-            cps_context.newTimelineName = ""
+        if checkpoint_context.newTimelineName:
+            checkpoint_context.newTimelineName = ""
 
         bpy.ops.wm.revert_mainfile()
 
@@ -65,7 +65,7 @@ def create_new_timeline(filepath, name, start_checkpoint_index, keep_history):
         raise FileExistsError(f"File '{name}' already exists")
 
     # Get current timeline history
-    # TODO test if "get_checkpoints" can be switched with cps_context.checkpoints
+    # TODO test if "get_checkpoints" can be switched with checkpoint_context.checkpoints
     current_timeline = state["current_timeline"]
     timeline_history = utils.get_checkpoints(filepath, current_timeline)
 

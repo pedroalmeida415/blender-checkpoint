@@ -12,7 +12,7 @@ class AddCheckpoint(bpy.types.Operator):
     """Add checkpoint"""
 
     bl_label = __doc__
-    bl_idname = "cps.add_checkpoint"
+    bl_idname = "checkpoint.add_checkpoint"
 
     description: bpy.props.StringProperty(
         name="",
@@ -23,19 +23,19 @@ class AddCheckpoint(bpy.types.Operator):
     def execute(self, context):
         filepath = bpy.path.abspath("//")
 
-        cps_context = context.window_manager.cps
+        checkpoint_context = context.window_manager.checkpoint
 
-        cps_context.should_display_dialog__ = False
+        checkpoint_context.should_display_dialog__ = False
 
         bpy.ops.wm.save_mainfile()
 
         add_checkpoint(filepath, self.description)
 
         self.description = ""
-        cps_context.selectedListIndex = 0
-        cps_context.should_display_dialog__ = True
-        if cps_context.checkpointDescription:
-            cps_context.checkpointDescription = ""
+        checkpoint_context.selectedListIndex = 0
+        checkpoint_context.should_display_dialog__ = True
+        if checkpoint_context.checkpointDescription:
+            checkpoint_context.checkpointDescription = ""
 
         return {"FINISHED"}
 
@@ -44,14 +44,14 @@ class PostSaveDialog(bpy.types.Operator):
     """Dialog to quickly add checkpoints"""
 
     bl_label = "Add checkpoint"
-    bl_idname = "cps.post_save_dialog"
+    bl_idname = "checkpoint.post_save_dialog"
 
     @classmethod
     def poll(cls, context):
         filepath = bpy.path.abspath("//")
         filename = bpy.path.basename(bpy.data.filepath)
 
-        cps_context = context.window_manager.cps
+        checkpoint_context = context.window_manager.checkpoint
 
         try:
             state = config.get_state(filepath)
@@ -59,8 +59,8 @@ class PostSaveDialog(bpy.types.Operator):
             return False
 
         return (
-            cps_context.isInitialized
-            and cps_context.should_display_dialog__
+            checkpoint_context.isInitialized
+            and checkpoint_context.should_display_dialog__
             and state["filename"] == filename
         )
 
@@ -85,11 +85,11 @@ class PostSaveDialog(bpy.types.Operator):
 
         col2 = row.column()
         col2.alignment = "EXPAND"
-        col2.prop(context.window_manager.cps, "checkpointDescription")
+        col2.prop(context.window_manager.checkpoint, "checkpointDescription")
 
     def execute(self, context):
-        cps_context = context.window_manager.cps
-        description = cps_context.checkpointDescription
+        checkpoint_context = context.window_manager.checkpoint
+        description = checkpoint_context.checkpointDescription
 
         if not description:
             self.report({"ERROR_INVALID_INPUT"}, "Description cannot be empty.")
@@ -99,9 +99,9 @@ class PostSaveDialog(bpy.types.Operator):
 
         add_checkpoint(filepath, description)
 
-        cps_context.selectedListIndex = 0
-        if cps_context.checkpointDescription:
-            cps_context.checkpointDescription = ""
+        checkpoint_context.selectedListIndex = 0
+        if checkpoint_context.checkpointDescription:
+            checkpoint_context.checkpointDescription = ""
 
         self.report({"INFO"}, "Successfully saved!")
 

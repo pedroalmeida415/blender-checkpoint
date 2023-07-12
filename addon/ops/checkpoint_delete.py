@@ -9,7 +9,7 @@ class DeleteCheckpoint(bpy.types.Operator):
     """Delete checkpoint"""
 
     bl_label = __doc__
-    bl_idname = "cps.delete_checkpoint"
+    bl_idname = "checkpoint.delete_checkpoint"
 
     def invoke(self, context, event):
         wm = context.window_manager
@@ -34,15 +34,15 @@ class DeleteCheckpoint(bpy.types.Operator):
         )
 
     def execute(self, context):
-        cps_context = context.window_manager.cps
+        checkpoint_context = context.window_manager.checkpoint
 
         filepath = bpy.path.abspath("//")
 
-        delete_checkpoint(filepath, cps_context.selectedListIndex)
+        delete_checkpoint(filepath, checkpoint_context.selectedListIndex)
 
         # Clean up
         self.id = ""
-        cps_context.selectedListIndex = 0
+        checkpoint_context.selectedListIndex = 0
 
         self.report({"INFO"}, "Checkpoint deleted successfully!")
         return {"FINISHED"}
@@ -88,7 +88,5 @@ def delete_checkpoint(filepath, checkpoint_index):
         config.set_state(
             filepath,
             "disk_usage",
-            utils.get_disk_usage(
-                os.path.join(filepath, config.PATHS_KEYS.ROOT_FOLDER)
-            ),
+            utils.get_disk_usage(os.path.join(filepath, config.PATHS_KEYS.ROOT_FOLDER)),
         )

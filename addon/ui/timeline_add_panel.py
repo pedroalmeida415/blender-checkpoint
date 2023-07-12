@@ -6,12 +6,12 @@ from .. import ops, utils
 class NewTimelinePanel(utils.CheckpointsPanelMixin, bpy.types.Panel):
     """Add new timeline"""
 
-    bl_idname = "CPS_PT_new_timeline_panel"
+    bl_idname = "CHECKPOINT_PT_new_timeline_panel"
     bl_label = ""
     bl_options = {utils.TIMELINE_ACTION_OPTIONS_2_83_POLYFILL}
 
     def draw(self, context):
-        cps_context = context.window_manager.cps
+        checkpoint_context = context.window_manager.checkpoint
 
         layout = self.layout
         layout.ui_units_x = 11.5
@@ -21,12 +21,12 @@ class NewTimelinePanel(utils.CheckpointsPanelMixin, bpy.types.Panel):
             icon=utils.TIMELINE_ICON,
         )
 
-        layout.prop(cps_context, "newTimelineName")
-        name = cps_context.newTimelineName
+        layout.prop(checkpoint_context, "newTimelineName")
+        name = checkpoint_context.newTimelineName
 
         row = layout.row()
-        row.prop(cps_context, "new_tl_keep_history")
-        new_tl_keep_history = cps_context.new_tl_keep_history
+        row.prop(checkpoint_context, "new_tl_keep_history")
+        new_tl_keep_history = checkpoint_context.new_tl_keep_history
 
         row = layout.row()
         if not name:

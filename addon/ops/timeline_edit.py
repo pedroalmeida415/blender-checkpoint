@@ -8,7 +8,7 @@ class RenameTimeline(bpy.types.Operator):
     """Edit current timeline name"""
 
     bl_label = __doc__
-    bl_idname = "cps.edit_timeline"
+    bl_idname = "checkpoint.edit_timeline"
 
     name: bpy.props.StringProperty(
         name="",
@@ -18,7 +18,7 @@ class RenameTimeline(bpy.types.Operator):
 
     def execute(self, context):
         filepath = bpy.path.abspath("//")
-        cps_context = context.window_manager.cps
+        checkpoint_context = context.window_manager.checkpoint
 
         slugified_name = utils.slugify(self.name)
 
@@ -29,8 +29,8 @@ class RenameTimeline(bpy.types.Operator):
             return {"CANCELLED"}
 
         self.name = ""
-        if cps_context.newTimelineName:
-            cps_context.newTimelineName = ""
+        if checkpoint_context.newTimelineName:
+            checkpoint_context.newTimelineName = ""
 
         self.report({"INFO"}, "Renamed timeline")
 

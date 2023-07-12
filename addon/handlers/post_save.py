@@ -7,11 +7,11 @@ from .. import utils
 @persistent
 def postSaveHandler(_):
     prefs = utils.prefs()
-    if prefs.shouldDisplayPostSaveDialog and bpy.ops.cps.post_save_dialog.poll():
-        bpy.ops.cps.post_save_dialog("INVOKE_DEFAULT")
+    if prefs.shouldDisplayPostSaveDialog and bpy.ops.checkpoint.post_save_dialog.poll():
+        bpy.ops.checkpoint.post_save_dialog("INVOKE_DEFAULT")
 
     if prefs.shouldAutoStart:
-        bpy.ops.cps.start_version_control("INVOKE_DEFAULT")
+        bpy.ops.checkpoint.start_version_control("INVOKE_DEFAULT")
 
 
 def register():

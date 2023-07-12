@@ -6,7 +6,7 @@ from .. import utils
 class SwitchTimelineErrorTooltip(utils.CheckpointsPanelMixin, bpy.types.Panel):
     """Tooltip for trying to create new timeline with uncomitted changes."""
 
-    bl_idname = "CPS_PT_switch_timeline_error_panel"
+    bl_idname = "CHECKPOINT_PT_switch_timeline_error_panel"
     bl_label = ""
     bl_options = {utils.TIMELINE_ACTION_OPTIONS_2_83_POLYFILL}
 

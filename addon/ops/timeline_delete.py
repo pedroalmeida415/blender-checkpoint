@@ -9,15 +9,15 @@ class DeleteTimeline(bpy.types.Operator):
     """Delete current timeline"""
 
     bl_label = __doc__
-    bl_idname = "cps.delete_timeline"
+    bl_idname = "checkpoint.delete_timeline"
 
     def execute(self, context):
         filepath = bpy.path.abspath("//")
         state = config.get_state(filepath)
-        cps_context = context.window_manager.cps
+        checkpoint_context = context.window_manager.checkpoint
 
         # get current timeline's checkpoints that will be deleted
-        tl_checkpoints_count = len(cps_context.checkpoints)
+        tl_checkpoints_count = len(checkpoint_context.checkpoints)
 
         to_delete_tl = state["current_timeline"]
 

@@ -6,7 +6,7 @@ from .. import config, ops, utils
 class DeleteTimelinePanel(utils.CheckpointsPanelMixin, bpy.types.Panel):
     """Deletes current Timeline"""
 
-    bl_idname = "CPS_PT_delete_timeline_panel"
+    bl_idname = "CHECKPOINT_PT_delete_timeline_panel"
     bl_label = ""
     bl_options = {utils.TIMELINE_ACTION_OPTIONS_2_83_POLYFILL}
 

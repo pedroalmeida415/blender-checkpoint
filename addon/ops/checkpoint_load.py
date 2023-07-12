@@ -9,14 +9,14 @@ class LoadCheckpoint(bpy.types.Operator):
     """Load selected checkpoint"""
 
     bl_label = __doc__
-    bl_idname = "cps.load_checkpoint"
+    bl_idname = "checkpoint.load_checkpoint"
 
     id: bpy.props.StringProperty(name="", description="ID of checkpoint to load")
 
     def execute(self, context):
         filepath = bpy.path.abspath("//")
 
-        activeCheckpointId = context.window_manager.cps.activeCheckpointId
+        activeCheckpointId = context.window_manager.checkpoint.activeCheckpointId
 
         if activeCheckpointId == self.id:
             return {"CANCELLED"}
