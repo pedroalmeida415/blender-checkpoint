@@ -80,7 +80,7 @@ class CheckpointsPanelData(bpy.types.PropertyGroup):
         name="", description="Current/last active checkpoint ID"
     )
 
-    diskUsage: bpy.props.IntProperty(default=0)
+    diskUsage: bpy.props.FloatProperty(default=0)
 
     isInitialized: bpy.props.BoolProperty(
         name="Version Control Status",

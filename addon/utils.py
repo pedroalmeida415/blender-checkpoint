@@ -58,7 +58,8 @@ def get_disk_usage(filepath):
             if not os.path.islink(fp):
                 total_size += os.path.getsize(fp)
 
-    return total_size
+    # Convert to MB
+    return total_size / (1024 * 1024)
 
 
 def getLastModifiedStr(date):

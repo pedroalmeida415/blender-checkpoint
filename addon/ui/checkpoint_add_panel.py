@@ -57,8 +57,6 @@ class SubPanelCheckpointAdd(utils.CheckpointsPanelMixin, bpy.types.Panel):
 
 
 def _format_size(size):
-    # Convert bytes to megabytes
-    size = size / (1024 * 1024)
     if size < 999:
         return f"{size:.2f} MB"
     else:
