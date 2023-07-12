@@ -27,26 +27,8 @@ bl_info = {
     "location": "Properties > Active Tool and Workspace settings > Checkpoints Panel",
 }
 
-import importlib
-import sys
-
 from . import addon_updater_ops
-
-# Local imports implemented to support Blender refreshes
-"""ORDER MATTERS"""
-modulesNames = (
-    "config",
-    "project_helpers",
-    "project_ops",
-    "project_ui",
-    "app_preferences",
-    "app_handlers",
-)
-for module in modulesNames:
-    if module in sys.modules:
-        importlib.reload(sys.modules[module])
-    else:
-        globals()[module] = importlib.import_module(f"{__name__}.{module}")
+from . import addon
 
 
 def register():
@@ -55,14 +37,10 @@ def register():
     # users can revert back to a working version.
     addon_updater_ops.register(bl_info)
 
-    for moduleName in modulesNames:
-        if hasattr(globals()[moduleName], "register"):
-            globals()[moduleName].register()
+    addon.register()
 
 
 def unregister():
-    addon_updater_ops.unregister()
+    addon.unregister()
 
-    for module in reversed(modulesNames):
-        if hasattr(globals()[module], "unregister"):
-            globals()[module].unregister()
+    addon_updater_ops.unregister()

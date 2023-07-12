@@ -2,26 +2,9 @@ import os
 import shutil
 
 import bpy
-from bpy.props import StringProperty
 
-from . import config
-from . import addon_updater_ops
-
-
-def get_user_preferences(context=None):
-    """Intermediate method for pre and post blender 2.8 grabbing preferences"""
-    if not context:
-        context = bpy.context
-    prefs = None
-    if hasattr(context, "user_preferences"):
-        prefs = context.user_preferences.addons.get(__package__, None)
-    elif hasattr(context, "preferences"):
-        prefs = context.preferences.addons.get(__package__, None)
-    if prefs:
-        return prefs.preferences
-    # To make the addon stable and non-exception prone, return None
-    # raise Exception("Could not fetch user preferences")
-    return None
+from . import config, utils
+from .. import addon_updater_ops
 
 
 class ResetProject(bpy.types.Operator):
@@ -41,14 +24,16 @@ class ResetProject(bpy.types.Operator):
         layout.separator()
 
         row = layout.row()
-        row.alignment = 'CENTER'
+        row.alignment = "CENTER"
         row.label(text="ARE YOU SURE?")
 
         layout.separator()
 
         row = layout.row()
         row.label(
-            text="This will delete all the addon's data from the current project", icon="TRASH")
+            text="This will delete all the addon's data from the current project",
+            icon="TRASH",
+        )
 
     def execute(self, context):
         filepath = bpy.path.abspath("//")
@@ -62,15 +47,14 @@ class ResetProject(bpy.types.Operator):
 
             self.report({"INFO"}, "Checkpoints data deleted successfully!")
         else:
-            self.report(
-                {"WARNING"}, "Checkpoints not found in the current directory!")
+            self.report({"WARNING"}, "Checkpoints not found in the current directory!")
 
         return {"FINISHED"}
 
 
 @addon_updater_ops.make_annotations
 class AddonPreferences(bpy.types.AddonPreferences):
-    bl_idname = __package__
+    bl_idname = utils.addon_name
 
     shouldDisplayPostSaveDialog: bpy.props.BoolProperty(
         name="Post Save Dialog",
@@ -88,34 +72,39 @@ class AddonPreferences(bpy.types.AddonPreferences):
     auto_check_update = bpy.props.BoolProperty(
         name="Auto-check for Update",
         description="If enabled, auto-check for updates using an interval",
-        default=False)
+        default=False,
+    )
 
     updater_interval_months = bpy.props.IntProperty(
-        name='Months',
+        name="Months",
         description="Number of months between checking for updates",
         default=0,
-        min=0)
+        min=0,
+    )
 
     updater_interval_days = bpy.props.IntProperty(
-        name='Days',
+        name="Days",
         description="Number of days between checking for updates",
         default=7,
         min=0,
-        max=31)
+        max=31,
+    )
 
     updater_interval_hours = bpy.props.IntProperty(
-        name='Hours',
+        name="Hours",
         description="Number of hours between checking for updates",
         default=0,
         min=0,
-        max=23)
+        max=23,
+    )
 
     updater_interval_minutes = bpy.props.IntProperty(
-        name='Minutes',
+        name="Minutes",
         description="Number of minutes between checking for updates",
         default=0,
         min=0,
-        max=59)
+        max=59,
+    )
 
     def draw(self, context):
         layout = self.layout
