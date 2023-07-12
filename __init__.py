@@ -23,7 +23,7 @@ bl_info = {
     "description": "Backup and version control for Blender",
     "blender": (2, 80, 0),
     "category": "Development",
-    "version": (1, 1, 1),
+    "version": (1, 1, 2),
     "location": "Properties > Active Tool and Workspace settings > Checkpoints Panel",
 }
 

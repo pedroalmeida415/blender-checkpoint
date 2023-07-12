@@ -1257,9 +1257,10 @@ def skip_tag_function(self, tag):
 
     # ---- write any custom code here, return true to disallow version ---- #
     #
-    # # Filter out e.g. if 'beta' is in name of release
-    # if 'beta' in tag.lower():
-    # 	return True
+    # Filter out e.g. if 'beta' is in name of release
+    # tag["assets"][0]["name"].lower()
+    if "supercharged" in tag["name"].lower():
+        return True
     # ---- write any custom code above, return true to disallow version --- #
 
     if self.include_branches:
@@ -1488,7 +1489,7 @@ def register(bl_info):
     # Set the min and max versions allowed to install.
     # Optional, default None
     # min install (>=) will install this and higher
-    updater.version_min_update = (0, 1, 0)
+    updater.version_min_update = (1, 1, 2)
     # updater.version_min_update = None  # None or default for no minimum.
 
     # Max install (<) will install strictly anything lower than this version
